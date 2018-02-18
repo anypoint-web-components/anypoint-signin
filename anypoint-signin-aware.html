@@ -1,0 +1,538 @@
+<!--
+@license
+Copyright 2018 The Advanced REST client authors <arc@mulesoft.com>
+Licensed under the Apache License, Version 2.0 (the "License"); you may not
+use this file except in compliance with the License. You may obtain a copy of
+the License at
+http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations under
+the License.
+-->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../oauth-authorization/oauth2-authorization.html">
+<link rel="import" href="../arc-polyfills/arc-polyfills.html">
+<script>
+(function() {
+  var AnypointAuth = {
+    /**
+     * oauth2 client ID
+     */
+    _clientId: null,
+    // returns currently set `client_id`
+    get clientId() {
+      return this._clientId;
+    },
+    // Sets new `client_id`
+    set clientId(val) {
+      if (val && val !== this._clientId) {
+        this._clientId = val;
+        this.initAuth2();
+      } else {
+        this._clientId = val;
+      }
+    },
+    // OAuth2 redirect URI
+    _redirectUri: null,
+    get redirectUri() {
+      return this._redirectUri;
+    },
+    set redirectUri(val) {
+      if (val && val !== this._redirectUri) {
+        this._redirectUri = val;
+        this.initAuth2();
+      } else {
+        this._redirectUri = val;
+      }
+    },
+    // OAuth2 authorization type
+    authType: 'implicit',
+    // Token authorization URL
+    authorizationUri: 'https://anypoint.mulesoft.com/accounts/oauth2/authorize',
+    // Code exchange endpoint
+    accessTokenUri: 'https://anypoint.mulesoft.com/accounts/oauth2/token',
+    // User info URL
+    profileUrl: 'https://anypoint.mulesoft.com/exchange/api/v1/profile',
+    // Log out URL.
+    logoutUri: 'https://anypoint.mulesoft.com/accounts/api/access_tokens/',
+    /** Is user signed in? */
+    _signedIn: false,
+    // Returns value for user signed in flag.
+    get signedIn() {
+      return this._signedIn;
+    },
+    /**
+     * Sets signedIn value and informs awares about the change.
+     *
+     * @param {Boolean} val Current state of user being signed in.
+     */
+    set signedIn(val) {
+      if (val === this._signedIn) {
+        return;
+      }
+      this._signedIn = val;
+      for (var i = 0; i < this.signinAwares.length; i++) {
+        this.signinAwares[i]._setSignedIn(val);
+      }
+    },
+    // User's access token.
+    _accessToken: null,
+    /**
+     * @return {String} Access token value
+     */
+    get accessToken() {
+      return this._accessToken;
+    },
+    /**
+     * Sets accessToken value and informs awares about the change.
+     *
+     * @param {String} val New access token.
+     */
+    set accessToken(val) {
+      if (val === this._accessToken) {
+        return;
+      }
+      this._accessToken = val;
+      for (var i = 0; i < this.signinAwares.length; i++) {
+        this.signinAwares[i]._setAccessToken(val);
+      }
+    },
+    // Received User info.
+    _user: null,
+    /**
+     * @return {Object} Profile information.
+     */
+    get user() {
+      return this._user;
+    },
+    /**
+     * Sets new value of user profile and informs awares about the change.
+     *
+     * @param {Object} val Retreived information about user profile.
+     */
+    set user(val) {
+      this._user = val;
+      for (var i = 0; i < this.signinAwares.length; i++) {
+        this.signinAwares[i]._setUser(val);
+      }
+    },
+    /**
+     * array of <anypoint-signin-aware>
+     * state changes are broadcast to them
+     */
+    signinAwares: [],
+    /**
+     * Initialize the client.
+     */
+    init: function() {
+      var factory;
+      if (this._oauthFactory) {
+        factory = this._oauthFactory;
+      } else {
+        factory = document.body.querySelector('oauth2-authorization');
+      }
+      if (!factory) {
+        this._oauth2ErrorHandler = this._oauth2ErrorHandler.bind(this);
+        this._oauth2TokenHandler = this._oauth2TokenHandler.bind(this);
+        this._oauthFactory = document.createElement('oauth2-authorization');
+        this._oauthFactory.addEventListener('oauth2-error', this._oauth2ErrorHandler);
+        this._oauthFactory.addEventListener('oauth2-token-response', this._oauth2TokenHandler);
+        document.body.appendChild(this._oauthFactory);
+      }
+      this.initAuth2();
+    },
+
+    /**
+     * Initializes OAuth2 client
+     */
+    initAuth2: function() {
+      this._initSignIn();
+    },
+
+    /**
+     * Generates `state` parameter for the OAuth2 call.
+     *
+     * @return {String} Generated state string.
+     */
+    generateState: function() {
+      let text = '';
+      let possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      for (let i = 0; i < 6; i++) {
+        text += possible.charAt(Math.floor(Math.random() * possible.length));
+      }
+      return text;
+    },
+
+    _initSignIn: function() {
+      if (!this.clientId || !this.redirectUri) {
+        return;
+      }
+      this.signIn(false);
+    },
+
+    assertAuthInitialized: function() {
+      if (!this.clientId) {
+        throw new Error('AuthEngine not initialized. clientId has not been configured.');
+      }
+      if (!this.redirectUri) {
+        throw new Error('AuthEngine not initialized. redirectUri has not been configured.');
+      }
+    },
+    /**
+     * OAuth2 authorization event settings.
+     *
+     * @return {Object} OAuth2 authorization settings to be dispatched to
+     * `<oauth2-authorization>` element
+     */
+    oauth2Config: function() {
+      this._lastState = this.generateState();
+      let result = {
+        type: this.authType,
+        authorizationUrl: this.authorizationUri,
+        clientId: this.clientId,
+        redirectUrl: this.redirectUri,
+        state: this._lastState
+      };
+      if (this.authType === 'code') {
+        result.accessTokenUrl = this.accessTokenUri;
+      }
+      return result;
+    },
+    /**
+     * Sends `oauth2-token-requested` custom event to authorize with the
+     * Exchange server.
+     *
+     * @param {Boolean} interactive If `false` then it performs non-interactive
+     * authorization in the background.
+     */
+    signIn: function(interactive) {
+      this.assertAuthInitialized();
+      var detail = this.oauth2Config();
+      if (interactive === false) {
+        detail.interactive = interactive;
+      }
+      this._oauthFactory.authorize(detail);
+    },
+    /**
+     * Signs out the user and attempts to destroy the token.
+     * Currently token destroy endpoint does not allow request from
+     * different domains so this is dummy function that clears token info,
+     * TODO: (jarrode) Discuss with core services to enable token revoke action
+     * from the outside of domain.
+     *
+     * @return {Promise} Promise resolved when the token is revoked.
+     */
+    signOut: function() {
+      return this._deleteToken()
+      .catch(function() {})
+      .then(function() {
+        AnypointAuth.setAuthData();
+      });
+    },
+
+    _oauth2TokenHandler: function(e) {
+      var info = e.detail;
+      if (!info) {
+        return;
+      }
+      if (this._lastState !== e.detail.state) {
+        return;
+      }
+      // this.accessToken = info.accessToken;
+      // this.setAuthData(info.accessToken, undefined);
+      this._getProfile(info.accessToken);
+    },
+
+    _oauth2ErrorHandler: function(e) {
+      if (this._lastState !== e.detail.state) {
+        return;
+      }
+      var message = e.detail.message;
+      this.accessToken = null;
+      this.user = null;
+      this.signedIn = false;
+      for (var i = 0; i < this.signinAwares.length; i++) {
+        this.signinAwares[i]._updateStatus();
+        this.signinAwares[i].errorNotify({
+          message: message
+        });
+      }
+    },
+
+    setAuthData: function(token, profile) {
+      this.accessToken = token;
+      this.user = profile;
+      this.signedIn = !!token;
+
+      for (var i = 0; i < this.signinAwares.length; i++) {
+        this.signinAwares[i]._updateStatus();
+      }
+    },
+    /**
+     * Gets user profile information from the authorization server.
+     *
+     * NOTE: Auth server does not allow XHR from other domains right now
+     * so this function is never called.
+     * This to be fixed when core service allows to get profile info from
+     * different domains.
+     *
+     * @param {String} accessToken OAuth 2 access token
+     */
+    _getProfile: function(accessToken) {
+      return this._authGet(this.profileUrl, accessToken)
+      .then(function(response) {
+        var profile;
+        try {
+          profile = JSON.parse(response);
+        } catch (e) {}
+        AnypointAuth.setAuthData(accessToken, profile);
+      })
+      .catch(function() {
+        AnypointAuth.setAuthData(accessToken);
+      });
+    },
+
+    _authGet: function(url, accessToken) {
+      accessToken = accessToken || this._accessToken;
+      return new Promise(function(resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', url);
+        xhr.setRequestHeader('Authorization', 'bearer ' + accessToken);
+        xhr.addEventListener('load', function(e) {
+          var status = e.target.status;
+          if (status === 404) {
+            return reject('Profile URL is invalid.');
+          } else if (status >= 400 && status < 500) {
+            return reject(
+              'Server does not support this method. Response code is ' + status);
+          } else if (status >= 500) {
+            return reject(
+              'Authorization server error. Response code is ' + status);
+          }
+          resolve(e.target.response);
+        });
+        xhr.addEventListener('error', function(e) {
+          var status = e.target.status;
+          var message = 'The request to the authorization server failed.';
+          if (status) {
+            message += ' Response code is: ' + status;
+          }
+          reject(message);
+        });
+        try {
+          xhr.send();
+        } catch (e) {
+          reject('Unable to send the request.');
+        }
+      });
+    },
+
+    _deleteToken: function() {
+      var url = this.logoutUri + this._accessToken;
+      return new Promise(function(resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        xhr.open('DELETE', url);
+        xhr.addEventListener('load', function(e) {
+          var status = e.target.status;
+          if (status > 299) {
+            return reject('Delete token request faioled.');
+          }
+          resolve();
+        });
+        xhr.addEventListener('error', function(e) {
+          var status = e.target.status;
+          var message = 'Unable to delete the token.';
+          if (status) {
+            message += ' Response code is: ' + status;
+          }
+          reject(message);
+        });
+        try {
+          xhr.send();
+        } catch (e) {
+          reject('Unable to send the request.');
+        }
+      });
+    },
+    /**
+     * attached <anypoint-signin-aware>
+     * @param {!AnypointSigninAwareElement} aware element to add
+     */
+    attachSigninAware: function(aware) {
+      if (this.signinAwares.indexOf(aware) === -1) {
+        this.signinAwares.push(aware);
+        aware._setSignedIn(this._signedIn);
+        aware._setAccessToken(this._accessToken);
+        aware._setUser(this._user);
+      }
+    },
+
+    detachSigninAware: function(aware) {
+      var index = this.signinAwares.indexOf(aware);
+      if (index !== -1) {
+        this.signinAwares.splice(index, 1);
+      }
+    },
+
+    notifyError: function(message) {
+      for (var i = 0; i < this.signinAwares.length; i++) {
+        this.signinAwares[i].errorNotify({
+          message: message
+        });
+      }
+    }
+  };
+
+  AnypointAuth.init();
+
+  if (window.__env === 'test') {
+    window.AnypointAuth = AnypointAuth;
+  }
+  /**
+   * `<anypoint-signin-aware>` is used to authenticate the user in Anypoint
+   * core services API.
+   *
+   * The `anypoint-signin-aware-success` event is triggered when a user
+   * successfully authenticates. It also sets `accessToken` property that can be
+   * used to interact with Anypoint APIs.
+   * The `anypoint-signin-aware-signed-out` event is triggered when a user
+   * signs out via calling `signOut()` function.
+   *
+   * You can bind to `signedIn` property to monitor authorization state.
+   * ##### Example
+   *
+   *     <anypoint-signin-aware signed-in="{{isSigned}}"></anypoint-signin-aware>
+   *
+   * The `clientId` and `redirectUri` properties has to be set before using the
+   * component. `clientId` and associated with it `redirectUri` has to be set up
+   * with Anypoint authorization server. Contact Anypoint Core services for
+   * more information.
+   *
+   * ##### Example
+   *
+   *     <anypoint-signin-aware client-id="abc123" redirect-uri="https://auth.domain.com/oauth2/redirect"></anypoint-signin-aware>
+   *
+   * ## Authorization type
+   *
+   * This element supports `implicit` authentication flow only. Web application
+   * should not contain OAuth2 secret and most OAuth2 authorization do not allow
+   * web clients to authenticate from a web client. If you have to use `code`
+   * authorization flow when use different method to authenticate the user.
+   *
+   * ## Autho log in
+   *
+   * The element attempts to log in user in a non-interactive way (without
+   * displaying the popup) when the lement is ready. It does nothing when
+   * the response is errored.
+   */
+  Polymer({
+    is: 'anypoint-signin-aware',
+
+    properties: {
+      /**
+       * An Anypoint clientId.
+       * This property is required to run the authorization flow.
+       */
+      clientId: {
+        type: String,
+        observer: '_clientIdChanged'
+      },
+      /**
+       * Authorization redirect URI.
+       * This property is required to run the authorization flow.
+       */
+      redirectUri: {
+        type: String,
+        observer: '_redirectUriChanged'
+      },
+
+      /**
+       * True if user is signed in
+       */
+      signedIn: {
+        type: Boolean,
+        notify: true,
+        readOnly: true
+      },
+      /**
+       * True if user is signed in
+       */
+      accessToken: {
+        type: String,
+        notify: true,
+        readOnly: true
+      },
+      /**
+       * User profile information.
+       */
+      user: {
+        type: Object,
+        notify: true,
+        readOnly: true
+      }
+    },
+
+    attached: function() {
+      AnypointAuth.attachSigninAware(this);
+    },
+
+    detached: function() {
+      AnypointAuth.detachSigninAware(this);
+    },
+
+    /** pops up the authorization dialog */
+    signIn: function() {
+      AnypointAuth.signIn();
+    },
+    /**
+     * Signs out the user and attempts to destroy the token.
+     * Currently token destroy endpoint does not allow request from
+     * different domains so this is dummy function that clears token info,
+     * TODO: (jarrode) Discuss with core services to enable token revoke action
+     * from the outside of domain.
+     *
+     * @return {Promise} Promise resolved when the token is revoked.
+     */
+    signOut: function() {
+      return AnypointAuth.signOut();
+    },
+
+    errorNotify: function(error) {
+      this.fire('anypoint-signin-aware-error', error);
+    },
+
+    _clientIdChanged: function(newId) {
+      AnypointAuth.clientId = newId;
+    },
+
+    _redirectUriChanged: function(value) {
+      AnypointAuth.redirectUri = value;
+    },
+
+    _updateStatus: function() {
+      if (this.signedIn) {
+        this.fire('anypoint-signin-aware-success', this.user);
+      } else {
+        this.fire('anypoint-signin-aware-signed-out', this.user);
+      }
+    },
+
+    /**
+     * Fired when this scope has been authorized
+     * @param {Object} result Authorization result.
+     * @event anypoint-signin-aware-success
+     */
+    /**
+     * Fired when this scope is not authorized
+     * @event anypoint-signin-aware-signed-out
+     */
+    /**
+     * Fired when there is an error during the signin flow.
+     * @param {Object} detail The error object returned from the OAuth 2 flow.
+     * @event anypoint-signin-aware-error
+     */
+  });
+})();
+</script>

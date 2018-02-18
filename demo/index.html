@@ -1,0 +1,91 @@
+<!doctype html>
+<!--
+@license
+Copyright (c) 2015 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
+
+  <title>anypoint-signin demo</title>
+
+  <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+
+  <link rel="import" href="../../iron-demo-helpers/demo-pages-shared-styles.html">
+  <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+
+  <link rel="import" href="../anypoint-signin.html">
+  <link rel="import" href="../anypoint-signin-aware.html">
+
+  <style is="custom-style" include="demo-pages-shared-styles">
+
+    .vertical-section-container {
+      max-width: 600px;
+    }
+
+  </style>
+</head>
+<body unresolved>
+  <div class="vertical-section-container centered">
+    <h3>The `anypoint-signin`</h3>
+    <demo-snippet>
+      <template is="dom-bind">
+        <anypoint-signin redirect-uri="https://auth.advancedrestclient.com/oauth-popup.html" client-id="59KaqF90hLgZMJec" signed-in="{{signedIn}}" access-token="{{accessToken}}" user="{{user}}"></anypoint-signin>
+        <p>User signed in: [[signedIn]]</p>
+        <p>User access token: [[accessToken]]</p>
+        <p>User data: [[user]]</p>
+      </template>
+    </demo-snippet>
+
+    <h3>Theme options</h3>
+    <demo-snippet>
+      <template is="dom-bind">
+        <anypoint-signin theme="light" redirect-uri="https://auth.advancedrestclient.com/oauth-popup.html" client-id="59KaqF90hLgZMJec"></anypoint-signin>
+        <anypoint-signin theme="dark" redirect-uri="https://auth.advancedrestclient.com/oauth-popup.html" client-id="59KaqF90hLgZMJec"></anypoint-signin>
+        <br><br>
+        <anypoint-signin noink theme="light" redirect-uri="https://auth.advancedrestclient.com/oauth-popup.html" client-id="59KaqF90hLgZMJec"></anypoint-signin>
+        <anypoint-signin noink theme="dark" redirect-uri="https://auth.advancedrestclient.com/oauth-popup.html" client-id="59KaqF90hLgZMJec"></anypoint-signin>
+        <br><br>
+        <anypoint-signin raised theme="light" redirect-uri="https://auth.advancedrestclient.com/oauth-popup.html" client-id="59KaqF90hLgZMJec"></anypoint-signin>
+        <anypoint-signin raised theme="dark" redirect-uri="https://auth.advancedrestclient.com/oauth-popup.html" client-id="59KaqF90hLgZMJec"></anypoint-signin>
+        <br><br>
+        <anypoint-signin disabled theme="light" redirect-uri="https://auth.advancedrestclient.com/oauth-popup.html" client-id="59KaqF90hLgZMJec"></anypoint-signin>
+        <anypoint-signin disabled theme="dark" redirect-uri="https://auth.advancedrestclient.com/oauth-popup.html" client-id="59KaqF90hLgZMJec"></anypoint-signin>
+      </template>
+    </demo-snippet>
+
+    <h3>Width options</h3>
+    <demo-snippet>
+      <template is="dom-bind">
+        <anypoint-signin width="iconOnly" redirect-uri="https://auth.advancedrestclient.com/oauth-popup.html" client-id="59KaqF90hLgZMJec"></anypoint-signin>
+        <anypoint-signin width="standard" redirect-uri="https://auth.advancedrestclient.com/oauth-popup.html" client-id="59KaqF90hLgZMJec"></anypoint-signin>
+        <anypoint-signin width="wide" redirect-uri="https://auth.advancedrestclient.com/oauth-popup.html" client-id="59KaqF90hLgZMJec"></anypoint-signin>
+      </template>
+    </demo-snippet>
+
+    <h3>Height options</h3>
+    <demo-snippet>
+      <template is="dom-bind">
+        <anypoint-signin height="short" redirect-uri="https://auth.advancedrestclient.com/oauth-popup.html" client-id="59KaqF90hLgZMJec"></anypoint-signin>
+        <anypoint-signin height="standard" redirect-uri="https://auth.advancedrestclient.com/oauth-popup.html" client-id="59KaqF90hLgZMJec"></anypoint-signin>
+        <anypoint-signin height="tall" redirect-uri="https://auth.advancedrestclient.com/oauth-popup.html" client-id="59KaqF90hLgZMJec"></anypoint-signin>
+      </template>
+    </demo-snippet>
+
+    <h3>raised and noink options</h3>
+    <demo-snippet>
+      <template is="dom-bind">
+        <anypoint-signin raised redirect-uri="https://auth.advancedrestclient.com/oauth-popup.html" client-id="59KaqF90hLgZMJec"></anypoint-signin>
+        <anypoint-signin noink redirect-uri="https://auth.advancedrestclient.com/oauth-popup.html" client-id="59KaqF90hLgZMJec"></anypoint-signin>
+      </template>
+    </demo-snippet>
+  </div>
+</body>
+</html>

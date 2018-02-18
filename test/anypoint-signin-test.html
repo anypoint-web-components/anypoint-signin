@@ -1,0 +1,163 @@
+<!doctype html>
+<!--
+@license
+Copyright 2018 The Advanced REST client authors <arc@mulesoft.com>
+Licensed under the Apache License, Version 2.0 (the "License"); you may not
+use this file except in compliance with the License. You may obtain a copy of
+the License at
+http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations under
+the License.
+-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <script>
+    window.__env = 'test';
+    </script>
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+    <script src="../../iron-test-helpers/test-helpers.js"></script>
+    <script src="../../iron-test-helpers/mock-interactions.js"></script>
+    <link rel="import" href="../anypoint-signin.html">
+  </head>
+  <body>
+
+    <test-fixture id="basic">
+      <template>
+        <anypoint-signin></anypoint-signin>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="noink">
+      <template>
+        <anypoint-signin noink></anypoint-signin>
+      </template>
+    </test-fixture>
+
+    <script>
+    /* global fixture, assert, TestHelpers */
+
+    suite('Basic', function() {
+      var element;
+      setup(function() {
+        element = fixture('basic');
+      });
+
+      test('_labelSignin is computed', function() {
+        assert.equal(element._labelSignin, 'Sign in');
+      });
+    });
+
+    suite('_computeButtonClass()', function() {
+      var element;
+      setup(function() {
+        element = fixture('basic');
+      });
+
+      test('Computes classes', function() {
+        const result = element._computeButtonClass('a', 'b', 'c', true);
+        assert.equal(result, 'height-a width-b theme-c signedIn-true');
+      });
+    });
+
+    suite('_computeSigninLabel()', function() {
+      var element;
+      setup(function() {
+        element = fixture('basic');
+      });
+
+      test('Returns defined value', function() {
+        const width = 'wide';
+        const label = 'test';
+        const result = element._computeSigninLabel(label, width);
+        assert.equal(result, label);
+      });
+
+      test('Returns "WIDE" value', function() {
+        const width = 'wide';
+        const label = '';
+        const result = element._computeSigninLabel(label, width);
+        assert.equal(result, 'Sign in with Exchange');
+      });
+
+      test('Returns "STANDARD" value', function() {
+        const width = 'standard';
+        const label = '';
+        const result = element._computeSigninLabel(label, width);
+        assert.equal(result, 'Sign in');
+      });
+
+      test('Returns "ICON_ONLY" value', function() {
+        const width = 'iconOnly';
+        const label = '';
+        const result = element._computeSigninLabel(label, width);
+        assert.equal(result, '');
+      });
+
+      test('Returns default value', function() {
+        const width = '';
+        const label = '';
+        const result = element._computeSigninLabel(label, width);
+        assert.equal(result, 'Sign in');
+      });
+    });
+
+    suite('No ink', function() {
+      var element;
+      setup(function() {
+        element = fixture('noink');
+        TestHelpers.forceXIfStamp(element);
+      });
+
+      test('Ripple is not rendered', function() {
+        const ripple = element.$$('paper-ripple');
+        assert.notOk(ripple);
+      });
+    });
+
+    suite('Buttons state', function() {
+      var element;
+      setup(function() {
+        element = fixture('basic');
+        TestHelpers.forceXIfStamp(element);
+      });
+
+      test('Sign in button is rendered', function() {
+        const button = element.$$('.signIn');
+        assert.ok(button);
+        const display = getComputedStyle(button).display;
+        assert.notEqual(display, 'none');
+      });
+
+      test('Sign out button not rendered', function() {
+        const button = element.$$('.signOut');
+        assert.notOk(button);
+      });
+
+      test('Sign out button is rendered when auth set', function() {
+        element.signedIn = true;
+        TestHelpers.forceXIfStamp(element);
+        const button = element.$$('.signOut');
+        assert.ok(button);
+        const display = getComputedStyle(button).display;
+        assert.notEqual(display, 'none');
+      });
+
+      test('Sign in button hidden', function() {
+        element.signedIn = true;
+        TestHelpers.forceXIfStamp(element);
+        const button = element.$$('.signIn');
+        assert.ok(button);
+        const display = getComputedStyle(button).display;
+        assert.equal(display, 'none');
+      });
+    });
+    </script>
+
+  </body>
+</html>

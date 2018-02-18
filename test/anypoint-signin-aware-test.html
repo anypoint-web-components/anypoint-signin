@@ -1,0 +1,180 @@
+<!doctype html>
+<!--
+@license
+Copyright 2018 The Advanced REST client authors <arc@mulesoft.com>
+Licensed under the Apache License, Version 2.0 (the "License"); you may not
+use this file except in compliance with the License. You may obtain a copy of
+the License at
+http://www.apache.org/licenses/LICENSE-2.0
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+License for the specific language governing permissions and limitations under
+the License.
+-->
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <script>
+    window.__env = 'test';
+    </script>
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+    <script src="../../iron-test-helpers/test-helpers.js"></script>
+    <script src="../../iron-test-helpers/mock-interactions.js"></script>
+    <script src="auth-server.js"></script>
+    <link rel="import" href="../anypoint-signin-aware.html">
+  </head>
+  <body>
+
+    <test-fixture id="basic">
+      <template>
+        <anypoint-signin-aware fire-oauth-events></anypoint-signin-aware>
+      </template>
+    </test-fixture>
+
+    <script>
+    /* global fixture, assert, AnypointAuth, AuthServer */
+    const clientId = 'test-id';
+    const redirectUri = 'test-redirect';
+    const replacedMethods = {};
+    function replaceAuthMethod(method, fn) {
+      var orig = AnypointAuth[method];
+      AnypointAuth[method] = fn;
+      replacedMethods[method] = orig;
+    }
+    function restoreMethod(method) {
+      AnypointAuth[method] = replacedMethods[method];
+      delete replacedMethods[method];
+    }
+    suite('Basic', function() {
+
+      suiteSetup(function() {
+        AuthServer.createServer();
+      });
+
+      suiteTeardown(function() {
+        AuthServer.restore();
+      });
+
+      var element;
+      setup(function() {
+        element = fixture('basic');
+        element.clientId = '';
+        element.redirectUri = '';
+      });
+
+      test('Auto authorize the user', function() {
+        var called = 0;
+        var fn = function() {
+          called++;
+        };
+        replaceAuthMethod('_initSignIn', fn);
+        element.clientId = clientId;
+        element.redirectUri = redirectUri;
+        restoreMethod('_initSignIn');
+        assert.equal(called, 2);
+      });
+
+      test('Auto calls signin function', function() {
+        var called = false;
+        var argValue;
+        var fn = function(arg) {
+          called = true;
+          argValue = arg;
+        };
+        replaceAuthMethod('signIn', fn);
+        element.clientId = clientId;
+        element.redirectUri = redirectUri;
+        restoreMethod('signIn');
+        assert.isTrue(called);
+        assert.isFalse(argValue);
+      });
+
+      test('signIn() calls oauth factory', function() {
+        var called = false;
+        var argValue;
+        var factory = {
+          authorize: function(arg) {
+            called = true;
+            argValue = arg;
+          }
+        };
+        replaceAuthMethod('_oauthFactory', factory);
+        element.clientId = clientId;
+        element.redirectUri = redirectUri;
+        restoreMethod('_oauthFactory');
+        assert.isTrue(called);
+        assert.equal(argValue.type, 'implicit');
+        assert.equal(argValue.authorizationUrl, 'https://anypoint.mulesoft.com/accounts/oauth2/authorize');
+        assert.equal(argValue.clientId, clientId);
+        assert.equal(argValue.redirectUrl, redirectUri);
+        assert.typeOf(argValue.state, 'string');
+      });
+
+      test('Sets properties when the response is ready', function(done) {
+        var called = false;
+        var argValue;
+        var factory = {
+          authorize: function(arg) {
+            called = true;
+            argValue = arg;
+          }
+        };
+        replaceAuthMethod('_oauthFactory', factory);
+        element.clientId = clientId;
+        element.redirectUri = redirectUri;
+        restoreMethod('_oauthFactory');
+        element.addEventListener('anypoint-signin-aware-success', function clb(e) {
+          element.removeEventListener('anypoint-signin-aware-success', clb);
+          assert.isTrue(element.signedIn);
+          assert.equal(element.accessToken, 'test-token');
+          assert.typeOf(element.user, 'object');
+          assert.isTrue(element.user.test);
+          assert.typeOf(e.detail, 'object');
+          assert.isTrue(e.detail.test);
+          done();
+        });
+        const oauth = document.body.querySelector('oauth2-authorization');
+        oauth.fire('oauth2-token-response', {
+          accessToken: 'test-token',
+          state: argValue.state
+        });
+      });
+
+      test('Signs out the user', function(done) {
+        var called = false;
+        var argValue;
+        var factory = {
+          authorize: function(arg) {
+            called = true;
+            argValue = arg;
+          }
+        };
+        replaceAuthMethod('_oauthFactory', factory);
+        element.clientId = clientId;
+        element.redirectUri = redirectUri;
+        restoreMethod('_oauthFactory');
+        element.addEventListener('anypoint-signin-aware-success', function clb() {
+          element.removeEventListener('anypoint-signin-aware-success', clb);
+          element.signOut();
+        });
+        element.addEventListener('anypoint-signin-aware-signed-out', function clb() {
+          element.removeEventListener('anypoint-signin-aware-signed-out', clb);
+          assert.isUndefined(element.accessToken);
+          assert.isUndefined(element.user);
+          assert.isFalse(element.signedIn);
+          done();
+        });
+        const oauth = document.body.querySelector('oauth2-authorization');
+        oauth.fire('oauth2-token-response', {
+          accessToken: 'test-token',
+          state: argValue.state
+        });
+      });
+    });
+    </script>
+
+  </body>
+</html>
