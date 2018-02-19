@@ -123,25 +123,61 @@ the License.
      * state changes are broadcast to them
      */
     signinAwares: [],
+
+    _forceOauthEvents: null,
+
+    get forceOauthEvents() {
+      return this._forceOauthEvents;
+    },
+
+    set forceOauthEvents(val) {
+      if (this._forceOauthEvents === val) {
+        return;
+      }
+      this._forceOauthEvents = val;
+      if (val) {
+        this._clearOauthAuthorization();
+      } else {
+        this._setOauthAuthorization();
+      }
+    },
     /**
      * Initialize the client.
      */
     init: function() {
+      if (!this._forceOauthEvents) {
+        this._setOauthAuthorization();
+      }
+      this.initAuth2();
+    },
+
+    _setOauthAuthorization() {
       var factory;
       if (this._oauthFactory) {
         factory = this._oauthFactory;
       } else {
-        factory = document.body.querySelector('oauth2-authorization');
+        var selectr = 'oauth2-authorization[data-owner="anypoint-signin-aware"]';
+        factory = document.body.querySelector(selectr);
       }
       if (!factory) {
         this._oauth2ErrorHandler = this._oauth2ErrorHandler.bind(this);
         this._oauth2TokenHandler = this._oauth2TokenHandler.bind(this);
         this._oauthFactory = document.createElement('oauth2-authorization');
+        this._oauthFactory.dataset.owner = 'anypoint-signin-aware';
         this._oauthFactory.addEventListener('oauth2-error', this._oauth2ErrorHandler);
         this._oauthFactory.addEventListener('oauth2-token-response', this._oauth2TokenHandler);
         document.body.appendChild(this._oauthFactory);
       }
-      this.initAuth2();
+    },
+
+    _clearOauthAuthorization: function() {
+      if (!this._oauthFactory) {
+        return;
+      }
+      this._oauthFactory.removeEventListener('oauth2-error', this._oauth2ErrorHandler);
+      this._oauthFactory.removeEventListener('oauth2-token-response', this._oauth2TokenHandler);
+      document.body.removeChild(this._oauthFactory);
+      this._oauthFactory = undefined;
     },
 
     /**
@@ -208,12 +244,23 @@ the License.
      * authorization in the background.
      */
     signIn: function(interactive) {
+      if (!this._oauthFactory && !this._forceOauthEvents) {
+        return;
+      }
       this.assertAuthInitialized();
       var detail = this.oauth2Config();
       if (interactive === false) {
         detail.interactive = interactive;
       }
-      this._oauthFactory.authorize(detail);
+      if (this._forceOauthEvents) {
+        var ev = new CustomEvent('oauth2-token-requested', {
+          bubbles: true,
+          detail: detail
+        });
+        document.body.dispatchEvent(ev);
+      } else {
+        this._oauthFactory.authorize(detail);
+      }
     },
     /**
      * Signs out the user and attempts to destroy the token.
@@ -363,9 +410,16 @@ the License.
     attachSigninAware: function(aware) {
       if (this.signinAwares.indexOf(aware) === -1) {
         this.signinAwares.push(aware);
+        if (typeof aware.forceOauthEvents !== 'undefined') {
+          this.forceOauthEvents = aware.forceOauthEvents;
+        }
         aware._setSignedIn(this._signedIn);
         aware._setAccessToken(this._accessToken);
         aware._setUser(this._user);
+      }
+      if (!this._initialized) {
+        AnypointAuth.init();
+        this._initialized = true;
       }
     },
 
@@ -385,7 +439,7 @@ the License.
     }
   };
 
-  AnypointAuth.init();
+  // AnypointAuth.init();
 
   if (window.__env === 'test') {
     window.AnypointAuth = AnypointAuth;
@@ -471,7 +525,16 @@ the License.
         type: Object,
         notify: true,
         readOnly: true
-      }
+      },
+      /**
+       * By default this element inserts `oauth2-authorization` element to the
+       * body and uses direct API to authorize the client. Set this property to
+       * force the element to use events system to call the OAuth endpoint.
+       *
+       * It is useful when your application has it's own OAuth 2 authorization
+       * mechanism.
+       */
+      forceOauthEvents: Boolean
     },
 
     attached: function() {
