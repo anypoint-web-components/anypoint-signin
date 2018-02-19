@@ -30,12 +30,18 @@ the License.
 
     <test-fixture id="basic">
       <template>
-        <anypoint-signin-aware fire-oauth-events></anypoint-signin-aware>
+        <anypoint-signin-aware></anypoint-signin-aware>
+      </template>
+    </test-fixture>
+
+    <test-fixture id="events">
+      <template>
+        <anypoint-signin-aware force-oauth-events></anypoint-signin-aware>
       </template>
     </test-fixture>
 
     <script>
-    /* global fixture, assert, AnypointAuth, AuthServer */
+    /* global fixture, assert, AnypointAuth, AuthServer, sinon */
     const clientId = 'test-id';
     const redirectUri = 'test-redirect';
     const replacedMethods = {};
@@ -173,6 +179,24 @@ the License.
           state: argValue.state
         });
       });
+    });
+
+    suite('force-oauth-events', function() {
+
+      var element;
+      setup(function() {
+        element = fixture('events');
+      });
+
+      test('Dispatches oauth2-token-requested custom event', function() {
+        var spy = sinon.spy();
+        document.body.addEventListener('oauth2-token-requested', spy);
+        element.clientId = clientId;
+        element.redirectUri = redirectUri;
+        element.signIn();
+        assert.isTrue(spy.calledOnce);
+      });
+
     });
     </script>
 

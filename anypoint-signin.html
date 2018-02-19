@@ -76,7 +76,8 @@ Custom property | Description | Default
       redirect-uri="[[redirectUri]]"
       signed-in="{{signedIn}}"
       user="{{user}}"
-      access-token="{{accessToken}}"></anypoint-signin-aware>
+      access-token="{{accessToken}}"
+      force-oauth-events="[[forceOauthEvents]]"></anypoint-signin-aware>
     <div id="authButton" class$="[[_computeButtonClass(height, width, theme, signedIn)]]">
       <template is="dom-if" if="[[!noink]]">
         <paper-ripple id="ripple" class="fit"></paper-ripple>
@@ -247,7 +248,16 @@ Custom property | Description | Default
         noink: {
           type: Boolean,
           value: false
-        }
+        },
+        /**
+         * By default this element inserts `oauth2-authorization` element to the
+         * body and uses direct API to authorize the client. Set this property to
+         * force the element to use events system to call the OAuth endpoint.
+         *
+         * It is useful when your application has it's own OAuth 2 authorization
+         * mechanism.
+         */
+        forceOauthEvents: Boolean
       },
 
       _computeButtonClass: function(height, width, theme, signedIn) {
