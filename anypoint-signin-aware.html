@@ -287,8 +287,10 @@ the License.
       if (this._lastState !== e.detail.state) {
         return;
       }
-      // this.accessToken = info.accessToken;
-      // this.setAuthData(info.accessToken, undefined);
+      if (!info.accessToken) {
+        this.setAuthData();
+        return;
+      }
       this._getProfile(info.accessToken);
     },
 
