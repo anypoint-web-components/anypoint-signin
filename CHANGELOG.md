@@ -1,3 +1,13 @@
+<a name="0.1.4"></a>
+## [0.1.4](https://github.com/advanced-rest-client/anypoint-signin/compare/0.1.3...0.1.4) (2018-02-19)
+
+
+### Fix
+
+* Stopped calliing `getProfile` when token is not set. ([a350813120a6aedfa76815049dab0309176df638](https://github.com/advanced-rest-client/anypoint-signin/commit/a350813120a6aedfa76815049dab0309176df638))
+
+
+
 <a name="0.1.3"></a>
 ## [0.1.3](https://github.com/advanced-rest-client/anypoint-signin/compare/0.1.2...0.1.3) (2018-02-19)
 
