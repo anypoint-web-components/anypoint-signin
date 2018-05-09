@@ -290,7 +290,6 @@ the License.
     },
 
     _oauth2TokenHandler: function(e) {
-      debugger;
       var info = e.detail;
       if (!info) {
         return;
@@ -306,7 +305,6 @@ the License.
     },
 
     _oauth2ErrorHandler: function(e) {
-      debugger;
       if (AnypointAuth._lastState !== e.detail.state) {
         return;
       }
