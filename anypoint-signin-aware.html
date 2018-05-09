@@ -23,28 +23,28 @@ the License.
     _clientId: null,
     // returns currently set `client_id`
     get clientId() {
-      return this._clientId;
+      return AnypointAuth._clientId;
     },
     // Sets new `client_id`
     set clientId(val) {
-      if (val && val !== this._clientId) {
-        this._clientId = val;
-        this.initAuth2();
+      if (val && val !== AnypointAuth._clientId) {
+        AnypointAuth._clientId = val;
+        AnypointAuth.initAuth2();
       } else {
-        this._clientId = val;
+        AnypointAuth._clientId = val;
       }
     },
     // OAuth2 redirect URI
     _redirectUri: null,
     get redirectUri() {
-      return this._redirectUri;
+      return AnypointAuth._redirectUri;
     },
     set redirectUri(val) {
-      if (val && val !== this._redirectUri) {
-        this._redirectUri = val;
-        this.initAuth2();
+      if (val && val !== AnypointAuth._redirectUri) {
+        AnypointAuth._redirectUri = val;
+        AnypointAuth.initAuth2();
       } else {
-        this._redirectUri = val;
+        AnypointAuth._redirectUri = val;
       }
     },
     // OAuth2 authorization type
@@ -61,7 +61,7 @@ the License.
     _signedIn: false,
     // Returns value for user signed in flag.
     get signedIn() {
-      return this._signedIn;
+      return AnypointAuth._signedIn;
     },
     /**
      * Sets signedIn value and informs awares about the change.
@@ -69,12 +69,12 @@ the License.
      * @param {Boolean} val Current state of user being signed in.
      */
     set signedIn(val) {
-      if (val === this._signedIn) {
+      if (val === AnypointAuth._signedIn) {
         return;
       }
-      this._signedIn = val;
-      for (var i = 0; i < this.signinAwares.length; i++) {
-        this.signinAwares[i]._setSignedIn(val);
+      AnypointAuth._signedIn = val;
+      for (var i = 0; i < AnypointAuth.signinAwares.length; i++) {
+        AnypointAuth.signinAwares[i]._setSignedIn(val);
       }
     },
     // User's access token.
@@ -83,7 +83,7 @@ the License.
      * @return {String} Access token value
      */
     get accessToken() {
-      return this._accessToken;
+      return AnypointAuth._accessToken;
     },
     /**
      * Sets accessToken value and informs awares about the change.
@@ -91,12 +91,12 @@ the License.
      * @param {String} val New access token.
      */
     set accessToken(val) {
-      if (val === this._accessToken) {
+      if (val === AnypointAuth._accessToken) {
         return;
       }
-      this._accessToken = val;
-      for (var i = 0; i < this.signinAwares.length; i++) {
-        this.signinAwares[i]._setAccessToken(val);
+      AnypointAuth._accessToken = val;
+      for (var i = 0; i < AnypointAuth.signinAwares.length; i++) {
+        AnypointAuth.signinAwares[i]._setAccessToken(val);
       }
     },
     // Received User info.
@@ -105,7 +105,7 @@ the License.
      * @return {Object} Profile information.
      */
     get user() {
-      return this._user;
+      return AnypointAuth._user;
     },
     /**
      * Sets new value of user profile and informs awares about the change.
@@ -113,9 +113,9 @@ the License.
      * @param {Object} val Retreived information about user profile.
      */
     set user(val) {
-      this._user = val;
-      for (var i = 0; i < this.signinAwares.length; i++) {
-        this.signinAwares[i]._setUser(val);
+      AnypointAuth._user = val;
+      for (var i = 0; i < AnypointAuth.signinAwares.length; i++) {
+        AnypointAuth.signinAwares[i]._setUser(val);
       }
     },
     /**
@@ -127,64 +127,74 @@ the License.
     _forceOauthEvents: null,
 
     get forceOauthEvents() {
-      return this._forceOauthEvents;
+      return AnypointAuth._forceOauthEvents;
     },
 
     set forceOauthEvents(val) {
-      if (this._forceOauthEvents === val) {
+      if (AnypointAuth._forceOauthEvents === val) {
         return;
       }
-      this._forceOauthEvents = val;
+      AnypointAuth._forceOauthEvents = val;
       if (val) {
-        this._clearOauthAuthorization();
+        AnypointAuth._clearOauthAuthorization();
+        AnypointAuth._observeWindowEvents();
       } else {
-        this._setOauthAuthorization();
+        AnypointAuth._setOauthAuthorization();
+        AnypointAuth._unobserveWindowEvents();
       }
     },
     /**
      * Initialize the client.
      */
     init: function() {
-      if (!this._forceOauthEvents) {
-        this._setOauthAuthorization();
+      if (!AnypointAuth._forceOauthEvents) {
+        AnypointAuth._setOauthAuthorization();
       }
-      this.initAuth2();
+      AnypointAuth.initAuth2();
     },
 
     _setOauthAuthorization() {
       var factory;
-      if (this._oauthFactory) {
-        factory = this._oauthFactory;
+      if (AnypointAuth._oauthFactory) {
+        factory = AnypointAuth._oauthFactory;
       } else {
         var selectr = 'oauth2-authorization[data-owner="anypoint-signin-aware"]';
         factory = document.body.querySelector(selectr);
       }
       if (!factory) {
-        this._oauth2ErrorHandler = this._oauth2ErrorHandler.bind(this);
-        this._oauth2TokenHandler = this._oauth2TokenHandler.bind(this);
-        this._oauthFactory = document.createElement('oauth2-authorization');
-        this._oauthFactory.dataset.owner = 'anypoint-signin-aware';
-        this._oauthFactory.addEventListener('oauth2-error', this._oauth2ErrorHandler);
-        this._oauthFactory.addEventListener('oauth2-token-response', this._oauth2TokenHandler);
-        document.body.appendChild(this._oauthFactory);
+        AnypointAuth._oauthFactory = document.createElement('oauth2-authorization');
+        AnypointAuth._oauthFactory.dataset.owner = 'anypoint-signin-aware';
+        AnypointAuth._oauthFactory.addEventListener('oauth2-error', AnypointAuth._oauth2ErrorHandler);
+        AnypointAuth._oauthFactory.addEventListener('oauth2-token-response', AnypointAuth._oauth2TokenHandler);
+        document.body.appendChild(AnypointAuth._oauthFactory);
       }
     },
 
     _clearOauthAuthorization: function() {
-      if (!this._oauthFactory) {
+      if (!AnypointAuth._oauthFactory) {
         return;
       }
-      this._oauthFactory.removeEventListener('oauth2-error', this._oauth2ErrorHandler);
-      this._oauthFactory.removeEventListener('oauth2-token-response', this._oauth2TokenHandler);
-      document.body.removeChild(this._oauthFactory);
-      this._oauthFactory = undefined;
+      AnypointAuth._oauthFactory.removeEventListener('oauth2-error', AnypointAuth._oauth2ErrorHandler);
+      AnypointAuth._oauthFactory.removeEventListener('oauth2-token-response', AnypointAuth._oauth2TokenHandler);
+      document.body.removeChild(AnypointAuth._oauthFactory);
+      AnypointAuth._oauthFactory = undefined;
+    },
+
+    _observeWindowEvents() {
+      window.addEventListener('oauth2-error', AnypointAuth._oauth2ErrorHandler);
+      window.addEventListener('oauth2-token-response', AnypointAuth._oauth2TokenHandler);
+    },
+
+    _unobserveWindowEvents() {
+      window.removeEventListener('oauth2-error', AnypointAuth._oauth2ErrorHandler);
+      window.removeEventListener('oauth2-token-response', AnypointAuth._oauth2TokenHandler);
     },
 
     /**
      * Initializes OAuth2 client
      */
     initAuth2: function() {
-      this._initSignIn();
+      AnypointAuth._initSignIn();
     },
 
     /**
@@ -202,17 +212,17 @@ the License.
     },
 
     _initSignIn: function() {
-      if (!this.clientId || !this.redirectUri) {
+      if (!AnypointAuth.clientId || !AnypointAuth.redirectUri) {
         return;
       }
-      this.signIn(false);
+      AnypointAuth.signIn(false);
     },
 
     assertAuthInitialized: function() {
-      if (!this.clientId) {
+      if (!AnypointAuth.clientId) {
         throw new Error('AuthEngine not initialized. clientId has not been configured.');
       }
-      if (!this.redirectUri) {
+      if (!AnypointAuth.redirectUri) {
         throw new Error('AuthEngine not initialized. redirectUri has not been configured.');
       }
     },
@@ -223,16 +233,16 @@ the License.
      * `<oauth2-authorization>` element
      */
     oauth2Config: function() {
-      this._lastState = this.generateState();
+      AnypointAuth._lastState = AnypointAuth.generateState();
       let result = {
-        type: this.authType,
-        authorizationUrl: this.authorizationUri,
-        clientId: this.clientId,
-        redirectUrl: this.redirectUri,
-        state: this._lastState
+        type: AnypointAuth.authType,
+        authorizationUrl: AnypointAuth.authorizationUri,
+        clientId: AnypointAuth.clientId,
+        redirectUrl: AnypointAuth.redirectUri,
+        state: AnypointAuth._lastState
       };
-      if (this.authType === 'code') {
-        result.accessTokenUrl = this.accessTokenUri;
+      if (AnypointAuth.authType === 'code') {
+        result.accessTokenUrl = AnypointAuth.accessTokenUri;
       }
       return result;
     },
@@ -244,22 +254,22 @@ the License.
      * authorization in the background.
      */
     signIn: function(interactive) {
-      if (!this._oauthFactory && !this._forceOauthEvents) {
+      if (!AnypointAuth._oauthFactory && !AnypointAuth._forceOauthEvents) {
         return;
       }
-      this.assertAuthInitialized();
-      var detail = this.oauth2Config();
+      AnypointAuth.assertAuthInitialized();
+      var detail = AnypointAuth.oauth2Config();
       if (interactive === false) {
         detail.interactive = interactive;
       }
-      if (this._forceOauthEvents) {
+      if (AnypointAuth._forceOauthEvents) {
         var ev = new CustomEvent('oauth2-token-requested', {
           bubbles: true,
           detail: detail
         });
         document.body.dispatchEvent(ev);
       } else {
-        this._oauthFactory.authorize(detail);
+        AnypointAuth._oauthFactory.authorize(detail);
       }
     },
     /**
@@ -272,7 +282,7 @@ the License.
      * @return {Promise} Promise resolved when the token is revoked.
      */
     signOut: function() {
-      return this._deleteToken()
+      return AnypointAuth._deleteToken()
       .catch(function() {})
       .then(function() {
         AnypointAuth.setAuthData();
@@ -280,43 +290,46 @@ the License.
     },
 
     _oauth2TokenHandler: function(e) {
+      debugger;
       var info = e.detail;
       if (!info) {
         return;
       }
-      if (this._lastState !== e.detail.state) {
+      if (AnypointAuth._lastState !== e.detail.state) {
         return;
       }
       if (!info.accessToken) {
-        this.setAuthData();
+        AnypointAuth.setAuthData();
         return;
       }
-      this._getProfile(info.accessToken);
+      AnypointAuth._getProfile(info.accessToken);
     },
 
     _oauth2ErrorHandler: function(e) {
-      if (this._lastState !== e.detail.state) {
+      debugger;
+      if (AnypointAuth._lastState !== e.detail.state) {
         return;
       }
       var message = e.detail.message;
-      this.accessToken = null;
-      this.user = null;
-      this.signedIn = false;
-      for (var i = 0; i < this.signinAwares.length; i++) {
-        this.signinAwares[i]._updateStatus();
-        this.signinAwares[i].errorNotify({
-          message: message
-        });
+      AnypointAuth.accessToken = null;
+      AnypointAuth.user = null;
+      AnypointAuth.signedIn = false;
+      for (var i = 0; i < AnypointAuth.signinAwares.length; i++) {
+        AnypointAuth.signinAwares[i]._updateStatus();
+        if (e.detail.interactive !== false) {
+          AnypointAuth.signinAwares[i].errorNotify({
+            message: message
+          });
+        }
       }
     },
 
     setAuthData: function(token, profile) {
-      this.accessToken = token;
-      this.user = profile;
-      this.signedIn = !!token;
-
-      for (var i = 0; i < this.signinAwares.length; i++) {
-        this.signinAwares[i]._updateStatus();
+      AnypointAuth.accessToken = token;
+      AnypointAuth.user = profile;
+      AnypointAuth.signedIn = !!token;
+      for (var i = 0; i < AnypointAuth.signinAwares.length; i++) {
+        AnypointAuth.signinAwares[i]._updateStatus();
       }
     },
     /**
@@ -330,7 +343,7 @@ the License.
      * @param {String} accessToken OAuth 2 access token
      */
     _getProfile: function(accessToken) {
-      return this._authGet(this.profileUrl, accessToken)
+      return AnypointAuth._authGet(AnypointAuth.profileUrl, accessToken)
       .then(function(response) {
         var profile;
         try {
@@ -344,7 +357,7 @@ the License.
     },
 
     _authGet: function(url, accessToken) {
-      accessToken = accessToken || this._accessToken;
+      accessToken = accessToken || AnypointAuth._accessToken;
       return new Promise(function(resolve, reject) {
         var xhr = new XMLHttpRequest();
         xhr.open('GET', url);
@@ -379,7 +392,7 @@ the License.
     },
 
     _deleteToken: function() {
-      var url = this.logoutUri + this._accessToken;
+      var url = AnypointAuth.logoutUri + AnypointAuth._accessToken;
       return new Promise(function(resolve, reject) {
         var xhr = new XMLHttpRequest();
         xhr.open('DELETE', url);
@@ -410,31 +423,31 @@ the License.
      * @param {!AnypointSigninAwareElement} aware element to add
      */
     attachSigninAware: function(aware) {
-      if (this.signinAwares.indexOf(aware) === -1) {
-        this.signinAwares.push(aware);
+      if (AnypointAuth.signinAwares.indexOf(aware) === -1) {
+        AnypointAuth.signinAwares.push(aware);
         if (typeof aware.forceOauthEvents !== 'undefined') {
-          this.forceOauthEvents = aware.forceOauthEvents;
+          AnypointAuth.forceOauthEvents = aware.forceOauthEvents;
         }
-        aware._setSignedIn(this._signedIn);
-        aware._setAccessToken(this._accessToken);
-        aware._setUser(this._user);
+        aware._setSignedIn(AnypointAuth._signedIn);
+        aware._setAccessToken(AnypointAuth._accessToken);
+        aware._setUser(AnypointAuth._user);
       }
-      if (!this._initialized) {
+      if (!AnypointAuth._initialized) {
         AnypointAuth.init();
-        this._initialized = true;
+        AnypointAuth._initialized = true;
       }
     },
 
     detachSigninAware: function(aware) {
-      var index = this.signinAwares.indexOf(aware);
+      var index = AnypointAuth.signinAwares.indexOf(aware);
       if (index !== -1) {
-        this.signinAwares.splice(index, 1);
+        AnypointAuth.signinAwares.splice(index, 1);
       }
     },
 
     notifyError: function(message) {
-      for (var i = 0; i < this.signinAwares.length; i++) {
-        this.signinAwares[i].errorNotify({
+      for (var i = 0; i < AnypointAuth.signinAwares.length; i++) {
+        AnypointAuth.signinAwares[i].errorNotify({
           message: message
         });
       }
