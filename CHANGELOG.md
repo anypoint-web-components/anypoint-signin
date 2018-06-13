@@ -1,3 +1,9 @@
+<a name="1.0.0"></a>
+# [1.0.0](https://github.com/advanced-rest-client/anypoint-signin/compare/0.1.4...1.0.0) (2018-06-13)
+
+
+
+
 <a name="0.1.6"></a>
 ## [0.1.6](https://github.com/advanced-rest-client/anypoint-signin/compare/0.1.4...0.1.6) (2018-05-09)
 
