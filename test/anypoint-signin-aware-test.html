@@ -19,15 +19,12 @@ the License.
     <script>
     window.__env = 'test';
     </script>
-    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
     <script src="../../web-component-tester/browser.js"></script>
-    <script src="../../iron-test-helpers/test-helpers.js"></script>
-    <script src="../../iron-test-helpers/mock-interactions.js"></script>
     <script src="auth-server.js"></script>
     <link rel="import" href="../anypoint-signin-aware.html">
   </head>
   <body>
-
     <test-fixture id="basic">
       <template>
         <anypoint-signin-aware></anypoint-signin-aware>
@@ -39,14 +36,13 @@ the License.
         <anypoint-signin-aware force-oauth-events></anypoint-signin-aware>
       </template>
     </test-fixture>
-
     <script>
-    /* global fixture, assert, AnypointAuth, AuthServer, sinon */
+    /* global AnypointAuth, AuthServer */
     const clientId = 'test-id';
     const redirectUri = 'test-redirect';
     const replacedMethods = {};
     function replaceAuthMethod(method, fn) {
-      var orig = AnypointAuth[method];
+      const orig = AnypointAuth[method];
       AnypointAuth[method] = fn;
       replacedMethods[method] = orig;
     }
@@ -55,7 +51,6 @@ the License.
       delete replacedMethods[method];
     }
     suite('Basic', function() {
-
       suiteSetup(function() {
         AuthServer.createServer();
       });
@@ -64,7 +59,7 @@ the License.
         AuthServer.restore();
       });
 
-      var element;
+      let element;
       setup(function() {
         element = fixture('basic');
         element.clientId = '';
@@ -72,8 +67,8 @@ the License.
       });
 
       test('Auto authorize the user', function() {
-        var called = 0;
-        var fn = function() {
+        let called = 0;
+        const fn = function() {
           called++;
         };
         replaceAuthMethod('_initSignIn', fn);
@@ -84,9 +79,9 @@ the License.
       });
 
       test('Auto calls signin function', function() {
-        var called = false;
-        var argValue;
-        var fn = function(arg) {
+        let called = false;
+        let argValue;
+        const fn = function(arg) {
           called = true;
           argValue = arg;
         };
@@ -99,9 +94,9 @@ the License.
       });
 
       test('signIn() calls oauth factory', function() {
-        var called = false;
-        var argValue;
-        var factory = {
+        let called = false;
+        let argValue;
+        const factory = {
           authorize: function(arg) {
             called = true;
             argValue = arg;
@@ -113,18 +108,16 @@ the License.
         restoreMethod('_oauthFactory');
         assert.isTrue(called);
         assert.equal(argValue.type, 'implicit');
-        assert.equal(argValue.authorizationUrl, 'https://anypoint.mulesoft.com/accounts/oauth2/authorize');
+        assert.equal(argValue.authorizationUri, 'https://anypoint.mulesoft.com/accounts/oauth2/authorize');
         assert.equal(argValue.clientId, clientId);
-        assert.equal(argValue.redirectUrl, redirectUri);
+        assert.equal(argValue.redirectUri, redirectUri);
         assert.typeOf(argValue.state, 'string');
       });
 
       test('Sets properties when the response is ready', function(done) {
-        var called = false;
-        var argValue;
-        var factory = {
+        let argValue;
+        const factory = {
           authorize: function(arg) {
-            called = true;
             argValue = arg;
           }
         };
@@ -137,24 +130,26 @@ the License.
           assert.isTrue(element.signedIn);
           assert.equal(element.accessToken, 'test-token');
           assert.typeOf(element.user, 'object');
-          assert.isTrue(element.user.test);
+          assert.equal(element.user.username, 'test-user');
           assert.typeOf(e.detail, 'object');
-          assert.isTrue(e.detail.test);
+          assert.equal(e.detail.username, 'test-user');
           done();
         });
         const oauth = document.body.querySelector('oauth2-authorization');
-        oauth.fire('oauth2-token-response', {
-          accessToken: 'test-token',
-          state: argValue.state
-        });
+        oauth.dispatchEvent(new CustomEvent('oauth2-token-response', {
+          bubbles: true,
+          composed: true,
+          detail: {
+            accessToken: 'test-token',
+            state: argValue.state
+          }
+        }));
       });
 
       test('Signs out the user', function(done) {
-        var called = false;
-        var argValue;
-        var factory = {
+        let argValue;
+        const factory = {
           authorize: function(arg) {
-            called = true;
             argValue = arg;
           }
         };
@@ -174,29 +169,312 @@ the License.
           done();
         });
         const oauth = document.body.querySelector('oauth2-authorization');
-        oauth.fire('oauth2-token-response', {
-          accessToken: 'test-token',
-          state: argValue.state
-        });
+        oauth.dispatchEvent(new CustomEvent('oauth2-token-response', {
+          bubbles: true,
+          composed: true,
+          detail: {
+            accessToken: 'test-token',
+            state: argValue.state
+          }
+        }));
       });
     });
 
     suite('force-oauth-events', function() {
-
-      var element;
+      let element;
       setup(function() {
         element = fixture('events');
       });
 
       test('Dispatches oauth2-token-requested custom event', function() {
-        var spy = sinon.spy();
+        const spy = sinon.spy();
         document.body.addEventListener('oauth2-token-requested', spy);
         element.clientId = clientId;
         element.redirectUri = redirectUri;
         element.signIn();
         assert.isTrue(spy.calledOnce);
       });
+    });
 
+    suite('AnypointAuth', () => {
+      suite('_oauth2ErrorHandler()', () => {
+        let element;
+        setup(function() {
+          element = fixture('basic');
+          AnypointAuth.accessToken = 'test-token';
+          AnypointAuth.user = {user: 'test-user'};
+          AnypointAuth.signedIn = true;
+          AnypointAuth._lastState = 'abcd';
+        });
+
+        test('Clears token data', () => {
+          AnypointAuth._oauth2ErrorHandler({
+            detail: {
+              state: 'abcd'
+            }
+          });
+          assert.equal(AnypointAuth.accessToken, null);
+          assert.equal(AnypointAuth.user, null);
+          assert.isFalse(AnypointAuth.signedIn);
+        });
+
+        test('Passes error message to the aware', () => {
+          const spy = sinon.spy(element, 'errorNotify');
+          AnypointAuth._oauth2ErrorHandler({
+            detail: {
+              state: 'abcd',
+              message: 'test-message'
+            }
+          });
+          assert.isTrue(spy.called);
+          assert.equal(spy.args[0][0].message, 'test-message');
+        });
+
+        test('Won\t report error when non-interactive', () => {
+          const spy = sinon.spy(element, 'errorNotify');
+          AnypointAuth._oauth2ErrorHandler({
+            detail: {
+              state: 'abcd',
+              message: 'test-message',
+              interactive: false
+            }
+          });
+          assert.isFalse(spy.called);
+        });
+
+        test('Calls _updateStatus() on aware', () => {
+          const spy = sinon.spy(element, '_updateStatus');
+          AnypointAuth._oauth2ErrorHandler({
+            detail: {
+              state: 'abcd'
+            }
+          });
+          assert.isTrue(spy.called);
+          assert.isUndefined(spy.args[0][0]);
+        });
+
+        test('Does nothing when state is different', () => {
+          const spy = sinon.spy(element, '_updateStatus');
+          AnypointAuth._oauth2ErrorHandler({
+            detail: {
+              state: 'other'
+            }
+          });
+          assert.isFalse(spy.called);
+        });
+      });
+
+      suite('_oauth2TokenHandler()', () => {
+        suiteSetup(function() {
+          AuthServer.createServer();
+        });
+
+        suiteTeardown(function() {
+          AuthServer.restore();
+        });
+
+        let element;
+        setup(function() {
+          element = fixture('basic');
+          AnypointAuth.accessToken = null;
+          AnypointAuth.user = null;
+          AnypointAuth.signedIn = false;
+          AnypointAuth._lastState = 'abcd';
+        });
+
+        teardown(() => {
+          if (AnypointAuth._getProfile.restore) {
+            AnypointAuth._getProfile.restore();
+          }
+        });
+
+        test('Does nothing when no detail on event', () => {
+          const spy = sinon.spy(AnypointAuth, '_getProfile');
+          AnypointAuth._oauth2TokenHandler({});
+          assert.isFalse(spy.called);
+        });
+
+        test('Does nothing when different state', () => {
+          const spy = sinon.spy(AnypointAuth, '_getProfile');
+          AnypointAuth._oauth2TokenHandler({
+            detail: {
+              state: 'other'
+            }
+          });
+          assert.isFalse(spy.called);
+        });
+
+        test('Calles setAuthData() only when no access token', () => {
+          const spy = sinon.spy(AnypointAuth, '_getProfile');
+          const spy2 = sinon.spy(AnypointAuth, 'setAuthData');
+          AnypointAuth._oauth2TokenHandler({
+            detail: {
+              state: 'abcd'
+            }
+          });
+          AnypointAuth.setAuthData.restore();
+          assert.isFalse(spy.called);
+          assert.isTrue(spy2.called);
+          assert.isUndefined(spy2.args[0][0]);
+        });
+
+        test('Calls _getProfile()', () => {
+          return AnypointAuth._oauth2TokenHandler({
+            detail: {
+              state: 'abcd',
+              accessToken: 'test'
+            }
+          })
+          .then(() => {
+            assert.deepEqual(AnypointAuth.user, {username: 'test-user'});
+          });
+        });
+
+        test('Sets token only when profile get was error', () => {
+          return AnypointAuth._oauth2TokenHandler({
+            detail: {
+              state: 'abcd',
+              accessToken: 'no-token'
+            }
+          })
+          .then(() => {
+            assert.equal(AnypointAuth.user, null);
+            assert.equal(AnypointAuth.accessToken, 'no-token');
+          });
+        });
+      });
+
+      suite('_getProfile()', () => {
+        suiteSetup(function() {
+          AuthServer.createServer();
+        });
+
+        suiteTeardown(function() {
+          AuthServer.restore();
+        });
+
+        let element;
+        setup(function() {
+          element = fixture('basic');
+          AnypointAuth.accessToken = null;
+          AnypointAuth.user = null;
+          AnypointAuth.signedIn = false;
+        });
+
+        test('Calls setAuthData()', () => {
+          const spy = sinon.spy(AnypointAuth, 'setAuthData');
+          return AnypointAuth._getProfile('token-123')
+          .then(() => {
+            AnypointAuth.setAuthData.restore();
+            assert.isTrue(spy.called);
+            assert.equal(spy.args[0][0], 'token-123');
+            assert.deepEqual(spy.args[0][1], {username: 'test-user'});
+          });
+        });
+
+        test('Sets profile data', () => {
+          return AnypointAuth._getProfile('token-123')
+          .then(() => {
+            assert.isTrue(AnypointAuth.signedIn);
+            assert.deepEqual(AnypointAuth.user, {username: 'test-user'});
+          });
+        });
+
+        test('Updates status of the aware', () => {
+          const spy = sinon.spy(element, '_updateStatus');
+          return AnypointAuth._getProfile('token-123')
+          .then(() => {
+            assert.isTrue(spy.called);
+          });
+        });
+
+        test('Uses token set on auth factory', () => {
+          AnypointAuth.accessToken = 'token-123';
+          return AnypointAuth._getProfile()
+          .then(() => {
+            assert.deepEqual(AnypointAuth.user, {username: 'test-user'});
+          });
+        });
+
+        test('Rejects when request error', () => {
+          return AnypointAuth._getProfile('no-token')
+          .then(() => {
+            throw new Error('Should not resolve.');
+          })
+          .catch((cause) => {
+            assert.notEqual(cause.message, 'Should not resolve.');
+          });
+        });
+
+        test('Returns 401 status message', () => {
+          return AnypointAuth._getProfile('no-token')
+          .catch((cause) => {
+            assert.equal(cause.message, 'Invalid access token. Server status is 401.');
+          });
+        });
+
+        test('Returns 404 status message', () => {
+          return AnypointAuth._getProfile('invalid-profile')
+          .catch((cause) => {
+            assert.equal(cause.message, 'Profile URL is invalid.');
+          });
+        });
+
+        test('Returns 4xx status message', () => {
+          return AnypointAuth._getProfile('error-400')
+          .catch((cause) => {
+            assert.equal(cause.message, 'Server do not support this method. Response code is 400.');
+          });
+        });
+
+        test('Returns 5xx status message', () => {
+          return AnypointAuth._getProfile('error-500')
+          .catch((cause) => {
+            assert.equal(cause.message, 'Authorization server error. Response code is  500.');
+          });
+        });
+      });
+
+      suite('notifyError()', () => {
+        let element;
+        setup(function() {
+          element = fixture('basic');
+        });
+
+        test('Calls errorNotify() on the aware', () => {
+          const spy = sinon.spy(element, 'errorNotify');
+          AnypointAuth.notifyError('test-message');
+          assert.isTrue(spy.called);
+        });
+      });
+
+      suite('assertAuthInitialized()', () => {
+        let element;
+        setup(function() {
+          element = fixture('basic');
+        });
+
+        test('Throws when no clientId', () => {
+          element.clientId = '';
+          element.redirectUri = '';
+          assert.throws(() => {
+            AnypointAuth.assertAuthInitialized();
+          }, 'AuthEngine not initialized. clientId has not been configured.');
+        });
+
+        test('Throws when no redirectUri', () => {
+          element.clientId = 'testid';
+          element.redirectUri = '';
+          assert.throws(() => {
+            AnypointAuth.assertAuthInitialized();
+          }, 'AuthEngine not initialized. redirectUri has not been configured.');
+        });
+
+        test('Passes when data is set', () => {
+          element.clientId = 'testid';
+          element.redirectUri = 'test-uri';
+        });
+      });
     });
     </script>
 

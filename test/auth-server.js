@@ -13,9 +13,24 @@ const AuthServer = {
   },
 
   mockProfile: function() {
-    let url = /^https:\/\/anypoint\.mulesoft\.com\/exchange\/api\/v1\/profile*/;
+    let url = /https:\/\/anypoint\.mulesoft\.com\/exchange\/api\/v1\/profile/;
     this.srv.respondWith('GET', url, function(request) {
-      request.respond(200, {}, '{"test": true}');
+      switch (request.requestHeaders.Authorization) {
+        case 'bearer no-token':
+          request.respond(401, {}, '{"error": true}');
+          break;
+        case 'invalid-profile':
+          request.respond(404, {}, '{"error": true}');
+          break;
+        case 'error-400':
+          request.respond(400, {}, '{"error": true}');
+          break;
+        case 'error-500':
+          request.respond(500, {}, '{"error": true}');
+          break;
+        default:
+          request.respond(200, {}, '{"username": "test-user"}');
+      }
     });
   },
 

@@ -1,163 +1,237 @@
 <!doctype html>
-<!--
-@license
-Copyright 2018 The Advanced REST client authors <arc@mulesoft.com>
-Licensed under the Apache License, Version 2.0 (the "License"); you may not
-use this file except in compliance with the License. You may obtain a copy of
-the License at
-http://www.apache.org/licenses/LICENSE-2.0
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
-WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
-License for the specific language governing permissions and limitations under
-the License.
--->
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
-    <script>
-    window.__env = 'test';
-    </script>
-    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
-    <script src="../../web-component-tester/browser.js"></script>
-    <script src="../../iron-test-helpers/test-helpers.js"></script>
-    <script src="../../iron-test-helpers/mock-interactions.js"></script>
-    <link rel="import" href="../anypoint-signin.html">
-  </head>
-  <body>
+<html lang="en">
 
-    <test-fixture id="basic">
-      <template>
-        <anypoint-signin></anypoint-signin>
-      </template>
-    </test-fixture>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+  <title>anypoint-signin test</title>
+  <script src="../../webcomponentsjs/webcomponents-loader.js"></script>
+  <script src="../../web-component-tester/browser.js"></script>
+  <link rel="import" href="../anypoint-signin.html">
+  <script src="auth-server.js"></script>
+</head>
 
-    <test-fixture id="noink">
-      <template>
-        <anypoint-signin noink></anypoint-signin>
-      </template>
-    </test-fixture>
+<body>
+  <test-fixture id="basic">
+    <template>
+      <anypoint-signin></anypoint-signin>
+    </template>
+  </test-fixture>
 
-    <script>
-    /* global fixture, assert, TestHelpers */
+  <test-fixture id="noink">
+    <template>
+      <anypoint-signin noink></anypoint-signin>
+    </template>
+  </test-fixture>
 
-    suite('Basic', function() {
-      var element;
-      setup(function() {
-        element = fixture('basic');
-      });
+  <test-fixture id="SetupReady">
+    <template>
+      <anypoint-signin client-id="abc" redirect-uri="https://auth.domain.com"></anypoint-signin>
+    </template>
+  </test-fixture>
 
-      test('_labelSignin is computed', function() {
-        assert.equal(element._labelSignin, 'Sign in');
-      });
+  <script>
+  /* global AuthServer */
+  suite('Basic', function() {
+    let element;
+    setup(function() {
+      element = fixture('basic');
+    });
+    test('_labelSignin is computed', function() {
+      assert.equal(element._labelSignin, 'Sign in');
+    });
+  });
+
+  suite('_computeButtonClass()', function() {
+    let element;
+    setup(function() {
+      element = fixture('basic');
+    });
+    test('Computes classes', function() {
+      const result = element._computeButtonClass('a', 'b', 'c', true);
+      assert.equal(result, 'height-a width-b theme-c signedIn-true');
+    });
+  });
+
+  suite('_computeSigninLabel()', function() {
+    let element;
+    setup(function() {
+      element = fixture('basic');
     });
 
-    suite('_computeButtonClass()', function() {
-      var element;
-      setup(function() {
-        element = fixture('basic');
-      });
-
-      test('Computes classes', function() {
-        const result = element._computeButtonClass('a', 'b', 'c', true);
-        assert.equal(result, 'height-a width-b theme-c signedIn-true');
-      });
+    test('Returns defined value', function() {
+      const width = 'wide';
+      const label = 'test';
+      const result = element._computeSigninLabel(label, width);
+      assert.equal(result, label);
     });
 
-    suite('_computeSigninLabel()', function() {
-      var element;
-      setup(function() {
-        element = fixture('basic');
-      });
-
-      test('Returns defined value', function() {
-        const width = 'wide';
-        const label = 'test';
-        const result = element._computeSigninLabel(label, width);
-        assert.equal(result, label);
-      });
-
-      test('Returns "WIDE" value', function() {
-        const width = 'wide';
-        const label = '';
-        const result = element._computeSigninLabel(label, width);
-        assert.equal(result, 'Sign in with Exchange');
-      });
-
-      test('Returns "STANDARD" value', function() {
-        const width = 'standard';
-        const label = '';
-        const result = element._computeSigninLabel(label, width);
-        assert.equal(result, 'Sign in');
-      });
-
-      test('Returns "ICON_ONLY" value', function() {
-        const width = 'iconOnly';
-        const label = '';
-        const result = element._computeSigninLabel(label, width);
-        assert.equal(result, '');
-      });
-
-      test('Returns default value', function() {
-        const width = '';
-        const label = '';
-        const result = element._computeSigninLabel(label, width);
-        assert.equal(result, 'Sign in');
-      });
+    test('Returns "WIDE" value', function() {
+      const width = 'wide';
+      const label = '';
+      const result = element._computeSigninLabel(label, width);
+      assert.equal(result, 'Sign in with Exchange');
     });
 
-    suite('No ink', function() {
-      var element;
-      setup(function() {
-        element = fixture('noink');
-        TestHelpers.forceXIfStamp(element);
-      });
-
-      test('Ripple is not rendered', function() {
-        const ripple = element.$$('paper-ripple');
-        assert.notOk(ripple);
-      });
+    test('Returns "STANDARD" value', function() {
+      const width = 'standard';
+      const label = '';
+      const result = element._computeSigninLabel(label, width);
+      assert.equal(result, 'Sign in');
     });
 
-    suite('Buttons state', function() {
-      var element;
-      setup(function() {
-        element = fixture('basic');
-        TestHelpers.forceXIfStamp(element);
-      });
+    test('Returns "ICON_ONLY" value', function() {
+      const width = 'iconOnly';
+      const label = '';
+      const result = element._computeSigninLabel(label, width);
+      assert.equal(result, '');
+    });
 
-      test('Sign in button is rendered', function() {
-        const button = element.$$('.signIn');
+    test('Returns default value', function() {
+      const width = '';
+      const label = '';
+      const result = element._computeSigninLabel(label, width);
+      assert.equal(result, 'Sign in');
+    });
+  });
+
+  suite('No ink', function() {
+    let element;
+    setup(function(done) {
+      element = fixture('noink');
+      flush(() => done());
+    });
+    test('Ripple is not rendered', function() {
+      const ripple = element.shadowRoot.querySelector('paper-ripple');
+      assert.notOk(ripple);
+    });
+  });
+
+  suite('Buttons state', function() {
+    let element;
+    setup(function(done) {
+      element = fixture('basic');
+      flush(() => done());
+    });
+
+    test('Sign in button is rendered', function() {
+      const button = element.shadowRoot.querySelector('.signIn');
+      assert.ok(button);
+      const display = getComputedStyle(button).display;
+      assert.notEqual(display, 'none');
+    });
+
+    test('Sign out button not rendered', function() {
+      const button = element.shadowRoot.querySelector('.signOut');
+      assert.notOk(button);
+    });
+
+    test('Sign out button is rendered when auth set', function(done) {
+      element.signedIn = true;
+      flush(() => {
+        const button = element.shadowRoot.querySelector('.signOut');
         assert.ok(button);
         const display = getComputedStyle(button).display;
         assert.notEqual(display, 'none');
+        done();
       });
+    });
 
-      test('Sign out button not rendered', function() {
-        const button = element.$$('.signOut');
-        assert.notOk(button);
-      });
-
-      test('Sign out button is rendered when auth set', function() {
-        element.signedIn = true;
-        TestHelpers.forceXIfStamp(element);
-        const button = element.$$('.signOut');
-        assert.ok(button);
-        const display = getComputedStyle(button).display;
-        assert.notEqual(display, 'none');
-      });
-
-      test('Sign in button hidden', function() {
-        element.signedIn = true;
-        TestHelpers.forceXIfStamp(element);
-        const button = element.$$('.signIn');
+    test('Sign in button hidden', function(done) {
+      element.signedIn = true;
+      flush(() => {
+        const button = element.shadowRoot.querySelector('.signIn');
         assert.ok(button);
         const display = getComputedStyle(button).display;
         assert.equal(display, 'none');
+        done();
       });
     });
-    </script>
+  });
 
-  </body>
+  suite('signIn', function() {
+    let element;
+    setup(function(done) {
+      element = fixture('SetupReady');
+      flush(() => done());
+    });
+
+    test('Calls signIn() on the aware', function() {
+      let called;
+      element.$.authAware.signIn = () => called = true;
+      element.signIn();
+      assert.isTrue(called);
+    });
+
+    test('Calls signIn for spacebar press', () => {
+      let called;
+      element.signIn = () => called = true;
+      const e = new CustomEvent('keydown', {});
+      e.keyCode = 13;
+      element._signInKeyPress(e);
+      assert.isTrue(called);
+    });
+
+    test('Calls signIn for enter press', () => {
+      let called;
+      element.signIn = () => called = true;
+      const e = new CustomEvent('keydown', {});
+      e.keyCode = 32;
+      element._signInKeyPress(e);
+      assert.isTrue(called);
+    });
+
+    test('Ignores other keys', () => {
+      let called = false;
+      element.signOut = () => called = true;
+      const e = new CustomEvent('keydown', {});
+      e.keyCode = 48;
+      element._signInKeyPress(e);
+      assert.isFalse(called);
+    });
+  });
+
+  suite('signOut', function() {
+    let element;
+    setup(function() {
+      element = fixture('SetupReady');
+    });
+
+    test('Calls signOut() on the aware', function() {
+      let called;
+      element.$.authAware.signOut = () => called = true;
+      element.signOut();
+      assert.isTrue(called);
+    });
+
+    test('Calls signOut for spacebar press', () => {
+      let called;
+      element.signOut = () => called = true;
+      const e = new CustomEvent('keydown', {});
+      e.keyCode = 13;
+      element._signOutKeyPress(e);
+      assert.isTrue(called);
+    });
+
+    test('Calls signOut for enter press', () => {
+      let called;
+      element.signOut = () => called = true;
+      const e = new CustomEvent('keydown', {});
+      e.keyCode = 32;
+      element._signOutKeyPress(e);
+      assert.isTrue(called);
+    });
+
+    test('Ignores other keys', () => {
+      let called = false;
+      element.signOut = () => called = true;
+      const e = new CustomEvent('keydown', {});
+      e.keyCode = 48;
+      element._signOutKeyPress(e);
+      assert.isFalse(called);
+    });
+  });
+  </script>
+</body>
+
 </html>

@@ -11,12 +11,11 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations under
 the License.
 -->
-<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../polymer/polymer-element.html">
 <link rel="import" href="../oauth-authorization/oauth2-authorization.html">
-<link rel="import" href="../arc-polyfills/arc-polyfills.html">
 <script>
 (function() {
-  var AnypointAuth = {
+  const AnypointAuth = {
     /**
      * oauth2 client ID
      */
@@ -73,7 +72,7 @@ the License.
         return;
       }
       AnypointAuth._signedIn = val;
-      for (var i = 0; i < AnypointAuth.signinAwares.length; i++) {
+      for (let i = 0; i < AnypointAuth.signinAwares.length; i++) {
         AnypointAuth.signinAwares[i]._setSignedIn(val);
       }
     },
@@ -95,7 +94,7 @@ the License.
         return;
       }
       AnypointAuth._accessToken = val;
-      for (var i = 0; i < AnypointAuth.signinAwares.length; i++) {
+      for (let i = 0; i < AnypointAuth.signinAwares.length; i++) {
         AnypointAuth.signinAwares[i]._setAccessToken(val);
       }
     },
@@ -114,7 +113,7 @@ the License.
      */
     set user(val) {
       AnypointAuth._user = val;
-      for (var i = 0; i < AnypointAuth.signinAwares.length; i++) {
+      for (let i = 0; i < AnypointAuth.signinAwares.length; i++) {
         AnypointAuth.signinAwares[i]._setUser(val);
       }
     },
@@ -147,18 +146,18 @@ the License.
      * Initialize the client.
      */
     init: function() {
-      if (!AnypointAuth._forceOauthEvents) {
+      if (!AnypointAuth.forceOauthEvents) {
         AnypointAuth._setOauthAuthorization();
       }
       AnypointAuth.initAuth2();
     },
 
     _setOauthAuthorization() {
-      var factory;
+      let factory;
       if (AnypointAuth._oauthFactory) {
         factory = AnypointAuth._oauthFactory;
       } else {
-        var selectr = 'oauth2-authorization[data-owner="anypoint-signin-aware"]';
+        const selectr = 'oauth2-authorization[data-owner="anypoint-signin-aware"]';
         factory = document.body.querySelector(selectr);
       }
       if (!factory) {
@@ -204,7 +203,7 @@ the License.
      */
     generateState: function() {
       let text = '';
-      let possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+      const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
       for (let i = 0; i < 6; i++) {
         text += possible.charAt(Math.floor(Math.random() * possible.length));
       }
@@ -234,15 +233,15 @@ the License.
      */
     oauth2Config: function() {
       AnypointAuth._lastState = AnypointAuth.generateState();
-      let result = {
+      const result = {
         type: AnypointAuth.authType,
-        authorizationUrl: AnypointAuth.authorizationUri,
+        authorizationUri: AnypointAuth.authorizationUri,
         clientId: AnypointAuth.clientId,
-        redirectUrl: AnypointAuth.redirectUri,
+        redirectUri: AnypointAuth.redirectUri,
         state: AnypointAuth._lastState
       };
       if (AnypointAuth.authType === 'code') {
-        result.accessTokenUrl = AnypointAuth.accessTokenUri;
+        result.accessTokenUri = AnypointAuth.accessTokenUri;
       }
       return result;
     },
@@ -254,16 +253,16 @@ the License.
      * authorization in the background.
      */
     signIn: function(interactive) {
-      if (!AnypointAuth._oauthFactory && !AnypointAuth._forceOauthEvents) {
+      if (!AnypointAuth._oauthFactory && !AnypointAuth.forceOauthEvents) {
         return;
       }
       AnypointAuth.assertAuthInitialized();
-      var detail = AnypointAuth.oauth2Config();
+      const detail = AnypointAuth.oauth2Config();
       if (interactive === false) {
         detail.interactive = interactive;
       }
-      if (AnypointAuth._forceOauthEvents) {
-        var ev = new CustomEvent('oauth2-token-requested', {
+      if (AnypointAuth.forceOauthEvents) {
+        const ev = new CustomEvent('oauth2-token-requested', {
           bubbles: true,
           detail: detail
         });
@@ -283,14 +282,12 @@ the License.
      */
     signOut: function() {
       return AnypointAuth._deleteToken()
-      .catch(function() {})
-      .then(function() {
-        AnypointAuth.setAuthData();
-      });
+      .catch(() => {})
+      .then(() => AnypointAuth.setAuthData());
     },
 
     _oauth2TokenHandler: function(e) {
-      var info = e.detail;
+      const info = e.detail;
       if (!info) {
         return;
       }
@@ -301,18 +298,19 @@ the License.
         AnypointAuth.setAuthData();
         return;
       }
-      AnypointAuth._getProfile(info.accessToken);
+      return AnypointAuth._getProfile(info.accessToken)
+      .catch(() => AnypointAuth.setAuthData(info.accessToken));
     },
 
     _oauth2ErrorHandler: function(e) {
       if (AnypointAuth._lastState !== e.detail.state) {
         return;
       }
-      var message = e.detail.message;
+      const message = e.detail.message;
       AnypointAuth.accessToken = null;
       AnypointAuth.user = null;
       AnypointAuth.signedIn = false;
-      for (var i = 0; i < AnypointAuth.signinAwares.length; i++) {
+      for (let i = 0; i < AnypointAuth.signinAwares.length; i++) {
         AnypointAuth.signinAwares[i]._updateStatus();
         if (e.detail.interactive !== false) {
           AnypointAuth.signinAwares[i].errorNotify({
@@ -326,7 +324,7 @@ the License.
       AnypointAuth.accessToken = token;
       AnypointAuth.user = profile;
       AnypointAuth.signedIn = !!token;
-      for (var i = 0; i < AnypointAuth.signinAwares.length; i++) {
+      for (let i = 0; i < AnypointAuth.signinAwares.length; i++) {
         AnypointAuth.signinAwares[i]._updateStatus();
       }
     },
@@ -339,43 +337,44 @@ the License.
      * different domains.
      *
      * @param {String} accessToken OAuth 2 access token
+     * @return {Promise}
      */
     _getProfile: function(accessToken) {
       return AnypointAuth._authGet(AnypointAuth.profileUrl, accessToken)
       .then(function(response) {
-        var profile;
+        let profile;
         try {
           profile = JSON.parse(response);
         } catch (e) {}
         AnypointAuth.setAuthData(accessToken, profile);
-      })
-      .catch(function() {
-        AnypointAuth.setAuthData(accessToken);
       });
     },
 
     _authGet: function(url, accessToken) {
-      accessToken = accessToken || AnypointAuth._accessToken;
+      accessToken = accessToken || AnypointAuth.accessToken;
       return new Promise(function(resolve, reject) {
-        var xhr = new XMLHttpRequest();
+        const xhr = new XMLHttpRequest();
         xhr.open('GET', url);
         xhr.setRequestHeader('Authorization', 'bearer ' + accessToken);
         xhr.addEventListener('load', function(e) {
-          var status = e.target.status;
+          const status = e.target.status;
           if (status === 404) {
-            return reject('Profile URL is invalid.');
+            return reject(new Error('Profile URL is invalid.'));
+          } else if (status === 401) {
+            return reject(new Error(
+              'Invalid access token. Server status is 401.'));
           } else if (status >= 400 && status < 500) {
-            return reject(
-              'Server does not support this method. Response code is ' + status);
+            return reject(new Error(
+              'Server do not support this method. Response code is ' + status));
           } else if (status >= 500) {
-            return reject(
-              'Authorization server error. Response code is ' + status);
+            return reject(new Error(
+              'Authorization server error. Response code is ' + status + '.'));
           }
           resolve(e.target.response);
         });
         xhr.addEventListener('error', function(e) {
-          var status = e.target.status;
-          var message = 'The request to the authorization server failed.';
+          const status = e.target.status;
+          let message = 'The request to the authorization server failed.';
           if (status) {
             message += ' Response code is: ' + status;
           }
@@ -390,20 +389,20 @@ the License.
     },
 
     _deleteToken: function() {
-      var url = AnypointAuth.logoutUri + AnypointAuth._accessToken;
+      const url = AnypointAuth.logoutUri + AnypointAuth.accessToken;
       return new Promise(function(resolve, reject) {
-        var xhr = new XMLHttpRequest();
+        const xhr = new XMLHttpRequest();
         xhr.open('DELETE', url);
         xhr.addEventListener('load', function(e) {
-          var status = e.target.status;
+          const status = e.target.status;
           if (status > 299) {
             return reject('Delete token request faioled.');
           }
           resolve();
         });
         xhr.addEventListener('error', function(e) {
-          var status = e.target.status;
-          var message = 'Unable to delete the token.';
+          const status = e.target.status;
+          let message = 'Unable to delete the token.';
           if (status) {
             message += ' Response code is: ' + status;
           }
@@ -426,9 +425,9 @@ the License.
         if (typeof aware.forceOauthEvents !== 'undefined') {
           AnypointAuth.forceOauthEvents = aware.forceOauthEvents;
         }
-        aware._setSignedIn(AnypointAuth._signedIn);
-        aware._setAccessToken(AnypointAuth._accessToken);
-        aware._setUser(AnypointAuth._user);
+        aware._setSignedIn(AnypointAuth.signedIn);
+        aware._setAccessToken(AnypointAuth.accessToken);
+        aware._setUser(AnypointAuth.user);
       }
       if (!AnypointAuth._initialized) {
         AnypointAuth.init();
@@ -437,14 +436,14 @@ the License.
     },
 
     detachSigninAware: function(aware) {
-      var index = AnypointAuth.signinAwares.indexOf(aware);
+      const index = AnypointAuth.signinAwares.indexOf(aware);
       if (index !== -1) {
         AnypointAuth.signinAwares.splice(index, 1);
       }
     },
 
     notifyError: function(message) {
-      for (var i = 0; i < AnypointAuth.signinAwares.length; i++) {
+      for (let i = 0; i < AnypointAuth.signinAwares.length; i++) {
         AnypointAuth.signinAwares[i].errorNotify({
           message: message
         });
@@ -493,122 +492,145 @@ the License.
    * The element attempts to log in user in a non-interactive way (without
    * displaying the popup) when the lement is ready. It does nothing when
    * the response is errored.
+   *
+   * @customElement
+   * @polymer
+   * @demo demo/index.html
+   * @memberof AnypointElements
    */
-  Polymer({
-    is: 'anypoint-signin-aware',
+   class AnypointSigninAware extends Polymer.Element {
+     static get is() {return 'anypoint-signin-aware';}
+     static get properties() {
+       return {
+         /**
+          * An Anypoint clientId.
+          * This property is required to run the authorization flow.
+          */
+         clientId: {
+           type: String,
+           observer: '_clientIdChanged'
+         },
+         /**
+          * Authorization redirect URI.
+          * This property is required to run the authorization flow.
+          */
+         redirectUri: {
+           type: String,
+           observer: '_redirectUriChanged'
+         },
 
-    properties: {
-      /**
-       * An Anypoint clientId.
-       * This property is required to run the authorization flow.
-       */
-      clientId: {
-        type: String,
-        observer: '_clientIdChanged'
-      },
-      /**
-       * Authorization redirect URI.
-       * This property is required to run the authorization flow.
-       */
-      redirectUri: {
-        type: String,
-        observer: '_redirectUriChanged'
-      },
+         /**
+          * True if user is signed in
+          */
+         signedIn: {
+           type: Boolean,
+           notify: true,
+           readOnly: true
+         },
+         /**
+          * True if user is signed in
+          */
+         accessToken: {
+           type: String,
+           notify: true,
+           readOnly: true
+         },
+         /**
+          * User profile information.
+          */
+         user: {
+           type: Object,
+           notify: true,
+           readOnly: true
+         },
+         /**
+          * By default this element inserts `oauth2-authorization` element to the
+          * body and uses direct API to authorize the client. Set this property to
+          * force the element to use events system to call the OAuth endpoint.
+          *
+          * It is useful when your application has it's own OAuth 2 authorization
+          * mechanism.
+          */
+         forceOauthEvents: Boolean
+       };
+     }
 
-      /**
-       * True if user is signed in
-       */
-      signedIn: {
-        type: Boolean,
-        notify: true,
-        readOnly: true
-      },
-      /**
-       * True if user is signed in
-       */
-      accessToken: {
-        type: String,
-        notify: true,
-        readOnly: true
-      },
-      /**
-       * User profile information.
-       */
-      user: {
-        type: Object,
-        notify: true,
-        readOnly: true
-      },
-      /**
-       * By default this element inserts `oauth2-authorization` element to the
-       * body and uses direct API to authorize the client. Set this property to
-       * force the element to use events system to call the OAuth endpoint.
-       *
-       * It is useful when your application has it's own OAuth 2 authorization
-       * mechanism.
-       */
-      forceOauthEvents: Boolean
-    },
+     connectedCallback() {
+       super.connectedCallback();
+       AnypointAuth.attachSigninAware(this);
+     }
 
-    attached: function() {
-      AnypointAuth.attachSigninAware(this);
-    },
+     disconnectedCallback() {
+       super.disconnectedCallback();
+       AnypointAuth.detachSigninAware(this);
+     }
 
-    detached: function() {
-      AnypointAuth.detachSigninAware(this);
-    },
+     /** pops up the authorization dialog */
+     signIn() {
+       AnypointAuth.signIn();
+     }
+     /**
+      * Signs out the user and attempts to destroy the token.
+      * Currently token destroy endpoint does not allow request from
+      * different domains so this is dummy function that clears token info,
+      * TODO: (jarrode) Discuss with core services to enable token revoke action
+      * from the outside of domain.
+      *
+      * @return {Promise} Promise resolved when the token is revoked.
+      */
+     signOut() {
+       return AnypointAuth.signOut();
+     }
+     /**
+      * Notifies application about error.
+      * @param {String} error Error mesage
+      */
+     errorNotify(error) {
+       this.dispatchEvent(new CustomEvent('anypoint-signin-aware-error', {
+         bubbles: true,
+         composed: true,
+         detail: error
+       }));
+     }
 
-    /** pops up the authorization dialog */
-    signIn: function() {
-      AnypointAuth.signIn();
-    },
-    /**
-     * Signs out the user and attempts to destroy the token.
-     * Currently token destroy endpoint does not allow request from
-     * different domains so this is dummy function that clears token info,
-     * TODO: (jarrode) Discuss with core services to enable token revoke action
-     * from the outside of domain.
-     *
-     * @return {Promise} Promise resolved when the token is revoked.
-     */
-    signOut: function() {
-      return AnypointAuth.signOut();
-    },
+     _clientIdChanged(newId) {
+       AnypointAuth.clientId = newId;
+     }
 
-    errorNotify: function(error) {
-      this.fire('anypoint-signin-aware-error', error);
-    },
+     _redirectUriChanged(value) {
+       AnypointAuth.redirectUri = value;
+     }
 
-    _clientIdChanged: function(newId) {
-      AnypointAuth.clientId = newId;
-    },
+     _updateStatus() {
+       let type;
+       if (this.signedIn) {
+         type = 'anypoint-signin-aware-success';
+       } else {
+         type = 'anypoint-signin-aware-signed-out';
+       }
 
-    _redirectUriChanged: function(value) {
-      AnypointAuth.redirectUri = value;
-    },
+       this.dispatchEvent(new CustomEvent(type, {
+         bubbles: true,
+         composed: true,
+         detail: this.user
+       }));
+     }
 
-    _updateStatus: function() {
-      if (this.signedIn) {
-        this.fire('anypoint-signin-aware-success', this.user);
-      } else {
-        this.fire('anypoint-signin-aware-signed-out', this.user);
-      }
-    },
-
-    /**
-     * Fired when this scope has been authorized
-     * @param {Object} result Authorization result.
-     * @event anypoint-signin-aware-success
-     */
-    /**
-     * Fired when this scope is not authorized
-     * @event anypoint-signin-aware-signed-out
-     */
-    /**
-     * Fired when there is an error during the signin flow.
-     * @param {Object} detail The error object returned from the OAuth 2 flow.
-     * @event anypoint-signin-aware-error
-     */
-  });
+     /**
+      * Fired when this scope has been authorized
+      * @param {Object} result Authorization result.
+      * @event anypoint-signin-aware-success
+      */
+     /**
+      * Fired when this scope is not authorized
+      * @event anypoint-signin-aware-signed-out
+      */
+     /**
+      * Fired when there is an error during the signin flow.
+      * @param {Object} detail The error object returned from the OAuth 2 flow.
+      * @event anypoint-signin-aware-error
+      */
+   }
+   window.customElements.define(AnypointSigninAware.is, AnypointSigninAware);
 })();
 </script>
