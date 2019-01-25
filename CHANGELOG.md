@@ -52,3 +52,16 @@
 
 
 
+# [2.0.0](https://github.com/advanced-rest-client/anypoint-signin/compare/0.1.4...2.0.0) (2019-01-25)
+
+
+### Breaking
+
+* Releasing new major version with Polymer 2 support ([8fa183c0b38a07915f16a876c19c661db3c9cc22](https://github.com/advanced-rest-client/anypoint-signin/commit/8fa183c0b38a07915f16a876c19c661db3c9cc22))
+
+### Docs
+
+* Updating polymer docs ([489314d34f17ee83e67c4bce8b7855d90e855507](https://github.com/advanced-rest-client/anypoint-signin/commit/489314d34f17ee83e67c4bce8b7855d90e855507))
+
+
+
