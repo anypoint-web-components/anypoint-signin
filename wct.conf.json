@@ -37,11 +37,11 @@
         "version": "11.1"
       }]
     },
-    "istanbub": {
+    "istanbul": {
       "dir": "./coverage",
       "reporters": ["text-summary", "lcov"],
       "include": [
-        "**/*.html"
+        "**/*.js"
       ],
       "exclude": [
         "**/test/**",
