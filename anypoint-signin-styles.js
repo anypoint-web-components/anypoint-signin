@@ -11,9 +11,9 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations under
 the License.
 */
-import '@polymer/iron-flex-layout/iron-flex-layout-classes.js';
-import '@polymer/paper-styles/shadow.js';
-import '@advanced-rest-client/anypoint-styles/colors.js';
+import '../../@polymer/iron-flex-layout/iron-flex-layout-classes.js';
+import '../../@polymer/paper-styles/shadow.js';
+import '../../@advanced-rest-client/anypoint-styles/colors.js';
 const $documentContainer = document.createElement('template');
 
 $documentContainer.innerHTML = `<dom-module id="anypoint-signin-styles">

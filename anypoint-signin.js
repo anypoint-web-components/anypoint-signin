@@ -1,7 +1,7 @@
-import {PolymerElement} from '@polymer/polymer/polymer-element.js';
-import {html} from '@polymer/polymer/lib/utils/html-tag.js';
-import '@polymer/paper-ripple/paper-ripple.js';
-import '@polymer/iron-icon/iron-icon.js';
+import {PolymerElement} from '../../@polymer/polymer/polymer-element.js';
+import {html} from '../../@polymer/polymer/lib/utils/html-tag.js';
+import '../../@polymer/paper-ripple/paper-ripple.js';
+import '../../@polymer/iron-icon/iron-icon.js';
 import './anypoint-signin-aware.js';
 import './exchange-icons.js';
 import './anypoint-signin-styles.js';

@@ -11,8 +11,8 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations under
 the License.
 */
-import {PolymerElement} from '@polymer/polymer/polymer-element.js';
-import '@api-components/oauth-authorization/oauth2-authorization.js';
+import {PolymerElement} from '../../@polymer/polymer/polymer-element.js';
+import '../../@api-components/oauth-authorization/oauth2-authorization.js';
 export const AnypointAuth = {
   /**
    * oauth2 client ID
@@ -494,7 +494,9 @@ export const AnypointAuth = {
  * @memberof AnypointElements
  */
 export class AnypointSigninAware extends PolymerElement {
-  static get is() {return 'anypoint-signin-aware';}
+  static get is() {
+    return 'anypoint-signin-aware';
+  }
   static get properties() {
     return {
       /**
