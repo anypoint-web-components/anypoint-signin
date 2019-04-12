@@ -12,7 +12,7 @@ License for the specific language governing permissions and limitations under
 the License.
 */
 import {PolymerElement} from '../../@polymer/polymer/polymer-element.js';
-import '../../@api-components/oauth-authorization/oauth2-authorization.js';
+import '../../@advanced-rest-client/oauth-authorization/oauth2-authorization.js';
 export const AnypointAuth = {
   /**
    * oauth2 client ID
