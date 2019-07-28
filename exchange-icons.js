@@ -2,7 +2,7 @@
 Copyright 2018 Mulesoft Inc
 All rights reserved.
 */
-import '../../@polymer/iron-iconset-svg/iron-iconset-svg.js';
+import '@polymer/iron-iconset-svg/iron-iconset-svg.js';
 const $documentContainer = document.createElement('template');
 $documentContainer.innerHTML = `<iron-iconset-svg name="exchange" size="26">
 <svg>

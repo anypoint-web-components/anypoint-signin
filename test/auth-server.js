@@ -1,5 +1,5 @@
-/* global sinon */
-const AuthServer = {
+import sinon from 'sinon/pkg/sinon-esm.js';
+export const AuthServer = {
   createServer: function() {
     this.srv = sinon.fakeServer.create({
       autoRespond: true
@@ -13,7 +13,7 @@ const AuthServer = {
   },
 
   mockProfile: function() {
-    let url = /https:\/\/anypoint\.mulesoft\.com\/exchange\/api\/v1\/profile/;
+    const url = /https:\/\/anypoint\.mulesoft\.com\/exchange\/api\/v1\/profile/;
     this.srv.respondWith('GET', url, function(request) {
       switch (request.requestHeaders.Authorization) {
         case 'bearer no-token':
@@ -35,7 +35,7 @@ const AuthServer = {
   },
 
   mockLogout: function() {
-    let url = /^https:\/\/anypoint\.mulesoft\.com\/accounts\/api\/access_tokens/;
+    const url = /^https:\/\/anypoint\.mulesoft\.com\/accounts\/api\/access_tokens/;
     this.srv.respondWith('DELETE', url, function(request) {
       request.respond(200, {}, '{"test": true}');
     });

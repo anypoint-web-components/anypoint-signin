@@ -11,8 +11,8 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations under
 the License.
 */
-import {PolymerElement} from '../../@polymer/polymer/polymer-element.js';
-import '../../@advanced-rest-client/oauth-authorization/oauth2-authorization.js';
+import { LitElement } from 'lit-element';
+import '@advanced-rest-client/oauth-authorization/oauth2-authorization.js';
 export const AnypointAuth = {
   /**
    * oauth2 client ID
@@ -71,7 +71,7 @@ export const AnypointAuth = {
     }
     AnypointAuth._signedIn = val;
     for (let i = 0; i < AnypointAuth.signinAwares.length; i++) {
-      AnypointAuth.signinAwares[i]._setSignedIn(val);
+      AnypointAuth.signinAwares[i]._signedIn = val;
     }
   },
   // User's access token.
@@ -93,7 +93,7 @@ export const AnypointAuth = {
     }
     AnypointAuth._accessToken = val;
     for (let i = 0; i < AnypointAuth.signinAwares.length; i++) {
-      AnypointAuth.signinAwares[i]._setAccessToken(val);
+      AnypointAuth.signinAwares[i]._accessToken = val;
     }
   },
   // Received User info.
@@ -112,7 +112,7 @@ export const AnypointAuth = {
   set user(val) {
     AnypointAuth._user = val;
     for (let i = 0; i < AnypointAuth.signinAwares.length; i++) {
-      AnypointAuth.signinAwares[i]._setUser(val);
+      AnypointAuth.signinAwares[i]._user = val;
     }
   },
   /**
@@ -280,8 +280,8 @@ export const AnypointAuth = {
    */
   signOut: function() {
     return AnypointAuth._deleteToken()
-    .catch(() => {})
-    .then(() => AnypointAuth.setAuthData());
+      .catch(() => {})
+      .then(() => AnypointAuth.setAuthData());
   },
 
   _oauth2TokenHandler: function(e) {
@@ -296,8 +296,7 @@ export const AnypointAuth = {
       AnypointAuth.setAuthData();
       return;
     }
-    return AnypointAuth._getProfile(info.accessToken)
-    .catch(() => AnypointAuth.setAuthData(info.accessToken));
+    return AnypointAuth._getProfile(info.accessToken).catch(() => AnypointAuth.setAuthData(info.accessToken));
   },
 
   _oauth2ErrorHandler: function(e) {
@@ -338,15 +337,18 @@ export const AnypointAuth = {
    * @return {Promise}
    */
   _getProfile: function(accessToken) {
-    return AnypointAuth._authGet(AnypointAuth.profileUrl, accessToken)
-    .then(function(response) {
+    return AnypointAuth._authGet(AnypointAuth.profileUrl, accessToken).then(function(response) {
       let profile;
       try {
         profile = JSON.parse(response);
-      } catch (e) {}
+      } catch (e) {
+        AnypointAuth._noop(e);
+      }
       AnypointAuth.setAuthData(accessToken, profile);
     });
   },
+
+  _noop: function() {},
 
   _authGet: function(url, accessToken) {
     accessToken = accessToken || AnypointAuth.accessToken;
@@ -359,14 +361,11 @@ export const AnypointAuth = {
         if (status === 404) {
           return reject(new Error('Profile URL is invalid.'));
         } else if (status === 401) {
-          return reject(new Error(
-            'Invalid access token. Server status is 401.'));
+          return reject(new Error('Invalid access token. Server status is 401.'));
         } else if (status >= 400 && status < 500) {
-          return reject(new Error(
-            'Server do not support this method. Response code is ' + status));
+          return reject(new Error('Server do not support this method. Response code is ' + status));
         } else if (status >= 500) {
-          return reject(new Error(
-            'Authorization server error. Response code is ' + status + '.'));
+          return reject(new Error('Authorization server error. Response code is ' + status + '.'));
         }
         resolve(e.target.response);
       });
@@ -376,25 +375,26 @@ export const AnypointAuth = {
         if (status) {
           message += ' Response code is: ' + status;
         }
-        reject(message);
+        reject(new Error(message));
       });
       try {
         xhr.send();
       } catch (e) {
-        reject('Unable to send the request.');
+        reject(new Error('Unable to send the request.'));
       }
     });
   },
 
   _deleteToken: function() {
     const url = AnypointAuth.logoutUri + AnypointAuth.accessToken;
+    /* global Promise */
     return new Promise(function(resolve, reject) {
       const xhr = new XMLHttpRequest();
       xhr.open('DELETE', url);
       xhr.addEventListener('load', function(e) {
         const status = e.target.status;
         if (status > 299) {
-          return reject('Delete token request faioled.');
+          return reject(new Error('Delete token request faioled.'));
         }
         resolve();
       });
@@ -404,12 +404,12 @@ export const AnypointAuth = {
         if (status) {
           message += ' Response code is: ' + status;
         }
-        reject(message);
+        reject(new Error(message));
       });
       try {
         xhr.send();
       } catch (e) {
-        reject('Unable to send the request.');
+        reject(new Error('Unable to send the request.'));
       }
     });
   },
@@ -423,9 +423,9 @@ export const AnypointAuth = {
       if (typeof aware.forceOauthEvents !== 'undefined') {
         AnypointAuth.forceOauthEvents = aware.forceOauthEvents;
       }
-      aware._setSignedIn(AnypointAuth.signedIn);
-      aware._setAccessToken(AnypointAuth.accessToken);
-      aware._setUser(AnypointAuth.user);
+      aware._signedIn = AnypointAuth.signedIn;
+      aware._accessToken = AnypointAuth.accessToken;
+      aware._user = AnypointAuth.user;
     }
     if (!AnypointAuth._initialized) {
       AnypointAuth.init();
@@ -493,72 +493,156 @@ export const AnypointAuth = {
  * @demo demo/index.html
  * @memberof AnypointElements
  */
-export class AnypointSigninAware extends PolymerElement {
-  static get is() {
-    return 'anypoint-signin-aware';
-  }
+export class AnypointSigninAware extends LitElement {
   static get properties() {
     return {
       /**
        * An Anypoint clientId.
        * This property is required to run the authorization flow.
        */
-      clientId: {
-        type: String,
-        observer: '_clientIdChanged'
-      },
+      clientId: { type: String },
       /**
        * Authorization redirect URI.
        * This property is required to run the authorization flow.
        */
-      redirectUri: {
-        type: String,
-        observer: '_redirectUriChanged'
-      },
-
-      /**
-       * True if user is signed in
-       */
-      signedIn: {
-        type: Boolean,
-        notify: true,
-        readOnly: true
-      },
-      /**
-       * True if user is signed in
-       */
-      accessToken: {
-        type: String,
-        notify: true,
-        readOnly: true
-      },
-      /**
-       * User profile information.
-       */
-      user: {
-        type: Object,
-        notify: true,
-        readOnly: true
-      },
+      redirectUri: { type: String },
       /**
        * By default this element inserts `oauth2-authorization` element to the
        * body and uses direct API to authorize the client. Set this property to
        * force the element to use events system to call the OAuth endpoint.
        *
        * It is useful when your application has it's own OAuth 2 authorization
-       * mechanism.
+       * mechanism. In this case handle `oauth2-token-requested` custom event.
+       * See `@advanced-rest-client/oauth-authorization` component documentation
+       * for more information.
        */
-      forceOauthEvents: Boolean
+      forceOauthEvents: { type: Boolean }
     };
+  }
+  /**
+   * @return {Object} User profile information.
+   */
+  get user() {
+    return this._user;
+  }
+
+  get _user() {
+    return this.__user;
+  }
+
+  set _user(value) {
+    const old = this.__user;
+    if (old === value) {
+      return;
+    }
+    this.__user = value;
+    this.dispatchEvent(
+      new CustomEvent('user-changed', {
+        detail: {
+          value
+        }
+      })
+    );
+  }
+  /**
+   * @return {String} Current access token of authenticated user
+   */
+  get accessToken() {
+    return this._accessToken;
+  }
+
+  get _accessToken() {
+    return this.__accessToken;
+  }
+
+  set _accessToken(value) {
+    const old = this.__accessToken;
+    if (old === value) {
+      return;
+    }
+    this.__accessToken = value;
+    this.dispatchEvent(
+      new CustomEvent('accesstoken-changed', {
+        detail: {
+          value
+        }
+      })
+    );
+  }
+  /**
+   * @return {String} True if user is signed in
+   */
+  get signedIn() {
+    return this._signedIn;
+  }
+
+  get _signedIn() {
+    return this.__signedIn;
+  }
+
+  set _signedIn(value) {
+    const old = this.__signedIn;
+    if (old === value) {
+      return;
+    }
+    this.__signedIn = value;
+    this.dispatchEvent(
+      new CustomEvent('signedin-changed', {
+        detail: {
+          value
+        }
+      })
+    );
+  }
+
+  get redirectUri() {
+    return this._redirectUri;
+  }
+
+  set redirectUri(value) {
+    const old = this._redirectUri;
+    if (old === value) {
+      return;
+    }
+    if (value) {
+      value = String(value);
+      // simple XSS prevention
+      if (value.indexOf('http') === -1) {
+        value = undefined;
+      }
+    }
+    this._redirectUri = value;
+    this._redirectUriChanged(value);
+  }
+
+  get clientId() {
+    return this._clientId;
+  }
+
+  set clientId(value) {
+    const old = this._clientId;
+    if (old === value) {
+      return;
+    }
+    if (value) {
+      value = String(value);
+    }
+    this._clientId = value;
+    this._clientIdChanged(value);
   }
 
   connectedCallback() {
-    super.connectedCallback();
+    if (super.connectedCallback) {
+      super.connectedCallback();
+    }
+    this.setAttribute('aria-hidden', 'true');
     AnypointAuth.attachSigninAware(this);
   }
 
   disconnectedCallback() {
-    super.disconnectedCallback();
+    if (super.disconnectedCallback) {
+      super.disconnectedCallback();
+    }
     AnypointAuth.detachSigninAware(this);
   }
 
@@ -583,11 +667,13 @@ export class AnypointSigninAware extends PolymerElement {
    * @param {String} error Error mesage
    */
   errorNotify(error) {
-    this.dispatchEvent(new CustomEvent('anypoint-signin-aware-error', {
-      bubbles: true,
-      composed: true,
-      detail: error
-    }));
+    this.dispatchEvent(
+      new CustomEvent('anypoint-signin-aware-error', {
+        bubbles: true,
+        composed: true,
+        detail: error
+      })
+    );
   }
 
   _clientIdChanged(newId) {
@@ -606,11 +692,13 @@ export class AnypointSigninAware extends PolymerElement {
       type = 'anypoint-signin-aware-signed-out';
     }
 
-    this.dispatchEvent(new CustomEvent(type, {
-      bubbles: true,
-      composed: true,
-      detail: this.user
-    }));
+    this.dispatchEvent(
+      new CustomEvent(type, {
+        bubbles: true,
+        composed: true,
+        detail: this.user
+      })
+    );
   }
 
   /**
@@ -628,4 +716,4 @@ export class AnypointSigninAware extends PolymerElement {
    * @event anypoint-signin-aware-error
    */
 }
-window.customElements.define(AnypointSigninAware.is, AnypointSigninAware);
+window.customElements.define('anypoint-signin-aware', AnypointSigninAware);
