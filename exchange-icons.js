@@ -1,9 +1,10 @@
-<!--
+/*
 Copyright 2018 Mulesoft Inc
 All rights reserved.
--->
-<link rel="import" href="../iron-iconset-svg/iron-iconset-svg.html">
-<iron-iconset-svg name="exchange" size="26">
+*/
+import '@polymer/iron-iconset-svg/iron-iconset-svg.js';
+const $documentContainer = document.createElement('template');
+$documentContainer.innerHTML = `<iron-iconset-svg name="exchange" size="26">
 <svg>
   <defs>
     <g id="exchange">
@@ -16,4 +17,6 @@ All rights reserved.
     </g>
   </defs>
 </svg>
-</iron-iconset-svg>
+</iron-iconset-svg>`;
+
+document.head.appendChild($documentContainer.content);

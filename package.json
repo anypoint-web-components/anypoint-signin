@@ -1,29 +1,80 @@
 {
-  "name": "@api-components/anypoint-signin",
-  "version": "2.0.0",
-  "license": "Apache-2.0",
+  "name": "@anypoint-web-components/anypoint-signin",
   "description": "Anypoint authentication web component",
-  "devDependencies": {
-    "@polymer/gen-typescript-declarations": "^1.6.1"
-  },
-  "private": false,
-  "main": "anypoint-signin.html",
-  "scripts": {
-    "lint": "polymer lint anypoint-signin.html",
-    "test-sauce": "polymer test --plugin sauce --job-name \"anypoint-signin:local-test\"",
-    "test": "polymer test --plugin local",
-    "update-types": "gen-typescript-declarations --deleteExisting --outDir ."
-  },
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/advanced-rest-client/anypoint-signin.git"
-  },
-  "bugs": {
-    "url": "https://github.com/advanced-rest-client/anypoint-signin/issues",
-    "email": "arc@mulesoft.com"
-  },
+  "version": "3.0.0",
+  "license": "Apache-2.0",
+  "main": "anypoint-signin.js",
+  "keywords": [
+    "web-components",
+    "anypoint",
+    "mulesoft",
+    "oauth2",
+    "authorization"
+  ],
   "authors": [
     "Pawel Psztyc",
     "The Advanced REST client authors <arc@mulesoft.com>"
-  ]
+  ],
+  "contributors": [
+    "Pawel Psztyc",
+    "The Advanced REST client authors <arc@mulesoft.com>"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/anypoint-web-components/anypoint-signin.git"
+  },
+  "bugs": {
+    "url": "https://github.com/anypoint-web-components/anypoint-signin/issues",
+    "email": "arc@mulesoft.com"
+  },
+  "dependencies": {
+    "@advanced-rest-client/oauth-authorization": "^3.0.0",
+    "@anypoint-web-components/anypoint-control-mixins": "^1.0.1",
+    "@polymer/iron-icon": "^3.0.0",
+    "@polymer/iron-iconset-svg": "^3.0.1",
+    "@polymer/paper-ripple": "^3.0.0",
+    "lit-element": "^2.0.1"
+  },
+  "devDependencies": {
+    "@advanced-rest-client/arc-demo-helper": "^1.0.3",
+    "@advanced-rest-client/eslint-config": "^1.0.6",
+    "@advanced-rest-client/prettier-config": "^0.1.0",
+    "@advanced-rest-client/testing-karma-sl": "^1.0.2",
+    "@anypoint-web-components/anypoint-styles": "^1.0.0-preview.1",
+    "@commitlint/cli": "^8.1.0",
+    "@commitlint/config-conventional": "^7.0.0",
+    "@open-wc/testing": "^2.1.2",
+    "@open-wc/testing-karma": "^3.1.2",
+    "@polymer/gen-typescript-declarations": "^1.6.2",
+    "@polymer/paper-toast": "^3.0.0",
+    "deepmerge": "^4.0.0",
+    "es-dev-server": "^1.5.0",
+    "husky": "^1.0.0",
+    "karma": "^4.2.0",
+    "lint-staged": "^8.0.0",
+    "sinon": "^7.3.2"
+  },
+  "scripts": {
+    "test": "karma start --coverage",
+    "update-types": "gen-typescript-declarations --deleteExisting --outDir .",
+    "start": "es-dev-server --app-index demo/index.html --node-resolve --open --watch",
+    "start:compatibility": "es-dev-server --app-index demo/index.html --compatibility all --node-resolve --open --watch",
+    "lint:eslint": "eslint --ext .js,.html .",
+    "format:eslint": "eslint --ext .js,.html . --fix",
+    "lint:prettier": "prettier \"**/*.js\" --list-different || (echo '↑↑ these files are not prettier formatted ↑↑' && exit 1)",
+    "format:prettier": "prettier \"**/*.js\" --write",
+    "lint": "npm run lint:eslint && npm run lint:prettier",
+    "format": "npm run format:eslint && npm run format:prettier",
+    "test:watch": "karma start --auto-watch=true --single-run=false",
+    "test:legacy": "karma start --legacy --coverage",
+    "test:legacy:watch": "karma start --legacy --auto-watch=true --single-run=false",
+    "test:sl": "karma start karma.sl.config.js --legacy --coverage"
+  },
+  "lint-staged": {
+    "*.js": [
+      "eslint --fix",
+      "prettier --write",
+      "git add"
+    ]
+  }
 }
