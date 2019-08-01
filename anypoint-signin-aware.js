@@ -511,10 +511,11 @@ export class AnypointSigninAware extends LitElement {
        */
       redirectUri: { type: String },
       /**
-       * Authorization redirect URI.
+       * String representing scopes that the application is requesting from the user.
+       * These scopes should be a subset of the scopes enabled for the client.
        * This property is required to run the grant authorization flow.
        */
-      scopes: { type: Array },
+      scopes: {},
       /**
        * By default this element inserts `oauth2-authorization` element to the
        * body and uses direct API to authorize the client. Set this property to
