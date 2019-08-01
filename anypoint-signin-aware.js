@@ -13,6 +13,9 @@ the License.
 */
 import { LitElement } from 'lit-element';
 import '@advanced-rest-client/oauth-authorization/oauth2-authorization.js';
+
+const hostname = 'https://qax.anypoint.mulesoft.com';
+
 export const AnypointAuth = {
   /**
    * oauth2 client ID
@@ -47,13 +50,13 @@ export const AnypointAuth = {
   // OAuth2 authorization type
   authType: 'implicit',
   // Token authorization URL
-  authorizationUri: 'https://anypoint.mulesoft.com/accounts/oauth2/authorize',
+  authorizationUri: `${hostname}/accounts/api/v2/oauth2/authorize`,
   // Code exchange endpoint
-  accessTokenUri: 'https://anypoint.mulesoft.com/accounts/oauth2/token',
+  accessTokenUri: `${hostname}/accounts/api/v2/oauth2/token`,
   // User info URL
-  profileUrl: 'https://anypoint.mulesoft.com/exchange/api/v1/profile',
+  profileUrl: `${hostname}/accounts/api/profile`,
   // Log out URL.
-  logoutUri: 'https://anypoint.mulesoft.com/accounts/api/access_tokens/',
+  logoutUri: `${hostname}/accounts/api/access_tokens/`,
   /** Is user signed in? */
   _signedIn: false,
   // Returns value for user signed in flag.
@@ -236,7 +239,8 @@ export const AnypointAuth = {
       authorizationUri: AnypointAuth.authorizationUri,
       clientId: AnypointAuth.clientId,
       redirectUri: AnypointAuth.redirectUri,
-      state: AnypointAuth._lastState
+      state: AnypointAuth._lastState,
+      scopes: AnypointAuth.scopes
     };
     if (AnypointAuth.authType === 'code') {
       result.accessTokenUri = AnypointAuth.accessTokenUri;
@@ -266,6 +270,8 @@ export const AnypointAuth = {
       });
       document.body.dispatchEvent(ev);
     } else {
+      // TODO: POC, remove when scopes actual implementation is done.
+      detail.scopes = ['full'];
       AnypointAuth._oauthFactory.authorize(detail);
     }
   },
@@ -507,6 +513,11 @@ export class AnypointSigninAware extends LitElement {
        */
       redirectUri: { type: String },
       /**
+       * Authorization redirect URI.
+       * This property is required to run the grant authorization flow.
+       */
+      scopes: { type: Array },
+      /**
        * By default this element inserts `oauth2-authorization` element to the
        * body and uses direct API to authorize the client. Set this property to
        * force the element to use events system to call the OAuth endpoint.
@@ -631,6 +642,22 @@ export class AnypointSigninAware extends LitElement {
     this._clientIdChanged(value);
   }
 
+  get scopes() {
+    return this._scopes;
+  }
+
+  set scopes(value) {
+    const old = this._clientId;
+    if (old === value) {
+      return;
+    }
+    if (value) {
+      value = String(value);
+    }
+    this._scopes = value;
+    this._scopesChanged(value);
+  }
+
   connectedCallback() {
     if (super.connectedCallback) {
       super.connectedCallback();
@@ -678,6 +705,10 @@ export class AnypointSigninAware extends LitElement {
 
   _clientIdChanged(newId) {
     AnypointAuth.clientId = newId;
+  }
+
+  _scopesChanged(newScopes) {
+    AnypointAuth.scopes = newScopes;
   }
 
   _redirectUriChanged(value) {

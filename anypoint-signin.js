@@ -114,14 +114,18 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
       forceOauthEvents,
       noink,
       labelSignout,
-      labelSignin
+      labelSignin,
+      scopes
     } = this;
+    const scopesArray = scopes && scopes.split(',');
+
     const buttonClass = this._computeButtonClass(height, width, theme, signedIn);
     const _labelSignin = this._computeSigninLabel(labelSignin, width);
     return html`
       <anypoint-signin-aware
         .clientId="${clientId}"
         .redirectUri="${redirectUri}"
+        .scopes="${scopesArray}"
         .forceOauthEvents="${forceOauthEvents}"
         @accesstoken-changed="${this._atHandler}"
         @user-changed="${this._userHandler}"
@@ -304,6 +308,12 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
       raised: {
         type: Boolean,
         reflect: true
+      },
+      /**
+       * OAuth Scopes that the signin flow will request for
+       */
+      scopes: {
+        type: String
       },
       /**
        * The theme to use for the button.
