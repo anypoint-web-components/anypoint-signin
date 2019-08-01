@@ -309,7 +309,7 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
         reflect: true
       },
       /**
-       * OAuth Scopes that the signin flow will request for
+       * OAuth Scopes that the signin flow will request for.
        */
       scopes: {},
       /**
