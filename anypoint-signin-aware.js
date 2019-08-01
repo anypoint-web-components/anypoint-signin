@@ -270,8 +270,6 @@ export const AnypointAuth = {
       });
       document.body.dispatchEvent(ev);
     } else {
-      // TODO: POC, remove when scopes actual implementation is done.
-      detail.scopes = ['full'];
       AnypointAuth._oauthFactory.authorize(detail);
     }
   },
@@ -691,7 +689,7 @@ export class AnypointSigninAware extends LitElement {
   }
   /**
    * Notifies application about error.
-   * @param {String} error Error mesage
+   * @param {String} error Error message
    */
   errorNotify(error) {
     this.dispatchEvent(
@@ -707,8 +705,13 @@ export class AnypointSigninAware extends LitElement {
     AnypointAuth.clientId = newId;
   }
 
+  /**
+   * Sets AnypointAuth with an array of scopes, e.g. ['full','profile','email']
+   * @param {String} newScopes space separated scopes, e.g. 'full profile email'
+   */
   _scopesChanged(newScopes) {
-    AnypointAuth.scopes = newScopes;
+    const scopes = newScopes && newScopes.split(' ');
+    AnypointAuth.scopes = scopes;
   }
 
   _redirectUriChanged(value) {
