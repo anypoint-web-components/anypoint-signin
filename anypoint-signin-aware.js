@@ -515,7 +515,7 @@ export class AnypointSigninAware extends LitElement {
        * These scopes should be a subset of the scopes enabled for the client.
        * This property is required to run the grant authorization flow.
        */
-      scopes: {},
+      scopes: { type: String },
       /**
        * By default this element inserts `oauth2-authorization` element to the
        * body and uses direct API to authorize the client. Set this property to
