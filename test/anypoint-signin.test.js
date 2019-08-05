@@ -341,48 +341,6 @@ describe('<anypoint-signin>', () => {
     });
   });
 
-  describe('onuser', () => {
-    let element;
-    beforeEach(async () => {
-      element = await basicFixture();
-    });
-
-    it('Getter returns previously registered handler', () => {
-      assert.isUndefined(element.onuser);
-      const f = () => {};
-      element.onuser = f;
-      assert.isTrue(element.onuser === f);
-    });
-
-    it('Calls registered function', () => {
-      let called = false;
-      const f = () => {
-        called = true;
-      };
-      element.onuser = f;
-      element.user = { name: 'test' };
-      element.onuser = null;
-      assert.isTrue(called);
-    });
-
-    it('Unregisteres old function', () => {
-      let called1 = false;
-      let called2 = false;
-      const f1 = () => {
-        called1 = true;
-      };
-      const f2 = () => {
-        called2 = true;
-      };
-      element.onuser = f1;
-      element.onuser = f2;
-      element.user = { name: 'test' };
-      element.onuser = null;
-      assert.isFalse(called1);
-      assert.isTrue(called2);
-    });
-  });
-
   describe('a11y', () => {
     it('passes a11y tests', async () => {
       const element = await basicFixture();

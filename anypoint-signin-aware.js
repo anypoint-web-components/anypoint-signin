@@ -14,7 +14,7 @@ the License.
 import { LitElement } from 'lit-element';
 import '@advanced-rest-client/oauth-authorization/oauth2-authorization.js';
 
-const hostname = 'https://qax.anypoint.mulesoft.com';
+export const hostname = 'https://qax.anypoint.mulesoft.com';
 
 export const AnypointAuth = {
   /**
@@ -53,8 +53,6 @@ export const AnypointAuth = {
   authorizationUri: `${hostname}/accounts/api/v2/oauth2/authorize`,
   // Code exchange endpoint
   accessTokenUri: `${hostname}/accounts/api/v2/oauth2/token`,
-  // User info URL
-  profileUrl: `${hostname}/accounts/api/profile`,
   // Log out URL.
   logoutUri: `${hostname}/accounts/api/access_tokens/`,
   /** Is user signed in? */
@@ -97,25 +95,6 @@ export const AnypointAuth = {
     AnypointAuth._accessToken = val;
     for (let i = 0; i < AnypointAuth.signinAwares.length; i++) {
       AnypointAuth.signinAwares[i]._accessToken = val;
-    }
-  },
-  // Received User info.
-  _user: null,
-  /**
-   * @return {Object} Profile information.
-   */
-  get user() {
-    return AnypointAuth._user;
-  },
-  /**
-   * Sets new value of user profile and informs awares about the change.
-   *
-   * @param {Object} val Retreived information about user profile.
-   */
-  set user(val) {
-    AnypointAuth._user = val;
-    for (let i = 0; i < AnypointAuth.signinAwares.length; i++) {
-      AnypointAuth.signinAwares[i]._user = val;
     }
   },
   /**
@@ -300,7 +279,7 @@ export const AnypointAuth = {
       AnypointAuth.setAuthData();
       return;
     }
-    return AnypointAuth._getProfile(info.accessToken).catch(() => AnypointAuth.setAuthData(info.accessToken));
+    return Promise.resolve(AnypointAuth.setAuthData(info.accessToken));
   },
 
   _oauth2ErrorHandler: function(e) {
@@ -309,7 +288,6 @@ export const AnypointAuth = {
     }
     const message = e.detail.message;
     AnypointAuth.accessToken = null;
-    AnypointAuth.user = null;
     AnypointAuth.signedIn = false;
     for (let i = 0; i < AnypointAuth.signinAwares.length; i++) {
       AnypointAuth.signinAwares[i]._updateStatus();
@@ -321,72 +299,12 @@ export const AnypointAuth = {
     }
   },
 
-  setAuthData: function(token, profile) {
+  setAuthData: function(token) {
     AnypointAuth.accessToken = token;
-    AnypointAuth.user = profile;
     AnypointAuth.signedIn = !!token;
     for (let i = 0; i < AnypointAuth.signinAwares.length; i++) {
       AnypointAuth.signinAwares[i]._updateStatus();
     }
-  },
-  /**
-   * Gets user profile information from the authorization server.
-   *
-   * NOTE: Auth server does not allow XHR from other domains right now
-   * so this function is never called.
-   * This to be fixed when core service allows to get profile info from
-   * different domains.
-   *
-   * @param {String} accessToken OAuth 2 access token
-   * @return {Promise}
-   */
-  _getProfile: function(accessToken) {
-    return AnypointAuth._authGet(AnypointAuth.profileUrl, accessToken).then(function(response) {
-      let profile;
-      try {
-        profile = JSON.parse(response);
-      } catch (e) {
-        AnypointAuth._noop(e);
-      }
-      AnypointAuth.setAuthData(accessToken, profile);
-    });
-  },
-
-  _noop: function() {},
-
-  _authGet: function(url, accessToken) {
-    accessToken = accessToken || AnypointAuth.accessToken;
-    return new Promise(function(resolve, reject) {
-      const xhr = new XMLHttpRequest();
-      xhr.open('GET', url);
-      xhr.setRequestHeader('Authorization', 'bearer ' + accessToken);
-      xhr.addEventListener('load', function(e) {
-        const status = e.target.status;
-        if (status === 404) {
-          return reject(new Error('Profile URL is invalid.'));
-        } else if (status === 401) {
-          return reject(new Error('Invalid access token. Server status is 401.'));
-        } else if (status >= 400 && status < 500) {
-          return reject(new Error('Server do not support this method. Response code is ' + status));
-        } else if (status >= 500) {
-          return reject(new Error('Authorization server error. Response code is ' + status + '.'));
-        }
-        resolve(e.target.response);
-      });
-      xhr.addEventListener('error', function(e) {
-        const status = e.target.status;
-        let message = 'The request to the authorization server failed.';
-        if (status) {
-          message += ' Response code is: ' + status;
-        }
-        reject(new Error(message));
-      });
-      try {
-        xhr.send();
-      } catch (e) {
-        reject(new Error('Unable to send the request.'));
-      }
-    });
   },
 
   _deleteToken: function() {
@@ -398,7 +316,7 @@ export const AnypointAuth = {
       xhr.addEventListener('load', function(e) {
         const status = e.target.status;
         if (status > 299) {
-          return reject(new Error('Delete token request faioled.'));
+          return reject(new Error('Delete token request failed.'));
         }
         resolve();
       });
@@ -429,7 +347,6 @@ export const AnypointAuth = {
       }
       aware._signedIn = AnypointAuth.signedIn;
       aware._accessToken = AnypointAuth.accessToken;
-      aware._user = AnypointAuth.user;
     }
     if (!AnypointAuth._initialized) {
       AnypointAuth.init();
@@ -528,31 +445,6 @@ export class AnypointSigninAware extends LitElement {
        */
       forceOauthEvents: { type: Boolean }
     };
-  }
-  /**
-   * @return {Object} User profile information.
-   */
-  get user() {
-    return this._user;
-  }
-
-  get _user() {
-    return this.__user;
-  }
-
-  set _user(value) {
-    const old = this.__user;
-    if (old === value) {
-      return;
-    }
-    this.__user = value;
-    this.dispatchEvent(
-      new CustomEvent('user-changed', {
-        detail: {
-          value
-        }
-      })
-    );
   }
   /**
    * @return {String} Current access token of authenticated user

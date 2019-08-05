@@ -31,8 +31,7 @@ const WidthValue = {
  * Anypoint sign in button allows to sign in the user in the Anypoint
  * core services.
  *
- * Authorization result is `accessToken` that can be used to call other APIs
- * and `user` object returned from the Exchange.
+ * Authorization result is `accessToken` that can be used to call other APIs.
  *
  * If you do not need to show the button, use companion
  * `<anypoint-signin-aware>` element to check authentication state and
@@ -66,7 +65,7 @@ const WidthValue = {
  * ## Autho log in
  *
  * The element attempts to log in user in a non-interactive way (without
- * displaying the popup) when the lement is ready. It does nothing when
+ * displaying the popup) when the element is ready. It does nothing when
  * the response is errored.
  *
  * ## New in version 2.0
@@ -127,7 +126,6 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
         .scopes="${scopes}"
         .forceOauthEvents="${forceOauthEvents}"
         @accesstoken-changed="${this._atHandler}"
-        @user-changed="${this._userHandler}"
         @signedin-changed="${this._signedinHandler}"
       ></anypoint-signin-aware>
       <div id="authButton" class="${buttonClass}">
@@ -196,26 +194,6 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
     );
   }
 
-  get user() {
-    return this._user;
-  }
-
-  set user(value) {
-    const old = this._user;
-    if (old === value) {
-      return;
-    }
-    this._user = value;
-    this.requestUpdate('user', old);
-    this.dispatchEvent(
-      new CustomEvent('user-changed', {
-        detail: {
-          value
-        }
-      })
-    );
-  }
-
   /**
    * @return {Function} Previously registered handler for `signedin-changed` event
    */
@@ -244,20 +222,6 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
   set onaccesstoken(value) {
     this._registerCallback('accesstoken-changed', value);
   }
-  /**
-   * @return {Function} Previously registered handler for `user-changed` event
-   */
-  get onuser() {
-    return this['_onuser-changed'];
-  }
-  /**
-   * Registers a callback function for `user-changed` event
-   * @param {Function} value A callback to register. Pass `null` or `undefined`
-   * to clear the listener.
-   */
-  set onuser(value) {
-    this._registerCallback('user-changed', value);
-  }
   static get properties() {
     return {
       /**
@@ -276,10 +240,6 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
        * True if user is signed in
        */
       accessToken: { type: String },
-      /**
-       * User profile information.
-       */
-      user: { type: Object },
       /**
        * The height to use for the button.
        *
@@ -480,10 +440,6 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
 
   _atHandler(e) {
     this.accessToken = e.detail.value;
-  }
-
-  _userHandler(e) {
-    this.user = e.detail.value;
   }
 
   _signedinHandler(e) {
