@@ -18,7 +18,6 @@ module.exports = ({ mode }) => {
     output: {
       filename: 'dist.js',
       path: path.resolve(__dirname, 'dist')
-    },
-    devtool: mode === 'development' ? 'source-map' : 'none'
+    }
   };
 };
