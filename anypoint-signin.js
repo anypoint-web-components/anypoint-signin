@@ -311,7 +311,7 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
       /**
        * OAuth Scopes that the signin flow will request for.
        */
-      scopes: {},
+      scopes: { type: String },
       /**
        * The theme to use for the button.
        *
