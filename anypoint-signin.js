@@ -6,7 +6,7 @@ import {
   ControlStateMixin
 } from '@anypoint-web-components/anypoint-control-mixins/anypoint-control-mixins.js';
 import './anypoint-signin-aware.js';
-import './exchange-icons.js';
+import './anypoint-icons.js';
 import styles from './anypoint-signin-styles.js';
 /**
  * Enum button label default values.
@@ -35,7 +35,7 @@ const WidthValue = {
  *
  * If you do not need to show the button, use companion
  * `<anypoint-signin-aware>` element to check authentication state and
- * perform manula authentication.
+ * perform manual authentication.
  *
  * #### Examples
  *
@@ -60,7 +60,7 @@ const WidthValue = {
  * This element supports `implicit` authentication flow only. Web application
  * should not contain OAuth2 secret and most OAuth2 authorization do not allow
  * web clients to authenticate from a web client. If you have to use `code`
- * authorization flow when use different method to authenticate the user.
+ * authorization flow then use different method to authenticate the user.
  *
  * ## Autho log in
  *
@@ -139,13 +139,13 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
           ${signedIn
             ? html`
                 <div class="button-content signOut">
-                  <span class="icon"><iron-icon icon="exchange:exchange"></iron-icon></span>
+                  <span class="icon"><iron-icon icon="anypoint:anypoint"></iron-icon></span>
                   <span class="buttonText">${labelSignout}</span>
                 </div>
               `
             : html`
                 <div class="button-content signIn">
-                  <span class="icon"><iron-icon icon="exchange:exchange"></iron-icon></span>
+                  <span class="icon"><iron-icon icon="anypoint:anypoint"></iron-icon></span>
                   <span class="buttonText">${_labelSignin}</span>
                 </div>
               `}
