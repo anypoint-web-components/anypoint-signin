@@ -65,7 +65,7 @@ export const AnypointAuth = {
   // Code exchange endpoint
   accessTokenUri: `${hostname}/accounts/api/v2/oauth2/token`,
   // Log out URL.
-  logoutUri: `${hostname}/accounts/api/access_tokens/`,
+  logoutUri: `${hostname}/accounts/api/logout/`,
   /** Is user signed in? */
   _signedIn: false,
   // Returns value for user signed in flag.
@@ -273,7 +273,7 @@ export const AnypointAuth = {
    * @return {Promise} Promise resolved when the token is revoked.
    */
   signOut: function() {
-    return AnypointAuth._deleteToken()
+    return AnypointAuth._logout()
       .catch(() => {})
       .then(() => AnypointAuth.setAuthData());
   },
@@ -318,12 +318,15 @@ export const AnypointAuth = {
     }
   },
 
-  _deleteToken: function() {
-    const url = AnypointAuth.logoutUri + AnypointAuth.accessToken;
+  _logout: function() {
+    const url = AnypointAuth.logoutUri;
     /* global Promise */
     return new Promise(function(resolve, reject) {
       const xhr = new XMLHttpRequest();
-      xhr.open('DELETE', url);
+      xhr.open('GET', url);
+      if (AnypointAuth.accessToken) {
+        xhr.setRequestHeader('Authorization', 'bearer ' + AnypointAuth.accessToken);
+      }
       xhr.addEventListener('load', function(e) {
         const status = e.target.status;
         if (status > 299) {
