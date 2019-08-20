@@ -14,7 +14,7 @@ the License.
 import { LitElement } from 'lit-element';
 import '@advanced-rest-client/oauth-authorization/oauth2-authorization.js';
 
-export const hostname = 'https://qax.anypoint.mulesoft.com';
+export const hostname = 'https://localhost:8787';
 
 export const AnypointAuth = {
   /**
@@ -47,8 +47,19 @@ export const AnypointAuth = {
       AnypointAuth._redirectUri = val;
     }
   },
-  // OAuth2 authorization type
-  authType: 'implicit',
+  // OAuth2 authorization type. e.g. implicit, authorization_code, etc.
+  _authType: 'implicit',
+  get authType() {
+    return AnypointAuth._authType;
+  },
+  set authType(val) {
+    if (val && val !== AnypointAuth._authType) {
+      AnypointAuth._authType = val;
+      AnypointAuth.initAuth2();
+    } else {
+      AnypointAuth._authType = val;
+    }
+  },
   // Token authorization URL
   authorizationUri: `${hostname}/accounts/api/v2/oauth2/authorize`,
   // Code exchange endpoint
@@ -418,6 +429,11 @@ export class AnypointSigninAware extends LitElement {
   static get properties() {
     return {
       /**
+       * The authorization grant type. e.g. implicit, authorization code, etc.
+       * Note for authorization code and other grant types, you should use forceOAuthEvents (see below).
+       */
+      authType: { type: String },
+      /**
        * An Anypoint clientId.
        * This property is required to run the authorization flow.
        */
@@ -533,12 +549,28 @@ export class AnypointSigninAware extends LitElement {
     this._clientIdChanged(value);
   }
 
+  get authType() {
+    return this._authType;
+  }
+
+  set authType(value) {
+    const old = this._authType;
+    if (old === value) {
+      return;
+    }
+    if (value) {
+      value = String(value);
+    }
+    this._authType = value;
+    this._authTypeChanged(value);
+  }
+
   get scopes() {
     return this._scopes;
   }
 
   set scopes(value) {
-    const old = this._clientId;
+    const old = this._scopes;
     if (old === value) {
       return;
     }
@@ -596,6 +628,10 @@ export class AnypointSigninAware extends LitElement {
 
   _clientIdChanged(newId) {
     AnypointAuth.clientId = newId;
+  }
+
+  _authTypeChanged(newAuthType) {
+    AnypointAuth.authType = newAuthType;
   }
 
   /**
