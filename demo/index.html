@@ -104,6 +104,8 @@
 
   <script type="module" src="./index.js"></script>
   <script>
+    // This is an example of handling the authorization-code once the authorization flow is completed and
+    // the page that the user is redirected sends back the authorization code from the authorization code flow.
     function oauth2CodeHandler(e) {
       console.log('Code Info', e.detail);
       console.log('The authorization code is', e.detail.code);
