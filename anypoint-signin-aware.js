@@ -16,6 +16,12 @@ import '@advanced-rest-client/oauth-authorization/oauth2-authorization.js';
 
 export const hostname = 'https://localhost:8787';
 
+export const GRANT_TYPES = {
+  AUTH_CODE: 'authorization_code',
+  REFRESH: 'refresh_token',
+  IMPLICIT: 'implicit'
+};
+
 export const AnypointAuth = {
   /**
    * oauth2 client ID
@@ -48,7 +54,8 @@ export const AnypointAuth = {
     }
   },
   // OAuth2 authorization type. e.g. implicit, authorization_code, etc.
-  _authType: 'implicit',
+  // By default, the authorization type is authorization_code.
+  _authType: GRANT_TYPES.AUTH_CODE,
   get authType() {
     return AnypointAuth._authType;
   },
@@ -232,8 +239,15 @@ export const AnypointAuth = {
       state: AnypointAuth._lastState,
       scopes: AnypointAuth.scopes
     };
-    if (AnypointAuth.authType === 'code') {
+    // For AUTH_CODE and REFRESH grant types, the signin-aware doesn't handle exchanging the code for the access token.
+    // (since anypoint-signin-aware is running client side, it can't make the exchange anyway since
+    // 1. CORS should be enabled for the /token endpoint.
+    // 2. The anypoint-signin-aware should not know about the client-secret of the application.
+    // Note: The oauth2-authorization module that signin-aware depends on has an option for overriding the exchange code
+    // flow by setting the "overrideExchangeCodeFlow" to true.
+    if (AnypointAuth.authType === GRANT_TYPES.AUTH_CODE || AnypointAuth.authType === GRANT_TYPES.REFRESH) {
       result.accessTokenUri = AnypointAuth.accessTokenUri;
+      result.overrideExchangeCodeFlow = true;
     }
     return result;
   },
@@ -391,8 +405,14 @@ export const AnypointAuth = {
  * The `anypoint-signin-aware-success` event is triggered when a user
  * successfully authenticates. It also sets `accessToken` property that can be
  * used to interact with Anypoint APIs.
+ *
  * The `anypoint-signin-aware-signed-out` event is triggered when a user
  * signs out via calling `signOut()` function.
+ *
+ * The `oauth2-token-response` event is triggered when a user
+ * successfully authenticates for the authorization_code flow via the /authorize endpoint. An authorization code
+ * is returned in the event and should be used to exchange for an access token via the /token endpoint from
+ * your backend server.
  *
  * You can bind to `signedIn` property to monitor authorization state.
  * ##### Example
@@ -406,21 +426,30 @@ export const AnypointAuth = {
  *
  * ##### Example
  *
- *     <anypoint-signin-aware
- *      client-id="abc123"
- *      redirect-uri="https://auth.domain.com/oauth2/redirect"></anypoint-signin-aware>
+ *      <anypoint-signin-aware
+ *        client-id="abc123"
+ *        redirect-uri="https://auth.domain.com/oauth2/redirect"
+ *      >
+ *      </anypoint-signin-aware>
  *
- * ## Authorization type
+ * ## Authorization types
  *
- * This element supports `implicit` authentication flow only. Web application
- * should not contain OAuth2 secret and most OAuth2 authorization do not allow
- * web clients to authenticate from a web client. If you have to use `code`
- * authorization flow when use different method to authenticate the user.
+ * This element supports `implicit` and `authorization_code` authentication flows.
+ *
+ * If you have to use the `authorization_code` authorization flow, you MUST handle exchanging the authorization code
+ * for an access token. The anypoint-signin-aware component will trigger the authorization flow.
+ *
+ * Your site at the redirect_uri should send back
+ * a window message (https://developer.mozilla.org/en-US/docs/Web/API/Window/message_event)
+ * via window.postMessage() that contains the authorization_code.
+ *
+ * See https://github.com/advanced-rest-client/oauth-authorization/blob/stage/oauth-popup.html for an example
+ * of a page that the Advanced Rest Client redirect_uri goes to which handles the authorization flow correctly.
  *
  * ## Autho log in
  *
  * The element attempts to log in user in a non-interactive way (without
- * displaying the popup) when the lement is ready. It does nothing when
+ * displaying the popup) when the element is ready. It does nothing when
  * the response is errored.
  *
  * @customElement
@@ -608,6 +637,8 @@ export class AnypointSigninAware extends LitElement {
    * Currently token destroy endpoint does not allow request from
    * different domains so this is dummy function that clears token info,
    * TODO: (jarrode) Discuss with core services to enable token revoke action
+   * TODO: (leo) Calling /logout will destroy the token as well. However, CORS is not enabled for /logout for most origins.
+   *  Figure out where the allowed origins list is.
    * from the outside of domain.
    *
    * @return {Promise} Promise resolved when the token is revoked.

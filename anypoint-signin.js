@@ -28,14 +28,23 @@ const WidthValue = {
   WIDE: 'wide'
 };
 /**
- * Anypoint sign in button allows to sign in the user in the Anypoint
- * core services.
+ * The Anypoint SignIn button allows you to sign the user into the Anypoint Platform.
  *
- * Authorization result is `accessToken` that can be used to call other APIs.
+ * The authorization result via the `implicit` flow is an `accessToken` that can be used to call other APIs.
  *
- * If you do not need to show the button, use companion
- * `<anypoint-signin-aware>` element to check authentication state and
- * perform manual authentication.
+ * In the `authorization_code` flow the signin button will dispatch an event "oauth2-code-response" with the
+ * authorization "code" which should be handled by you the developer.
+ *
+ * The oauth2-code-response will have the following properties if you dispatch a message
+ * correctly from the redirect uri popup window:
+ *
+ * code: "THE_AUTHORIZATION_CODE"
+ * oauth2response: true
+ * state: "YOUR_STATE_QUERY_PARAMETER"
+ * tokenTime: 1566413156116
+ *
+ * If you do not need to show the button, use the companion
+ * `<anypoint-signin-aware>` element to check authentication state and perform manual authentication.
  *
  * #### Examples
  *
@@ -50,17 +59,23 @@ const WidthValue = {
  *
  * #### Notes
  *
- * The `clientId` and `redirectUri` properties has to be set before using the
- * component. `clientId` and associated with it `redirectUri` has to be set up
- * with Anypoint authorization server. Contact Anypoint Core services for
- * more information.
+ * The `clientId`, `redirectUri`, and `authType` properties has to be set before using the component.
+ *
+ * Note: `authType` determines what grant type flow to use for authentication.
+ * Contact the Anypoint Access Management team for more information.
+ * By default, the `authType` will be the authorization_code flow.
+ *
+ * Note: The Anypoint Platform, for security reasons, does not support the `implicit` flow currently.
+ *
+ * `clientId` and `redirectUri` has to be set up in the Anypoint Platform when registering an application.
  *
  * ## Authorization type
  *
- * This element supports `implicit` authentication flow only. Web application
- * should not contain OAuth2 secret and most OAuth2 authorization do not allow
- * web clients to authenticate from a web client. If you have to use `code`
- * authorization flow then use different method to authenticate the user.
+ * This element supports `implicit` and `authorization_code` authentication flows. It potentially also supports
+ * `refresh_token` but this hasn't been tested.
+ *
+ * If you have to use the `authorization_code` authorization flow, you MUST handle exchanging the authorization code
+ * for an access token. The anypoint-signin-aware component will trigger the authorization flow.
  *
  * ## Autho log in
  *

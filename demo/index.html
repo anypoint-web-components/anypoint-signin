@@ -103,6 +103,14 @@
   </div>
 
   <script type="module" src="./index.js"></script>
+  <script>
+    function oauth2CodeHandler(e) {
+      console.log('Code Info', e.detail);
+      console.log('The authorization code is', e.detail.code);
+      console.log('You should exchange this code for an access token');
+    }
+    document.addEventListener('oauth2-code-response', oauth2CodeHandler);
+  </script>
 </body>
 
 </html>
