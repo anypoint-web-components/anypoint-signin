@@ -28,33 +28,19 @@ const WidthValue = {
   WIDE: 'wide'
 };
 /**
- * The Anypoint SignIn button allows you to sign the user into the Anypoint Platform.
+ * ## Overview
  *
- * The authorization result via the `implicit` flow is an `accessToken` that can be used to call other APIs.
+ * The Anypoint SignIn button allows you to sign users into the Anypoint Platform.
  *
- * In the `authorization_code` flow the signin button will dispatch an event "oauth2-code-response" with the
- * authorization "code" which should be handled by you the developer.
+ * ## Scopes
  *
- * The oauth2-code-response will have the following properties if you dispatch a message
- * correctly from the redirect uri popup window:
+ * If you require OAuth 2.0 authorization for certain scopes for your application, the SignIn button supports
+ * requesting authorization for scopes from the user and will initialize an authorization flow for those scopes.
+ * Simply pass a space separated list of scopes as an attribute to the anypoint-signin element.
  *
- * code: "THE_AUTHORIZATION_CODE"
- * oauth2response: true
- * state: "YOUR_STATE_QUERY_PARAMETER"
- * tokenTime: 1566413156116
- *
- * If you do not need to show the button, use the companion
- * `<anypoint-signin-aware>` element to check authentication state and perform manual authentication.
- *
- * #### Examples
- *
- * ```html
- * <anypoint-signin client-id="..."
- *  redirect-uri="https://auth.domain.com/auth/redirect"></anypoint-signin>
- * <anypoint-signin label-signin="Sign-in" client-id="..."
- *  redirect-uri="https://auth.domain.com/auth/redirect"></anypoint-signin>
- * <anypoint-signin theme="dark" width="iconOnly" client-id="..."
- *  redirect-uri="https://auth.domain.com/auth/redirect"></anypoint-signin>
+ * Example
+ * ```
+ * <anypoint-signin redirecturi="YOUR_REDIRECT_URI" scopes="profile openid ..." clientid="YOUR_CLIENT_ID"></anypoint-signin>
  * ```
  *
  * #### Notes
@@ -63,19 +49,70 @@ const WidthValue = {
  *
  * Note: `authType` determines what grant type flow to use for authentication.
  * Contact the Anypoint Access Management team for more information.
- * By default, the `authType` will be the authorization_code flow.
+ * By default, the `authType` will be "authorization_code".
  *
- * Note: The Anypoint Platform, for security reasons, does not support the `implicit` flow currently.
+ * Note: `scopes` is an optional property that tells the button which scopes to request authorization for.
+ *
+ * Note: The Anypoint Platform, for security reasons, does not support the `implicit` flow.
+ * Please use the "authorization_code" flow.
  *
  * `clientId` and `redirectUri` has to be set up in the Anypoint Platform when registering an application.
  *
+ *  If you do not need to show the button, use the companion
+ * `<anypoint-signin-aware>` element to check authentication state and perform manual authentication.
+ *
  * ## Authorization type
  *
- * This element supports `implicit` and `authorization_code` authentication flows. It potentially also supports
- * `refresh_token` but this hasn't been tested.
+ * This element supports `implicit` and `authorization_code` authentication flows.
+ * It potentially also supports `refresh_token` (use at your discretion, this hasn't been thoroughly tested).
+ *
+ * The authorization result via the `implicit` flow is an `accessToken` that can be used to call other APIs.
+ *
+ * The authorization result via the `authorization_code` flow will dispatch an event "oauth2-code-response" with the
+ * authorization "code" which you can exchange (e.g. via a backend service) for an `accessToken`.
  *
  * If you have to use the `authorization_code` authorization flow, you MUST handle exchanging the authorization code
- * for an access token. The anypoint-signin-aware component will trigger the authorization flow.
+ * for an access token. The anypoint-signin-aware element that the anypoint-signin button uses will trigger the
+ * authorization flow. Once the user grants authorization, the authorization server will redirect the user to the
+ * redirect_uri of the application. The page at the redirect_uri will have the authorization code in the "code"
+ * query parameter of the url. The page should parse through the query parameters and send this via a
+ * window.postMessage() call back to the page with the anypoint-signin button. The anypoint-signin-aware
+ * uses the oauth2-authorization module has an event listener for the window message event and will dispatch
+ * the "oauth2-code-response" event with the authorization code for you to exchange for the access token.
+ *
+ * See https://github.com/advanced-rest-client/oauth-authorization/blob/stage/oauth-popup.html for an example
+ * of a page that the Advanced Rest Client redirect_uri goes to which handles the authorization flow correctly.
+ *
+ * See the demo page for an event listener for the "oauth2-code-response". This should be what you implement
+ * for getting the code back.
+ *
+ * The "oauth2-code-response" will have the following properties if you dispatch a message
+ * correctly from the redirect uri popup window after a user successfully grants authorization to your application.
+ *
+ * code: "THE_AUTHORIZATION_CODE"
+ * oauth2response: true
+ * state: "YOUR_STATE_QUERY_PARAMETER"
+ * tokenTime: 1566413156116
+ *
+ * #### Examples
+ *
+ * ```html
+ * <anypoint-signin
+ *    scopes="openid"
+ *    client-id="YOUR APPLICATION CLIENT ID"
+ *    redirect-uri="https://auth.domain.com/auth/redirect"
+ *  />
+ * <anypoint-signin
+ *    label-signin="Sign-in" client-id="..."
+ *    redirect-uri="https://auth.domain.com/auth/redirect"
+ * />
+ * <anypoint-signin
+ *    theme="dark"
+ *    width="iconOnly"
+ *    client-id="..."
+ *    redirect-uri="https://auth.domain.com/auth/redirect"
+ *  />
+ * ```
  *
  * ## Autho log in
  *

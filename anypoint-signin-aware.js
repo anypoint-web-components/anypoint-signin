@@ -399,12 +399,11 @@ export const AnypointAuth = {
 };
 
 /**
- * `<anypoint-signin-aware>` is used to authenticate the user in Anypoint
- * core services API.
+ * `<anypoint-signin-aware>` is used to authenticate the user with the Anypoint Platform.
  *
  * The `anypoint-signin-aware-success` event is triggered when a user
  * successfully authenticates. It also sets `accessToken` property that can be
- * used to interact with Anypoint APIs.
+ * used to interact with Anypoint Platform APIs.
  *
  * The `anypoint-signin-aware-signed-out` event is triggered when a user
  * signs out via calling `signOut()` function.
@@ -421,8 +420,8 @@ export const AnypointAuth = {
  *
  * The `clientId` and `redirectUri` properties has to be set before using the
  * component. `clientId` and associated with it `redirectUri` has to be set up
- * with Anypoint authorization server. Contact Anypoint Core services for
- * more information.
+ * with Anypoint authorization server.
+ * Contact Anypoint Access Management for more information.
  *
  * ##### Example
  *
@@ -436,8 +435,10 @@ export const AnypointAuth = {
  *
  * This element supports `implicit` and `authorization_code` authentication flows.
  *
- * If you have to use the `authorization_code` authorization flow, you MUST handle exchanging the authorization code
- * for an access token. The anypoint-signin-aware component will trigger the authorization flow.
+ * If you have to use the `authorization_code` authorization flow on the client side,
+ * you MUST handle exchanging the authorization code for an access token.
+ * The anypoint-signin-aware component will trigger the authorization flow for the user.
+ * Once the user grants authorization, the authorization server will redirect the user to the redirect_uri of your app.
  *
  * Your site at the redirect_uri should send back
  * a window message (https://developer.mozilla.org/en-US/docs/Web/API/Window/message_event)
