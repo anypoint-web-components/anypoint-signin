@@ -239,7 +239,9 @@ export const AnypointAuth = {
     // 2. The anypoint-signin-aware should not know about the client-secret of the application.
     // Note: The oauth2-authorization module that signin-aware depends on has an option for overriding the exchange code
     // flow by setting the "overrideExchangeCodeFlow" to true.
-    if (AnypointAuth.authType === GRANT_TYPES.AUTH_CODE || AnypointAuth.authType === GRANT_TYPES.REFRESH) {
+    const useAuthCodeFlow =
+      AnypointAuth.authType === GRANT_TYPES.AUTH_CODE || AnypointAuth.authType === GRANT_TYPES.REFRESH;
+    if (useAuthCodeFlow) {
       result.accessTokenUri = AnypointAuth.accessTokenUri;
       result.overrideExchangeCodeFlow = true;
     }
@@ -298,7 +300,7 @@ export const AnypointAuth = {
       AnypointAuth.setAuthData();
       return;
     }
-    return Promise.resolve(AnypointAuth.setAuthData(info.accessToken));
+    AnypointAuth.setAuthData(info.accessToken);
   },
 
   _oauth2ErrorHandler: function(e) {
