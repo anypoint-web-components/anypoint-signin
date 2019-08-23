@@ -234,7 +234,7 @@ export const AnypointAuth = {
       scopes: AnypointAuth.scopes
     };
     // For AUTH_CODE and REFRESH grant types, the signin-aware doesn't handle exchanging the code for the access token.
-    // (since anypoint-signin-aware is running client side, it can't make the exchange anyway since
+    // (since anypoint-signin-aware is running client side, it can't make the exchange anyway since:
     // 1. CORS should be enabled for the /token endpoint.
     // 2. The anypoint-signin-aware should not know about the client-secret of the application.
     // Note: The oauth2-authorization module that signin-aware depends on has an option for overriding the exchange code
