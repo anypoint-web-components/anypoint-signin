@@ -1,9 +1,7 @@
 import { fixture, assert } from '@open-wc/testing';
 import sinon from 'sinon/pkg/sinon-esm.js';
 import { AuthServer } from './auth-server.js';
-import { AnypointAuth } from '../anypoint-signin-aware.js';
-
-const hostname = 'https://qax.anypoint.mulesoft.com';
+import { hostname, AnypointAuth } from '../anypoint-signin-aware.js';
 
 describe('<anypoint-signin-aware>', () => {
   async function basicFixture() {
@@ -85,7 +83,7 @@ describe('<anypoint-signin-aware>', () => {
       element.redirectUri = redirectUri;
       restoreMethod('_oauthFactory');
       assert.isTrue(called);
-      assert.equal(argValue.type, 'implicit');
+      assert.equal(argValue.type, 'authorization_code');
       assert.equal(argValue.authorizationUri, `${hostname}/accounts/api/v2/oauth2/authorize`);
       assert.equal(argValue.clientId, clientId);
       assert.equal(argValue.redirectUri, redirectUri);
@@ -174,6 +172,48 @@ describe('<anypoint-signin-aware>', () => {
   });
 
   describe('AnypointAuth', () => {
+    describe('oauth2Config', () => {
+      it('does not set overrideExchangeCodeFlow if the auth type is not authorization_code', () => {
+        AnypointAuth.authType = 'implicit';
+        AnypointAuth.scopes = ['full'];
+        const config = AnypointAuth.oauth2Config();
+        assert.isUndefined(config.overrideExchangeCodeFlow);
+        assert.isUndefined(config.accessTokenUri);
+        assert.equal(AnypointAuth.scopes, config.scopes);
+      });
+
+      it('sets overrideExchangeCodeFlow if the auth type is authorization_code', () => {
+        AnypointAuth.authType = 'authorization_code';
+        AnypointAuth.accessTokenUri = 'tokenuri';
+        AnypointAuth.scopes = ['full'];
+        const config = AnypointAuth.oauth2Config();
+        assert.isTrue(config.overrideExchangeCodeFlow);
+        assert.equal(AnypointAuth.accessTokenUri, config.accessTokenUri);
+        assert.equal(AnypointAuth.scopes, config.scopes);
+      });
+    });
+
+    describe('properties', () => {
+      let element;
+      beforeEach(async () => {
+        element = await basicFixture();
+      });
+
+      it('setting authType calls authTypeChanged if its value differs from previous value', () => {
+        const spy = sinon.spy(element, '_authTypeChanged');
+        assert.isFalse(spy.called);
+        element.authType = 'authorization_code';
+        assert.isTrue(spy.called);
+      });
+
+      it('setting scopes calls scopesChanged if its value differs from previous value', () => {
+        const spy = sinon.spy(element, '_scopesChanged');
+        assert.isFalse(spy.called);
+        element.scopes = 'profile';
+        assert.isTrue(spy.called);
+      });
+    });
+
     describe('_oauth2ErrorHandler()', () => {
       let element;
       beforeEach(async () => {
@@ -265,17 +305,6 @@ describe('<anypoint-signin-aware>', () => {
         AnypointAuth.setAuthData.restore();
         assert.isTrue(spy2.called);
         assert.isUndefined(spy2.args[0][0]);
-      });
-
-      it('Sets token only when profile get was error', () => {
-        return AnypointAuth._oauth2TokenHandler({
-          detail: {
-            state: 'abcd',
-            accessToken: 'no-token'
-          }
-        }).then(() => {
-          assert.equal(AnypointAuth.accessToken, 'no-token');
-        });
       });
     });
 

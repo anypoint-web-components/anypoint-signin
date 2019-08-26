@@ -56,6 +56,26 @@ describe('<anypoint-signin>', () => {
     });
   });
 
+  describe('_computeIcon', () => {
+    let element;
+
+    beforeEach(async () => {
+      element = await basicFixture();
+    });
+
+    it('Returns default value', function() {
+      const icon = '';
+      const result = element._computeIcon(icon);
+      assert.equal(result, 'anypoint:anypoint');
+    });
+
+    it('Returns exchange value', function() {
+      const icon = 'exchange';
+      const result = element._computeIcon(icon);
+      assert.equal(result, 'exchange:exchange');
+    });
+  });
+
   describe('_computeSigninLabel()', function() {
     let element;
     beforeEach(async () => {
@@ -72,7 +92,16 @@ describe('<anypoint-signin>', () => {
     it('Returns "WIDE" value', function() {
       const width = 'wide';
       const label = '';
-      const result = element._computeSigninLabel(label, width);
+      const icon = '';
+      const result = element._computeSigninLabel(label, width, icon);
+      assert.equal(result, 'Sign in with Anypoint');
+    });
+
+    it('Returns "WIDE" value for exchange when icon is set to exchange', function() {
+      const width = 'wide';
+      const label = '';
+      const icon = 'exchange';
+      const result = element._computeSigninLabel(label, width, icon);
       assert.equal(result, 'Sign in with Exchange');
     });
 

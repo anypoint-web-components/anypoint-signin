@@ -34,9 +34,11 @@ export const AnypointAuth = {
   // Sets new `client_id`
   set clientId(val) {
     if (val && val !== AnypointAuth._clientId) {
+      AnypointAuth._clientId = val;
       AnypointAuth.initAuth2();
+    } else {
+      AnypointAuth._clientId = val;
     }
-    AnypointAuth._clientId = val;
   },
   // OAuth2 redirect URI
   _redirectUri: null,
@@ -45,9 +47,11 @@ export const AnypointAuth = {
   },
   set redirectUri(val) {
     if (val && val !== AnypointAuth._redirectUri) {
+      AnypointAuth._redirectUri = val;
       AnypointAuth.initAuth2();
+    } else {
+      AnypointAuth._redirectUri = val;
     }
-    AnypointAuth._redirectUri = val;
   },
   // OAuth2 authorization type. e.g. implicit, authorization_code, etc.
   // By default, the authorization type is authorization_code.
@@ -57,9 +61,11 @@ export const AnypointAuth = {
   },
   set authType(val) {
     if (val && val !== AnypointAuth._authType) {
+      AnypointAuth._authType = val;
       AnypointAuth.initAuth2();
+    } else {
+      AnypointAuth._authType = val;
     }
-    AnypointAuth._authType = val;
   },
   // Token authorization URL
   authorizationUri: `${hostname}/accounts/api/v2/oauth2/authorize`,

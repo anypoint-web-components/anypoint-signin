@@ -7,6 +7,7 @@ import {
 } from '@anypoint-web-components/anypoint-control-mixins/anypoint-control-mixins.js';
 import './anypoint-signin-aware.js';
 import './anypoint-icons.js';
+import './exchange-icons.js';
 import styles from './anypoint-signin-styles.js';
 /**
  * Enum button label default values.
@@ -15,7 +16,8 @@ import styles from './anypoint-signin-styles.js';
  */
 const LabelValue = {
   STANDARD: 'Sign in',
-  WIDE: 'Sign in with Exchange'
+  WIDE_EXCHANGE: 'Sign in with Exchange',
+  WIDE_ANYPOINT: 'Sign in with Anypoint'
 };
 /**
  * Enum width values.
@@ -167,11 +169,12 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
       labelSignout,
       labelSignin,
       scopes,
-      authType
+      authType,
+      icon
     } = this;
-
+    const buttonIcon = this._computeIcon(icon);
     const buttonClass = this._computeButtonClass(height, width, theme, signedIn);
-    const _labelSignin = this._computeSigninLabel(labelSignin, width);
+    const _labelSignin = this._computeSigninLabel(labelSignin, width, icon);
     return html`
       <anypoint-signin-aware
         .clientId="${clientId}"
@@ -193,13 +196,13 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
           ${signedIn
             ? html`
                 <div class="button-content signOut">
-                  <span class="icon"><iron-icon icon="anypoint:anypoint"></iron-icon></span>
+                  <span class="icon"><iron-icon icon=${buttonIcon}></iron-icon></span>
                   <span class="buttonText">${labelSignout}</span>
                 </div>
               `
             : html`
                 <div class="button-content signIn">
-                  <span class="icon"><iron-icon icon="anypoint:anypoint"></iron-icon></span>
+                  <span class="icon"><iron-icon icon=${buttonIcon}></iron-icon></span>
                   <span class="buttonText">${_labelSignin}</span>
                 </div>
               `}
@@ -310,6 +313,12 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
        */
       labelSignin: { type: String },
       /**
+       * icon - optional selection between "exchange" and "anypoint" MuleSoft icon.
+       * By default, the icon is "anypoint", the MuleSoft icon.
+       * If you want to use exchange, set the icon attribute to "exchange".
+       */
+      icon: { type: String },
+      /**
        * An optional label for the sign-out button.
        *
        * Defaults to `Sign out`
@@ -374,6 +383,7 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
     this.labelSignout = 'Sign out';
     this.theme = 'light';
     this.noink = false;
+    this.icon = 'anypoint';
 
     this._keyDownHandler = this._keyDownHandler.bind(this);
     this._clickHandler = this._clickHandler.bind(this);
@@ -387,7 +397,8 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
       this.setAttribute('tabindex', '0');
     }
     if (!this.hasAttribute('aria-labelledby') && !this.hasAttribute('aria-label')) {
-      this.setAttribute('aria-label', 'Press the button to sign in with Exchange');
+      const text = `Press the button to sign in with ${this.icon === 'exchange' ? 'Exchange' : 'Anypoint'}`;
+      this.setAttribute('aria-label', text);
     }
     this.addEventListener('keydown', this._keyDownHandler);
     this.addEventListener('click', this._clickHandler);
@@ -422,19 +433,23 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
   _computeButtonClass(height, width, theme, signedIn) {
     return 'height-' + height + ' width-' + width + ' theme-' + theme + ' signedIn-' + signedIn;
   }
+  _computeIcon(icon) {
+    return icon === 'exchange' ? `${icon}:${icon}` : 'anypoint:anypoint';
+  }
   /**
    * Determines the proper label based on the attributes.
    * @param {String} labelSignin
    * @param {Number} width
+   * @param {String} icon
    * @return {String}
    */
-  _computeSigninLabel(labelSignin, width) {
+  _computeSigninLabel(labelSignin, width, icon) {
     if (labelSignin) {
       return labelSignin;
     } else {
       switch (width) {
         case WidthValue.WIDE:
-          return LabelValue.WIDE;
+          return icon === 'exchange' ? LabelValue.WIDE_EXCHANGE : LabelValue.WIDE_ANYPOINT;
         case WidthValue.STANDARD:
           return LabelValue.STANDARD;
         case WidthValue.ICON_ONLY:
