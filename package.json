@@ -28,7 +28,7 @@
     "email": "arc@mulesoft.com"
   },
   "dependencies": {
-    "@advanced-rest-client/oauth-authorization": "^3.0.0",
+    "@advanced-rest-client/oauth-authorization": "^3.0.1",
     "@anypoint-web-components/anypoint-control-mixins": "^1.0.1",
     "@polymer/iron-icon": "^3.0.0",
     "@polymer/iron-iconset-svg": "^3.0.1",
