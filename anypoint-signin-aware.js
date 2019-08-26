@@ -233,14 +233,15 @@ export const AnypointAuth = {
       state: AnypointAuth._lastState,
       scopes: AnypointAuth.scopes
     };
-    // For AUTH_CODE and REFRESH grant types, the signin-aware doesn't handle exchanging the code for the access token.
-    // (since anypoint-signin-aware is running client side, it can't make the exchange anyway since:
-    // 1. CORS should be enabled for the /token endpoint.
-    // 2. The anypoint-signin-aware should not know about the client-secret of the application.
-    // Note: The oauth2-authorization module that signin-aware depends on has an option for overriding the exchange code
-    // flow by setting the "overrideExchangeCodeFlow" to true.
-    const useAuthCodeFlow =
-      AnypointAuth.authType === GRANT_TYPES.AUTH_CODE || AnypointAuth.authType === GRANT_TYPES.REFRESH;
+    /**
+     * For the AUTH_CODE grant type, the signin-aware doesn't handle exchanging the code for the access token.
+     * (since anypoint-signin-aware runs client side, it can't make the exchange anyway because:
+     * 1. CORS isn't enabled for the /token endpoint.
+     * 2. The anypoint-signin-aware should not know about the client-secret of the application.
+     * Note: The oauth2-authorization module that signin-aware depends on has an option for
+     * overriding the exchange code flow by setting the "overrideExchangeCodeFlow" to true, done here.
+     */
+    const useAuthCodeFlow = AnypointAuth.authType === GRANT_TYPES.AUTH_CODE;
     if (useAuthCodeFlow) {
       result.accessTokenUri = AnypointAuth.accessTokenUri;
       result.overrideExchangeCodeFlow = true;
@@ -634,7 +635,8 @@ export class AnypointSigninAware extends LitElement {
    * Currently token destroy endpoint does not allow request from
    * different domains so this is dummy function that clears token info,
    * TODO: (jarrode) Discuss with core services to enable token revoke action
-   * TODO: (leo) Calling /logout will destroy the token as well. However, CORS is not enabled for /logout for most origins.
+   * TODO: (leo) Calling /logout will destroy the token as well.
+   *  However, CORS is not enabled for /logout for most origins.
    *  Figure out where the allowed origins list is.
    * from the outside of domain.
    *
