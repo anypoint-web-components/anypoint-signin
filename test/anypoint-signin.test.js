@@ -6,10 +6,6 @@ describe('<anypoint-signin>', () => {
     return await fixture(`<anypoint-signin></anypoint-signin>`);
   }
 
-  async function noinkFixture() {
-    return await fixture(`<anypoint-signin noink></anypoint-signin>`);
-  }
-
   async function setupReadyFixture() {
     return await fixture(`<anypoint-signin clientid="abc" redirecturi="https://auth.domain.com"></anypoint-signin>`);
   }
@@ -56,26 +52,6 @@ describe('<anypoint-signin>', () => {
     });
   });
 
-  describe('_computeIcon', () => {
-    let element;
-
-    beforeEach(async () => {
-      element = await basicFixture();
-    });
-
-    it('Returns default value', function() {
-      const icon = '';
-      const result = element._computeIcon(icon);
-      assert.equal(result, 'anypoint:anypoint');
-    });
-
-    it('Returns exchange value', function() {
-      const icon = 'exchange';
-      const result = element._computeIcon(icon);
-      assert.equal(result, 'exchange:exchange');
-    });
-  });
-
   describe('_computeSigninLabel()', function() {
     let element;
     beforeEach(async () => {
@@ -94,15 +70,7 @@ describe('<anypoint-signin>', () => {
       const label = '';
       const icon = '';
       const result = element._computeSigninLabel(label, width, icon);
-      assert.equal(result, 'Sign in with Anypoint');
-    });
-
-    it('Returns "WIDE" value for exchange when icon is set to exchange', function() {
-      const width = 'wide';
-      const label = '';
-      const icon = 'exchange';
-      const result = element._computeSigninLabel(label, width, icon);
-      assert.equal(result, 'Sign in with Exchange');
+      assert.equal(result, 'Sign in with MuleSoft');
     });
 
     it('Returns "STANDARD" value', function() {
@@ -112,30 +80,11 @@ describe('<anypoint-signin>', () => {
       assert.equal(result, 'Sign in');
     });
 
-    it('Returns "ICON_ONLY" value', function() {
-      const width = 'iconOnly';
-      const label = '';
-      const result = element._computeSigninLabel(label, width);
-      assert.equal(result, '');
-    });
-
     it('Returns default value', function() {
       const width = '';
       const label = '';
       const result = element._computeSigninLabel(label, width);
       assert.equal(result, 'Sign in');
-    });
-  });
-
-  describe('No ink', function() {
-    let element;
-    beforeEach(async () => {
-      element = await noinkFixture();
-      await nextFrame();
-    });
-    it('Ripple is not rendered', function() {
-      const ripple = element.shadowRoot.querySelector('paper-ripple');
-      assert.notOk(ripple);
     });
   });
 
@@ -310,7 +259,7 @@ describe('<anypoint-signin>', () => {
       assert.isTrue(called);
     });
 
-    it('Unregisteres old function', () => {
+    it('Unregisters old function', () => {
       let called1 = false;
       let called2 = false;
       const f1 = () => {
@@ -352,7 +301,7 @@ describe('<anypoint-signin>', () => {
       assert.isTrue(called);
     });
 
-    it('Unregisteres old function', () => {
+    it('Unregisters old function', () => {
       let called1 = false;
       let called2 = false;
       const f1 = () => {

@@ -6,7 +6,7 @@ import {
   ControlStateMixin
 } from '@anypoint-web-components/anypoint-control-mixins/anypoint-control-mixins.js';
 import './anypoint-signin-aware.js';
-import './anypoint-icons.js';
+import './mulesoft-icons.js';
 import './exchange-icons.js';
 import styles from './anypoint-signin-styles.js';
 /**
@@ -16,8 +16,7 @@ import styles from './anypoint-signin-styles.js';
  */
 const LabelValue = {
   STANDARD: 'Sign in',
-  WIDE_EXCHANGE: 'Sign in with Exchange',
-  WIDE_ANYPOINT: 'Sign in with Anypoint'
+  WIDE: 'Sign in with MuleSoft'
 };
 /**
  * Enum width values.
@@ -25,7 +24,6 @@ const LabelValue = {
  * @enum {string}
  */
 const WidthValue = {
-  ICON_ONLY: 'iconOnly',
   STANDARD: 'standard',
   WIDE: 'wide'
 };
@@ -165,14 +163,13 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
       clientId,
       redirectUri,
       forceOauthEvents,
-      noink,
       labelSignout,
       labelSignin,
       scopes,
       authType,
       icon
     } = this;
-    const buttonIcon = this._computeIcon(icon);
+    const buttonIcon = 'anypoint:anypoint';
     const buttonClass = this._computeButtonClass(height, width, theme, signedIn);
     const _labelSignin = this._computeSigninLabel(labelSignin, width, icon);
     return html`
@@ -186,27 +183,19 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
         @signedin-changed="${this._signedinHandler}"
       ></anypoint-signin-aware>
       <div id="authButton" class="${buttonClass}">
-        ${noink
-          ? undefined
+        ${signedIn
+          ? html`
+              <div class="button-content signOut">
+                <span class="icon"><iron-icon icon=${buttonIcon}></iron-icon></span>
+                <span class="buttonText">${labelSignout}</span>
+              </div>
+            `
           : html`
-              <paper-ripple id="ripple" class="fit"></paper-ripple>
+              <div class="button-content signIn">
+                <span class="icon"><iron-icon icon=${buttonIcon}></iron-icon></span>
+                <span class="buttonText">${_labelSignin}</span>
+              </div>
             `}
-        <!-- this div is needed to position the ripple behind text content -->
-        <div>
-          ${signedIn
-            ? html`
-                <div class="button-content signOut">
-                  <span class="icon"><iron-icon icon=${buttonIcon}></iron-icon></span>
-                  <span class="buttonText">${labelSignout}</span>
-                </div>
-              `
-            : html`
-                <div class="button-content signIn">
-                  <span class="icon"><iron-icon icon=${buttonIcon}></iron-icon></span>
-                  <span class="buttonText">${_labelSignin}</span>
-                </div>
-              `}
-        </div>
       </div>
     `;
   }
@@ -298,39 +287,15 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
        */
       accessToken: { type: String },
       /**
-       * The height to use for the button.
-       *
-       * Available options: short, standard, tall.
-       *
-       * Defaults to `standard`
-       *
-       * @type {string}
-       * @default 'standard'
-       */
-      height: { type: String },
-      /**
        * An optional label for the sign-in button.
        */
       labelSignin: { type: String },
-      /**
-       * icon - optional selection between "exchange" and "anypoint" MuleSoft icon.
-       * By default, the icon is "anypoint", the MuleSoft icon.
-       * If you want to use exchange, set the icon attribute to "exchange".
-       */
-      icon: { type: String },
       /**
        * An optional label for the sign-out button.
        *
        * Defaults to `Sign out`
        */
       labelSignout: { type: String },
-      /**
-       * If true, the button will be styled with a shadow.
-       */
-      raised: {
-        type: Boolean,
-        reflect: true
-      },
       /**
        * OAuth Scopes that the signin flow will request for.
        */
@@ -346,7 +311,7 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
        *
        * @attribute theme
        * @type {string}
-       * @default 'light'
+       * @default 'dark'
        */
       theme: { type: String, reflect: true },
       /**
@@ -358,8 +323,6 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
        * @default 'standard'
        */
       width: { type: String },
-      // If set it will not render ripple effect
-      noink: { type: Boolean },
       /**
        * By default this element inserts `oauth2-authorization` element to the
        * body and uses direct API to authorize the client. Set this property to
@@ -381,9 +344,7 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
     this.height = 'standard';
     this.width = 'standard';
     this.labelSignout = 'Sign out';
-    this.theme = 'light';
-    this.noink = false;
-    this.icon = 'anypoint';
+    this.theme = 'dark';
 
     this._keyDownHandler = this._keyDownHandler.bind(this);
     this._clickHandler = this._clickHandler.bind(this);
@@ -397,7 +358,7 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
       this.setAttribute('tabindex', '0');
     }
     if (!this.hasAttribute('aria-labelledby') && !this.hasAttribute('aria-label')) {
-      const text = `Press the button to sign in with ${this.icon === 'exchange' ? 'Exchange' : 'Anypoint'}`;
+      const text = 'Press the button to sign in with MuleSoft';
       this.setAttribute('aria-label', text);
     }
     this.addEventListener('keydown', this._keyDownHandler);
@@ -433,9 +394,6 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
   _computeButtonClass(height, width, theme, signedIn) {
     return 'height-' + height + ' width-' + width + ' theme-' + theme + ' signedIn-' + signedIn;
   }
-  _computeIcon(icon) {
-    return icon === 'exchange' ? `${icon}:${icon}` : 'anypoint:anypoint';
-  }
   /**
    * Determines the proper label based on the attributes.
    * @param {String} labelSignin
@@ -449,11 +407,9 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
     } else {
       switch (width) {
         case WidthValue.WIDE:
-          return icon === 'exchange' ? LabelValue.WIDE_EXCHANGE : LabelValue.WIDE_ANYPOINT;
+          return LabelValue.WIDE;
         case WidthValue.STANDARD:
           return LabelValue.STANDARD;
-        case WidthValue.ICON_ONLY:
-          return '';
         default:
           return LabelValue.STANDARD;
       }
