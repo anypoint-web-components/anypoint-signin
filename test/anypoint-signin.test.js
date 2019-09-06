@@ -40,18 +40,6 @@ describe('<anypoint-signin>', () => {
     return event;
   }
 
-  describe('_computeButtonClass()', function() {
-    let element;
-    beforeEach(async () => {
-      element = await basicFixture();
-    });
-
-    it('Computes classes', function() {
-      const result = element._computeButtonClass('a', 'b', 'c', true);
-      assert.equal(result, 'height-a width-b theme-c signedIn-true');
-    });
-  });
-
   describe('_computeSigninLabel()', function() {
     let element;
     beforeEach(async () => {
@@ -59,32 +47,15 @@ describe('<anypoint-signin>', () => {
     });
 
     it('Returns defined value', function() {
-      const width = 'wide';
       const label = 'test';
-      const result = element._computeSigninLabel(label, width);
+      const result = element._computeSigninLabel(label);
       assert.equal(result, label);
     });
 
     it('Returns "WIDE" value', function() {
-      const width = 'wide';
       const label = '';
-      const icon = '';
-      const result = element._computeSigninLabel(label, width, icon);
+      const result = element._computeSigninLabel(label);
       assert.equal(result, 'Sign in with MuleSoft');
-    });
-
-    it('Returns "STANDARD" value', function() {
-      const width = 'standard';
-      const label = '';
-      const result = element._computeSigninLabel(label, width);
-      assert.equal(result, 'Sign in');
-    });
-
-    it('Returns default value', function() {
-      const width = '';
-      const label = '';
-      const result = element._computeSigninLabel(label, width);
-      assert.equal(result, 'Sign in');
     });
   });
 

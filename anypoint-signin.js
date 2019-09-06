@@ -1,13 +1,13 @@
-import { LitElement, html, css } from 'lit-element';
+import { html, css } from 'lit-element';
 import '@polymer/paper-ripple/paper-ripple.js';
 import '@polymer/iron-icon/iron-icon.js';
-import {
-  ButtonStateMixin,
-  ControlStateMixin
-} from '@anypoint-web-components/anypoint-control-mixins/anypoint-control-mixins.js';
+import '@anypoint-web-components/anypoint-button/anypoint-button.js';
+import '@anypoint-web-components/anypoint-button/anypoint-icon-button.js';
 import './anypoint-signin-aware.js';
 import './mulesoft-icons.js';
 import styles from './anypoint-signin-styles.js';
+import { AnypointButton } from '@anypoint-web-components/anypoint-button/src/AnypointButton.js';
+
 /**
  * Enum button label default values.
  * @readonly
@@ -138,39 +138,30 @@ const WidthValue = {
  * @demo demo/index.html
  * @memberof AnypointElements
  */
-export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElement)) {
+export class AnypointSignin extends AnypointButton {
   static get styles() {
     return css`
       ${styles}
-
-      .fit {
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
-      }
     `;
   }
 
   render() {
     const {
-      height,
-      width,
-      theme,
-      signedIn,
-      clientId,
-      redirectUri,
-      forceOauthEvents,
-      labelSignout,
-      labelSignin,
-      scopes,
       authType,
-      icon
+      clientId,
+      compatibility,
+      elevation,
+      emphasis,
+      forceOauthEvents,
+      labelSignin,
+      labelSignout,
+      noink,
+      redirectUri,
+      scopes,
+      signedIn
     } = this;
     const buttonIcon = 'anypoint:anypoint';
-    const buttonClass = this._computeButtonClass(height, width, theme, signedIn);
-    const _labelSignin = this._computeSigninLabel(labelSignin, width, icon);
+    const _labelSignin = this._computeSigninLabel(labelSignin, WidthValue.WIDE);
     return html`
       <anypoint-signin-aware
         .clientId="${clientId}"
@@ -181,21 +172,15 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
         @accesstoken-changed="${this._atHandler}"
         @signedin-changed="${this._signedinHandler}"
       ></anypoint-signin-aware>
-      <button id="authButton" class="${buttonClass}" type="button">
-        ${signedIn
-          ? html`
-              <div class="button-content signOut">
-                <span class="icon"><iron-icon icon=${buttonIcon}></iron-icon></span>
-                <span class="buttonText">${labelSignout}</span>
-              </div>
-            `
-          : html`
-              <div class="button-content signIn">
-                <span class="icon"><iron-icon icon=${buttonIcon}></iron-icon></span>
-                <span class="buttonText">${_labelSignin}</span>
-              </div>
-            `}
-      </button>
+      <anypoint-button
+        noink="${noink}"
+        elevation="${elevation}"
+        emphasis="${emphasis}"
+        compatibility="${compatibility}"
+      >
+        <iron-icon icon="${buttonIcon}"></iron-icon>
+        <div class="buttonText ${signedIn ? 'signOut' : 'signIn'}">${signedIn ? labelSignout : _labelSignin}</div>
+      </anypoint-button>
     `;
   }
 
@@ -340,10 +325,13 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
 
   constructor() {
     super();
-    this.height = 'standard';
-    this.width = 'standard';
+    this.compatibility = true;
+    this.emphasis = 'high';
+    this.elevation = '0';
     this.labelSignout = 'Sign out';
+    this.noink = true;
     this.theme = 'dark';
+    this.width = 'wide';
 
     this._keyDownHandler = this._keyDownHandler.bind(this);
     this._clickHandler = this._clickHandler.bind(this);
@@ -390,29 +378,16 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
     this.addEventListener(eventType, value);
   }
 
-  _computeButtonClass(height, width, theme, signedIn) {
-    return 'height-' + height + ' width-' + width + ' theme-' + theme + ' signedIn-' + signedIn;
-  }
   /**
    * Determines the proper label based on the attributes.
    * @param {String} labelSignin
-   * @param {Number} width
-   * @param {String} icon
    * @return {String}
    */
-  _computeSigninLabel(labelSignin, width, icon) {
+  _computeSigninLabel(labelSignin) {
     if (labelSignin) {
       return labelSignin;
-    } else {
-      switch (width) {
-        case WidthValue.WIDE:
-          return LabelValue.WIDE;
-        case WidthValue.STANDARD:
-          return LabelValue.STANDARD;
-        default:
-          return LabelValue.STANDARD;
-      }
     }
+    return LabelValue.WIDE;
   }
   /**
    * Sign in user. Opens the authorization dialog for signing in.

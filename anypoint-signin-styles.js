@@ -14,102 +14,27 @@ the License.
 import { css } from 'lit-element';
 // import '../../@advanced-rest-client/anypoint-styles/colors.js';
 export default css`
-  :host {
-    display: inline-block;
-    position: relative;
-    box-sizing: border-box;
-    margin: 0 0.29em;
-    background: transparent;
-    text-align: center;
-    font: inherit;
-    outline: none;
-    -webkit-user-select: none;
-    user-select: none;
-    cursor: pointer;
-    z-index: 0;
-  }
-
   :host([disabled]) {
     cursor: auto;
     pointer-events: none;
   }
 
-  :host([disabled]) #authButton {
-    background: var(--anypoint-signin-disabled-background-color, #eaeaea);
-    color: var(--anypoint-signin-disabled-color, #a8a8a8);
-  }
-
-  #authButton {
-    position: relative;
-    font-size: var(--arc-font-body1-font-size);
-    font-weight: var(--anypoint-signin-bold-font-weight, 600);
-    line-height: var(--arc-font-body1-line-height);
-    font-size: 14px;
-    /* Button should use System font defaults */
-    font-family: -apple-system, 'BlinkMacSystemFont', 'Helvetica Neue', 'Segoe UI', sans-serif;
-    text-align: center;
-    user-select: none;
-    white-space: nowrap;
-    border-radius: 2px;
-    -webkit-transition: background 0.3s, background-color 0.3s, color 0.3s;
-    transition: box-shadow 0.15s cubic-bezier(0.46, 0.03, 0.52, 0.96);
-  }
-
   iron-icon {
-    width: 22px;
-    height: 22px;
+    width: 21px;
+    height: 21px;
     margin: 6px;
-  }
-
-  .icon {
-    display: inline-block;
-    vertical-align: middle;
-  }
-
-  .button-content {
-    outline: none;
   }
 
   .buttonText {
     display: inline-block;
+    font-family: -apple-system, 'BlinkMacSystemFont', 'Helvetica Neue', 'Segoe UI', sans-serif;
+    font-size: var(--arc-font-body1-font-size, 14);
+    font-weight: var(--anypoint-signin-bold-font-weight, 600);
     vertical-align: middle;
-    padding-right: 0.8em;
-  }
-
-  /*
-   * Dark Theme
-   */
-
-  .theme-dark {
-    background: var(--anypoint-color-coreBlue3);
-    color: var(--anypoint-color-tertiary);
-    border: 0;
-    border-radius: 2px;
-  }
-
-  .theme-dark::after {
-    border-radius: 2px;
-    bottom: 0;
-    content: '';
-    display: block;
-    height: 100%;
-    left: 0;
-    pointer-events: none;
-    position: absolute;
-    right: 0;
-    box-shadow: inset 0 -1px 0 rgba(0, 0, 0, 0.1);
-  }
-
-  .theme-dark:hover {
-    background: var(--anypoint-color-coreBlue4);
-  }
-
-  .theme-dark:active {
-    background: var(--anypoint-color-coreBlue5);
-  }
-
-  .theme-dark:focus {
-    outline: 0;
-    box-shadow: 0 0 0 3px var(--anypoint-color-coreBlue1);
+    padding-right: 0.4em;
+    line-height: var(--arc-font-body1-line-height);
+    text-align: center;
+    white-space: nowrap;
+    transition: box-shadow 0.15s cubic-bezier(0.46, 0.03, 0.52, 0.96);
   }
 `;
