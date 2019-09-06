@@ -41,17 +41,16 @@ export default css`
 
   #authButton {
     position: relative;
-    font-family: 'Open Sans', sans-serif;
-    font-size: 14px;
     font-size: var(--arc-font-body1-font-size);
     font-weight: var(--arc-font-body1-font-weight);
     line-height: var(--arc-font-body1-line-height);
+    font-size: 14px;
     text-align: center;
-    transition: box-shadow 0.15s cubic-bezier(0.46, 0.03, 0.52, 0.96);
     user-select: none;
     white-space: nowrap;
     border-radius: 2px;
     -webkit-transition: background 0.3s, background-color 0.3s, color 0.3s;
+    transition: box-shadow 0.15s cubic-bezier(0.46, 0.03, 0.52, 0.96);
   }
 
   iron-icon {

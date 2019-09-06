@@ -7,7 +7,6 @@ import {
 } from '@anypoint-web-components/anypoint-control-mixins/anypoint-control-mixins.js';
 import './anypoint-signin-aware.js';
 import './mulesoft-icons.js';
-import './exchange-icons.js';
 import styles from './anypoint-signin-styles.js';
 /**
  * Enum button label default values.
