@@ -42,7 +42,7 @@ export default css`
   #authButton {
     position: relative;
     font-size: var(--arc-font-body1-font-size);
-    font-weight: 600;
+    font-weight: var(--anypoint-signin-bold-font-weight, 600);
     line-height: var(--arc-font-body1-line-height);
     font-size: 14px;
     /* Button should use System font defaults */
