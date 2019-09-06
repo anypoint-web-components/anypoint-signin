@@ -41,8 +41,7 @@ export default css`
 
   #authButton {
     position: relative;
-    outline: none;
-    font-family: Open Sans, sans-serif;
+    font-family: 'Open Sans', sans-serif;
     font-size: 14px;
     font-size: var(--arc-font-body1-font-size);
     font-weight: var(--arc-font-body1-font-weight);
@@ -51,7 +50,7 @@ export default css`
     transition: box-shadow 0.15s cubic-bezier(0.46, 0.03, 0.52, 0.96);
     user-select: none;
     white-space: nowrap;
-    border-radius: inherit;
+    border-radius: 2px;
     -webkit-transition: background 0.3s, background-color 0.3s, color 0.3s;
   }
 
@@ -101,15 +100,14 @@ export default css`
   }
 
   .theme-dark:hover {
-    background-color: #087299;
+    background: var(--anypoint-color-coreBlue4);
   }
 
   .theme-dark:active {
-    background-color: var(--anypoint-color-coreBlue5);
+    background: var(--anypoint-color-coreBlue5);
   }
 
   .theme-dark:focus {
-    background: var(--anypoint-color-coreBlue4);
     outline: 0;
     box-shadow: 0 0 0 3px var(--anypoint-color-coreBlue1);
   }
