@@ -181,7 +181,7 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
         @accesstoken-changed="${this._atHandler}"
         @signedin-changed="${this._signedinHandler}"
       ></anypoint-signin-aware>
-      <div id="authButton" class="${buttonClass}">
+      <button id="authButton" class="${buttonClass}" type="button">
         ${signedIn
           ? html`
               <div class="button-content signOut">
@@ -195,7 +195,7 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
                 <span class="buttonText">${_labelSignin}</span>
               </div>
             `}
-      </div>
+      </button>
     `;
   }
 
