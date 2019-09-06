@@ -42,9 +42,11 @@ export default css`
   #authButton {
     position: relative;
     font-size: var(--arc-font-body1-font-size);
-    font-weight: var(--arc-font-body1-font-weight);
+    font-weight: 600;
     line-height: var(--arc-font-body1-line-height);
     font-size: 14px;
+    /* Button should use System font defaults */
+    font-family: -apple-system, 'BlinkMacSystemFont', 'Helvetica Neue', 'Segoe UI', sans-serif;
     text-align: center;
     user-select: none;
     white-space: nowrap;
