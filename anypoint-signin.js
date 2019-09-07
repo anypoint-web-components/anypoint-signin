@@ -177,10 +177,10 @@ export class AnypointSignin extends AnypointButton {
         @signedin-changed="${this._signedinHandler}"
       ></anypoint-signin-aware>
       <anypoint-button
+        ?disabled="${disabled}"
         ?elevation="${elevation}"
         ?noink="${noink}"
         ?toggles="${toggles}"
-        ?disabled="${disabled}"
         compatibility="${compatibility}"
         emphasis="${emphasis}"
       >
@@ -333,10 +333,14 @@ export class AnypointSignin extends AnypointButton {
 
   constructor() {
     super();
+    /**
+     * Provide defaults that style the anypoint-signin into a button consistent
+     * with the Anypoint Components V3 button to provide consistency to the platform.
+     */
     this.compatibility = true;
     this.disabled = false;
-    this.emphasis = 'high';
     this.elevation = '0';
+    this.emphasis = 'high';
     this.labelSignout = 'Sign out';
     this.noink = true;
     this.theme = 'dark';
