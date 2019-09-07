@@ -151,6 +151,7 @@ export class AnypointSignin extends AnypointButton {
       authType,
       clientId,
       compatibility,
+      disabled,
       elevation,
       emphasis,
       forceOauthEvents,
@@ -179,6 +180,7 @@ export class AnypointSignin extends AnypointButton {
         ?elevation="${elevation}"
         ?noink="${noink}"
         ?toggles="${toggles}"
+        ?disabled="${disabled}"
         compatibility="${compatibility}"
         emphasis="${emphasis}"
       >
@@ -332,6 +334,7 @@ export class AnypointSignin extends AnypointButton {
   constructor() {
     super();
     this.compatibility = true;
+    this.disabled = false;
     this.emphasis = 'high';
     this.elevation = '0';
     this.labelSignout = 'Sign out';
