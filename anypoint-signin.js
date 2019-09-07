@@ -24,7 +24,8 @@ const LabelValue = {
  */
 const WidthValue = {
   STANDARD: 'standard',
-  WIDE: 'wide'
+  WIDE: 'wide',
+  ICON_ONLY: 'iconOnly'
 };
 /**
  * ## Overview
@@ -158,10 +159,12 @@ export class AnypointSignin extends AnypointButton {
       noink,
       redirectUri,
       scopes,
-      signedIn
+      signedIn,
+      toggles,
+      width
     } = this;
     const buttonIcon = 'anypoint:anypoint';
-    const _labelSignin = this._computeSigninLabel(labelSignin, WidthValue.WIDE);
+    const _labelSignin = this._computeSigninLabel(labelSignin, width);
     return html`
       <anypoint-signin-aware
         .clientId="${clientId}"
@@ -173,13 +176,16 @@ export class AnypointSignin extends AnypointButton {
         @signedin-changed="${this._signedinHandler}"
       ></anypoint-signin-aware>
       <anypoint-button
-        noink="${noink}"
-        elevation="${elevation}"
-        emphasis="${emphasis}"
+        ?elevation="${elevation}"
+        ?noink="${noink}"
+        ?toggles="${toggles}"
         compatibility="${compatibility}"
+        emphasis="${emphasis}"
       >
         <iron-icon icon="${buttonIcon}"></iron-icon>
-        <div class="buttonText ${signedIn ? 'signOut' : 'signIn'}">${signedIn ? labelSignout : _labelSignin}</div>
+        <div class="buttonText ${signedIn ? 'signOut' : 'signIn'}">
+          ${signedIn ? labelSignout : _labelSignin}
+        </div>
       </anypoint-button>
     `;
   }
@@ -301,10 +307,10 @@ export class AnypointSignin extends AnypointButton {
       /**
        * The width to use for the button.
        *
-       * Available options: iconOnly, standard, wide.
+       * Available options: 'standard', 'wide'.
        *
        * @type {string}
-       * @default 'standard'
+       * @default 'wide'
        */
       width: { type: String },
       /**
@@ -331,6 +337,7 @@ export class AnypointSignin extends AnypointButton {
     this.labelSignout = 'Sign out';
     this.noink = true;
     this.theme = 'dark';
+    this.toggles = false;
     this.width = 'wide';
 
     this._keyDownHandler = this._keyDownHandler.bind(this);
@@ -380,14 +387,24 @@ export class AnypointSignin extends AnypointButton {
 
   /**
    * Determines the proper label based on the attributes.
-   * @param {String} labelSignin
-   * @return {String}
+   * @param {String} labelSignin - the signin label e.g. "Sign in with MuleSoft"
+   * @param {String} width - wide, iconOnly, standard
+   * @return {String} - the string that the signin button should show e.g. "Sign in with MuleSoft"
    */
-  _computeSigninLabel(labelSignin) {
+  _computeSigninLabel(labelSignin, width) {
     if (labelSignin) {
       return labelSignin;
     }
-    return LabelValue.WIDE;
+    switch (width) {
+      case WidthValue.WIDE:
+        return LabelValue.WIDE;
+      case WidthValue.STANDARD:
+        return LabelValue.STANDARD;
+      case WidthValue.ICON_ONLY:
+        return '';
+      default:
+        return LabelValue.WIDE;
+    }
   }
   /**
    * Sign in user. Opens the authorization dialog for signing in.
