@@ -19,22 +19,10 @@ export default css`
     pointer-events: none;
   }
 
-  iron-icon {
-    width: 21px;
-    height: 21px;
-    margin: 6px;
-  }
-
   .buttonText {
-    display: inline-block;
     font-family: -apple-system, 'BlinkMacSystemFont', 'Helvetica Neue', 'Segoe UI', sans-serif;
     font-size: var(--arc-font-body1-font-size, 14);
     font-weight: var(--anypoint-signin-bold-font-weight, 600);
-    vertical-align: middle;
     padding-right: 0.4em;
-    line-height: var(--arc-font-body1-line-height);
-    text-align: center;
-    white-space: nowrap;
-    transition: box-shadow 0.15s cubic-bezier(0.46, 0.03, 0.52, 0.96);
   }
 `;
