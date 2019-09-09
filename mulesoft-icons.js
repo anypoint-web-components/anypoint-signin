@@ -6,12 +6,6 @@ import '@polymer/iron-iconset-svg/iron-iconset-svg.js';
 const $documentContainer = document.createElement('template');
 $documentContainer.innerHTML = `<iron-iconset-svg name="anypoint" size="26">
 <svg>
-<g id="guides">
-</g>
-<g id="white">
-</g>
-<g id="_x31_6_16" display="none">
-</g>
 <g id="anypoint">
 	<path d="M22,13c0,3.6140137-2.1311646,6.7286377-5.2044678,8.1605225l-0.793457-2.9610596
 		C17.7964478,17.1611328,19.0045776,15.222168,19.0045776,13c0-1.0114746-0.2511597-1.9638672-0.6928711-2.8000488L14.2505493,16
@@ -22,8 +16,6 @@ $documentContainer.innerHTML = `<iron-iconset-svg name="anypoint" size="26">
 		S24.999939,6.3725586,24.999939,13z M23.999939,13c0-6.0751953-4.9248047-11-10.999939-11
 		C6.9249268,2,2.000061,6.9248047,2.000061,13c0,6.0750732,4.9248657,11,10.999939,11
 		C19.0751343,24,23.999939,19.0750732,23.999939,13z"/>
-</g>
-<g id="grid">
 </g>
 </svg>
 </iron-iconset-svg>`;
