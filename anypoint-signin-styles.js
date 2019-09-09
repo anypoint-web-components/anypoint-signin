@@ -14,14 +14,9 @@ the License.
 import { css } from 'lit-element';
 // import '../../@advanced-rest-client/anypoint-styles/colors.js';
 export default css`
-  :host([disabled]) {
-    cursor: auto;
-    pointer-events: none;
-  }
-
   .buttonText {
-    font-family: -apple-system, 'BlinkMacSystemFont', 'Helvetica Neue', 'Segoe UI', sans-serif;
-    font-size: var(--arc-font-body1-font-size, 14);
+    font-family: var(--arc-font-family, -apple-system, 'BlinkMacSystemFont', 'Helvetica Neue', 'Segoe UI', sans-serif);
+    font-size: var(--arc-font-body1-font-size, 1rem);
     font-weight: var(--anypoint-signin-bold-font-weight, 600);
     margin-left: 8px;
   }
