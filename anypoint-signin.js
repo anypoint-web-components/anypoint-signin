@@ -291,6 +291,11 @@ export class AnypointSignin extends AnypointButton {
        */
       width: { type: String },
       /**
+       * If set to true, sets the compatibility property of AnypointButton to false
+       * so that the button is rendered like the Anypoint Button (with material styling)
+       */
+      material: { type: Boolean },
+      /**
        * By default this element inserts `oauth2-authorization` element to the
        * body and uses direct API to authorize the client. Set this property to
        * force the element to use events system to call the OAuth endpoint.
@@ -308,6 +313,7 @@ export class AnypointSignin extends AnypointButton {
 
   constructor() {
     super();
+    this.emphasis = 'high';
     this._keyDownHandler = this._keyDownHandler.bind(this);
     this._clickHandler = this._clickHandler.bind(this);
   }
@@ -322,10 +328,7 @@ export class AnypointSignin extends AnypointButton {
     if (!this.hasAttribute('width')) {
       this.setAttribute('width', 'wide');
     }
-    if (!this.hasAttribute('emphasis')) {
-      this.setAttribute('emphasis', 'high');
-    }
-    if (!this.hasAttribute('compatibility')) {
+    if (!this.hasAttribute('material')) {
       this.setAttribute('compatibility', 'true');
     }
     if (!this.hasAttribute('labelSignout')) {
