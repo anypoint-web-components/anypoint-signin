@@ -107,7 +107,6 @@ const WidthValue = {
  *    redirect-uri="https://auth.domain.com/auth/redirect"
  * />
  * <anypoint-signin
- *    theme="dark"
  *    width="iconOnly"
  *    client-id="..."
  *    redirect-uri="https://auth.domain.com/auth/redirect"
@@ -283,16 +282,6 @@ export class AnypointSignin extends AnypointButton {
        */
       authType: { type: String },
       /**
-       * The theme to use for the button.
-       *
-       * Available options: light, dark.
-       *
-       * @attribute theme
-       * @type {string}
-       * @default 'dark'
-       */
-      theme: { type: String, reflect: true },
-      /**
        * The width to use for the button.
        *
        * Available options: 'standard', 'wide'.
@@ -319,20 +308,6 @@ export class AnypointSignin extends AnypointButton {
 
   constructor() {
     super();
-    /**
-     * Provide defaults that style the anypoint-signin into a button consistent
-     * with the Anypoint Components V3 button to provide consistency to the platform.
-     */
-    this.compatibility = true;
-    this.disabled = false;
-    this.elevation = '0';
-    this.emphasis = 'high';
-    this.labelSignout = 'Sign out';
-    this.noink = true;
-    this.theme = 'dark';
-    this.toggles = false;
-    this.width = 'wide';
-
     this._keyDownHandler = this._keyDownHandler.bind(this);
     this._clickHandler = this._clickHandler.bind(this);
   }
@@ -343,6 +318,18 @@ export class AnypointSignin extends AnypointButton {
     }
     if (!this.hasAttribute('tabindex')) {
       this.setAttribute('tabindex', '0');
+    }
+    if (!this.hasAttribute('width')) {
+      this.setAttribute('width', 'wide');
+    }
+    if (!this.hasAttribute('emphasis')) {
+      this.setAttribute('emphasis', 'high');
+    }
+    if (!this.hasAttribute('compatibility')) {
+      this.setAttribute('compatibility', 'true');
+    }
+    if (!this.hasAttribute('labelSignout')) {
+      this.setAttribute('labelSignout', 'Sign out');
     }
     if (!this.hasAttribute('aria-labelledby') && !this.hasAttribute('aria-label')) {
       const text = 'Press the button to sign in with MuleSoft';
