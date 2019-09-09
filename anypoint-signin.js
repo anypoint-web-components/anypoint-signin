@@ -141,27 +141,24 @@ const WidthValue = {
  */
 export class AnypointSignin extends AnypointButton {
   static get styles() {
-    return css`
-      ${styles}
-    `;
+    return [
+      AnypointButton.styles,
+      css`
+        ${styles}
+      `
+    ];
   }
 
   render() {
     const {
       authType,
       clientId,
-      compatibility,
-      disabled,
-      elevation,
-      emphasis,
       forceOauthEvents,
       labelSignin,
       labelSignout,
-      noink,
       redirectUri,
       scopes,
       signedIn,
-      toggles,
       width
     } = this;
     const buttonIcon = 'anypoint:anypoint';
@@ -176,19 +173,8 @@ export class AnypointSignin extends AnypointButton {
         @accesstoken-changed="${this._atHandler}"
         @signedin-changed="${this._signedinHandler}"
       ></anypoint-signin-aware>
-      <anypoint-button
-        ?disabled="${disabled}"
-        ?elevation="${elevation}"
-        ?noink="${noink}"
-        ?toggles="${toggles}"
-        compatibility="${compatibility}"
-        emphasis="${emphasis}"
-      >
-        <iron-icon icon="${buttonIcon}"></iron-icon>
-        <div class="buttonText ${signedIn ? 'signOut' : 'signIn'}">
-          ${signedIn ? labelSignout : _labelSignin}
-        </div>
-      </anypoint-button>
+      <iron-icon icon="${buttonIcon}"></iron-icon>
+      <div class="buttonText ${signedIn ? 'signOut' : 'signIn'}">${signedIn ? labelSignout : _labelSignin}</div>
     `;
   }
 

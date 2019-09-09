@@ -23,6 +23,6 @@ export default css`
     font-family: -apple-system, 'BlinkMacSystemFont', 'Helvetica Neue', 'Segoe UI', sans-serif;
     font-size: var(--arc-font-body1-font-size, 14);
     font-weight: var(--anypoint-signin-bold-font-weight, 600);
-    padding-right: 0.4em;
+    margin-left: 8px;
   }
 `;
