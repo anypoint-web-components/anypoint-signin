@@ -343,7 +343,7 @@ export class AnypointSignin extends AnypointButton {
     if (!this.hasAttribute('tabindex')) {
       this.setAttribute('tabindex', '0');
     }
-    if (!this.hasAttribute('material') || this.getAttribute('material') === 'false') {
+    if (!this.hasAttribute('material')) {
       this.setAttribute('compatibility', 'true');
     }
     if (!this.hasAttribute('width')) {

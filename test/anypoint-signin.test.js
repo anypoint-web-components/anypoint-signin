@@ -6,6 +6,10 @@ describe('<anypoint-signin>', () => {
     return await fixture(`<anypoint-signin></anypoint-signin>`);
   }
 
+  async function materialFixture(material = true) {
+    return await fixture(`<anypoint-signin material="${material}"></anypoint-signin>`);
+  }
+
   async function setupReadyFixture() {
     return await fixture(`<anypoint-signin clientid="abc" redirecturi="https://auth.domain.com"></anypoint-signin>`);
   }
@@ -39,6 +43,30 @@ describe('<anypoint-signin>', () => {
     event.code = code;
     return event;
   }
+
+  describe('material', () => {
+    it('sets compatibility to false if set to true', async () => {
+      const element = await materialFixture(true);
+      assert.equal(element.compatibility, false);
+    });
+
+    it('defaults compatibility to true if not set', async () => {
+      const element = await basicFixture();
+      assert.equal(element.compatibility, true);
+    });
+
+    it('sets compatibility to true if set to false', async () => {
+      const element = await basicFixture(false);
+      assert.equal(element.compatibility, true);
+    });
+  });
+
+  describe('emphasis', () => {
+    it('is by default set to high', async () => {
+      const element = await basicFixture();
+      assert.equal(element.emphasis, 'high');
+    });
+  });
 
   describe('_computeSigninLabel()', function() {
     let element;
