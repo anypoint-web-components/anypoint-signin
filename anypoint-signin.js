@@ -245,6 +245,24 @@ export class AnypointSignin extends AnypointButton {
   set onaccesstoken(value) {
     this._registerCallback('accesstoken-changed', value);
   }
+  /**
+   * @return {*} material property, which should represent opposite of compatibility
+   */
+  get material() {
+    return this._material;
+  }
+  /**
+   * @param {boolean} value If false, button should use compatibility styling.
+   * If true, should use material styling.
+   */
+  set material(value) {
+    const old = this._material;
+    if (old === value) {
+      return;
+    }
+    this.compatibility = !value;
+    this._material = value;
+  }
   static get properties() {
     return {
       /**
@@ -325,11 +343,11 @@ export class AnypointSignin extends AnypointButton {
     if (!this.hasAttribute('tabindex')) {
       this.setAttribute('tabindex', '0');
     }
+    if (!this.hasAttribute('material') || this.getAttribute('material') === 'false') {
+      this.setAttribute('compatibility', 'true');
+    }
     if (!this.hasAttribute('width')) {
       this.setAttribute('width', 'wide');
-    }
-    if (!this.hasAttribute('material')) {
-      this.setAttribute('compatibility', 'true');
     }
     if (!this.hasAttribute('labelSignout')) {
       this.setAttribute('labelSignout', 'Sign out');
