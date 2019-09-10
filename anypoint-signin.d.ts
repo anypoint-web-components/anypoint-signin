@@ -5,19 +5,16 @@
  *   https://github.com/Polymer/tools/tree/master/packages/gen-typescript-declarations
  *
  * To modify these typings, edit the source file(s):
- *   anypoint-signin.html
+ *   anypoint-signin.js
  */
 
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
 // tslint:disable:no-any describes the API as best we are able today
 
-/// <reference path="../polymer/types/polymer-element.d.ts" />
-/// <reference path="../paper-ripple/paper-ripple.d.ts" />
-/// <reference path="../iron-icon/iron-icon.d.ts" />
-/// <reference path="anypoint-signin-aware.d.ts" />
-/// <reference path="exchange-icons.d.ts" />
-/// <reference path="anypoint-signin-styles.d.ts" />
+import {LitElement, html, css} from 'lit-element';
+
+export {AnypointSignin};
 
 declare namespace AnypointElements {
 
@@ -35,9 +32,12 @@ declare namespace AnypointElements {
    * #### Examples
    *
    * ```html
-   * <anypoint-signin client-id="..." redirect-uri="https://auth.domain.com/auth/redirect"></anypoint-signin>
-   * <anypoint-signin label-signin="Sign-in" client-id="..." redirect-uri="https://auth.domain.com/auth/redirect"></anypoint-signin>
-   * <anypoint-signin theme="dark" width="iconOnly" client-id="..." redirect-uri="https://auth.domain.com/auth/redirect"></anypoint-signin>
+   * <anypoint-signin client-id="..."
+   *  redirect-uri="https://auth.domain.com/auth/redirect"></anypoint-signin>
+   * <anypoint-signin label-signin="Sign-in" client-id="..."
+   *  redirect-uri="https://auth.domain.com/auth/redirect"></anypoint-signin>
+   * <anypoint-signin theme="dark" width="iconOnly" client-id="..."
+   *  redirect-uri="https://auth.domain.com/auth/redirect"></anypoint-signin>
    * ```
    *
    * #### Notes
@@ -72,21 +72,10 @@ declare namespace AnypointElements {
    *
    * Custom property | Description | Default
    * ----------------|-------------|----------
-   * `--anypoint-signin` | Mixin applied to the element | `{}`
    * `--anypoint-signin-disabled-background-color` | Background color of the disabled button | `#eaeaea`
    * `--anypoint-signin-disabled-color` | Color of the disabled button | `#a8a8a8`
    */
-  class AnypointSignin extends Polymer.Element {
-
-    /**
-     * An Anypoint clientId
-     */
-    clientId: string|null|undefined;
-
-    /**
-     * Authorization redirect URI
-     */
-    redirectUri: string|null|undefined;
+  class AnypointSignin extends LitElement {
 
     /**
      * True if user is signed in
@@ -102,11 +91,24 @@ declare namespace AnypointElements {
      * User profile information.
      */
     user: object|null|undefined;
+    readonly authAware: any;
+
+    /**
+     * An Anypoint clientId
+     */
+    clientId: string|null|undefined;
+
+    /**
+     * Authorization redirect URI
+     */
+    redirectUri: string|null|undefined;
 
     /**
      * The height to use for the button.
      *
      * Available options: short, standard, tall.
+     *
+     * Defaults to `standard`
      */
     height: string;
 
@@ -114,10 +116,11 @@ declare namespace AnypointElements {
      * An optional label for the sign-in button.
      */
     labelSignin: string|null|undefined;
-    readonly _labelSignin: string|null|undefined;
 
     /**
      * An optional label for the sign-out button.
+     *
+     * Defaults to `Sign out`
      */
     labelSignout: string|null|undefined;
 
@@ -154,12 +157,14 @@ declare namespace AnypointElements {
      * mechanism.
      */
     forceOauthEvents: boolean|null|undefined;
+    constructor();
+    render(): any;
     _computeButtonClass(height: any, width: any, theme: any, signedIn: any): any;
 
     /**
      * Determines the proper label based on the attributes.
      */
-    _computeSigninLabel(labelSignin: any, width: any): any;
+    _computeSigninLabel(labelSignin: String|null, width: Number|null): String|null;
 
     /**
      * Sign in user. Opens the authorization dialog for signing in.
@@ -173,9 +178,15 @@ declare namespace AnypointElements {
      */
     signOut(): void;
     _signOutKeyPress(e: any): void;
+    _atHandler(e: any): void;
+    _userHandler(e: any): void;
+    _signedinHandler(e: any): void;
   }
 }
 
-interface HTMLElementTagNameMap {
-  "anypoint-signin": AnypointElements.AnypointSignin;
+declare global {
+
+  interface HTMLElementTagNameMap {
+    "anypoint-signin": AnypointElements.AnypointSignin;
+  }
 }

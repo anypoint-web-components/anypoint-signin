@@ -5,15 +5,16 @@
  *   https://github.com/Polymer/tools/tree/master/packages/gen-typescript-declarations
  *
  * To modify these typings, edit the source file(s):
- *   anypoint-signin-aware.html
+ *   anypoint-signin-aware.js
  */
 
 
 // tslint:disable:variable-name Describing an API that's defined elsewhere.
 // tslint:disable:no-any describes the API as best we are able today
 
-/// <reference path="../polymer/types/polymer-element.d.ts" />
-/// <reference path="../oauth-authorization/oauth2-authorization.d.ts" />
+import {LitElement} from 'lit-element';
+
+export {AnypointSigninAware};
 
 declare namespace AnypointElements {
 
@@ -39,7 +40,9 @@ declare namespace AnypointElements {
    *
    * ##### Example
    *
-   *     <anypoint-signin-aware client-id="abc123" redirect-uri="https://auth.domain.com/oauth2/redirect"></anypoint-signin-aware>
+   *     <anypoint-signin-aware
+   *      client-id="abc123"
+   *      redirect-uri="https://auth.domain.com/oauth2/redirect"></anypoint-signin-aware>
    *
    * ## Authorization type
    *
@@ -54,13 +57,13 @@ declare namespace AnypointElements {
    * displaying the popup) when the lement is ready. It does nothing when
    * the response is errored.
    */
-  class AnypointSigninAware extends Polymer.Element {
-
-    /**
-     * An Anypoint clientId.
-     * This property is required to run the authorization flow.
-     */
-    clientId: string|null|undefined;
+  class AnypointSigninAware extends LitElement {
+    readonly user: object|null;
+    _user: any;
+    readonly accessToken: String|null;
+    _accessToken: any;
+    readonly signedIn: String|null;
+    _signedIn: any;
 
     /**
      * Authorization redirect URI.
@@ -69,19 +72,10 @@ declare namespace AnypointElements {
     redirectUri: string|null|undefined;
 
     /**
-     * True if user is signed in
+     * An Anypoint clientId.
+     * This property is required to run the authorization flow.
      */
-    readonly signedIn: boolean|null|undefined;
-
-    /**
-     * True if user is signed in
-     */
-    readonly accessToken: string|null|undefined;
-
-    /**
-     * User profile information.
-     */
-    readonly user: object|null|undefined;
+    clientId: string|null|undefined;
 
     /**
      * By default this element inserts `oauth2-authorization` element to the
@@ -89,9 +83,12 @@ declare namespace AnypointElements {
      * force the element to use events system to call the OAuth endpoint.
      *
      * It is useful when your application has it's own OAuth 2 authorization
-     * mechanism.
+     * mechanism. In this case handle `oauth2-token-requested` custom event.
+     * See `@advanced-rest-client/oauth-authorization` component documentation
+     * for more information.
      */
     forceOauthEvents: boolean|null|undefined;
+    constructor();
     connectedCallback(): void;
     disconnectedCallback(): void;
 
@@ -123,6 +120,9 @@ declare namespace AnypointElements {
   }
 }
 
-interface HTMLElementTagNameMap {
-  "anypoint-signin-aware": AnypointElements.AnypointSigninAware;
+declare global {
+
+  interface HTMLElementTagNameMap {
+    "anypoint-signin-aware": AnypointElements.AnypointSigninAware;
+  }
 }

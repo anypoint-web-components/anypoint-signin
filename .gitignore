@@ -2,6 +2,8 @@
 .DS_Store
 .AppleDouble
 .LSOverride
+.idea
+dist
 
 # Icon must end with two \r
 Icon
@@ -55,6 +57,4 @@ $RECYCLE.BIN/
 .nfs*
 
 node_modules
-bower_components
-build
 coverage
