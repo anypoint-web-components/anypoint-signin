@@ -332,6 +332,9 @@ export class AnypointSignin extends AnypointButton {
   constructor() {
     super();
     this.emphasis = 'high';
+    this.width = 'wide';
+    this.labelSignout = 'Sign out';
+    this.compatibility = true;
     this._keyDownHandler = this._keyDownHandler.bind(this);
     this._clickHandler = this._clickHandler.bind(this);
   }
@@ -342,15 +345,6 @@ export class AnypointSignin extends AnypointButton {
     }
     if (!this.hasAttribute('tabindex')) {
       this.setAttribute('tabindex', '0');
-    }
-    if (!this.hasAttribute('material')) {
-      this.setAttribute('compatibility', 'true');
-    }
-    if (!this.hasAttribute('width')) {
-      this.setAttribute('width', 'wide');
-    }
-    if (!this.hasAttribute('labelSignout')) {
-      this.setAttribute('labelSignout', 'Sign out');
     }
     if (!this.hasAttribute('aria-labelledby') && !this.hasAttribute('aria-label')) {
       const text = 'Press the button to sign in with MuleSoft';
