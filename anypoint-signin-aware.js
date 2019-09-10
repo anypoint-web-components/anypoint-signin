@@ -13,6 +13,15 @@ the License.
 */
 import { LitElement } from 'lit-element';
 import '@advanced-rest-client/oauth-authorization/oauth2-authorization.js';
+
+export const hostname = 'https://anypoint.mulesoft.com';
+
+export const GRANT_TYPES = {
+  AUTH_CODE: 'authorization_code',
+  REFRESH: 'refresh_token',
+  IMPLICIT: 'implicit'
+};
+
 export const AnypointAuth = {
   /**
    * oauth2 client ID
@@ -44,16 +53,26 @@ export const AnypointAuth = {
       AnypointAuth._redirectUri = val;
     }
   },
-  // OAuth2 authorization type
-  authType: 'implicit',
+  // OAuth2 authorization type. e.g. implicit, authorization_code, etc.
+  // By default, the authorization type is authorization_code.
+  _authType: GRANT_TYPES.AUTH_CODE,
+  get authType() {
+    return AnypointAuth._authType;
+  },
+  set authType(val) {
+    if (val && val !== AnypointAuth._authType) {
+      AnypointAuth._authType = val;
+      AnypointAuth.initAuth2();
+    } else {
+      AnypointAuth._authType = val;
+    }
+  },
   // Token authorization URL
-  authorizationUri: 'https://anypoint.mulesoft.com/accounts/oauth2/authorize',
+  authorizationUri: `${hostname}/accounts/api/v2/oauth2/authorize`,
   // Code exchange endpoint
-  accessTokenUri: 'https://anypoint.mulesoft.com/accounts/oauth2/token',
-  // User info URL
-  profileUrl: 'https://anypoint.mulesoft.com/exchange/api/v1/profile',
+  accessTokenUri: `${hostname}/accounts/api/v2/oauth2/token`,
   // Log out URL.
-  logoutUri: 'https://anypoint.mulesoft.com/accounts/api/access_tokens/',
+  logoutUri: `${hostname}/accounts/api/logout/`,
   /** Is user signed in? */
   _signedIn: false,
   // Returns value for user signed in flag.
@@ -94,25 +113,6 @@ export const AnypointAuth = {
     AnypointAuth._accessToken = val;
     for (let i = 0; i < AnypointAuth.signinAwares.length; i++) {
       AnypointAuth.signinAwares[i]._accessToken = val;
-    }
-  },
-  // Received User info.
-  _user: null,
-  /**
-   * @return {Object} Profile information.
-   */
-  get user() {
-    return AnypointAuth._user;
-  },
-  /**
-   * Sets new value of user profile and informs awares about the change.
-   *
-   * @param {Object} val Retreived information about user profile.
-   */
-  set user(val) {
-    AnypointAuth._user = val;
-    for (let i = 0; i < AnypointAuth.signinAwares.length; i++) {
-      AnypointAuth.signinAwares[i]._user = val;
     }
   },
   /**
@@ -236,10 +236,21 @@ export const AnypointAuth = {
       authorizationUri: AnypointAuth.authorizationUri,
       clientId: AnypointAuth.clientId,
       redirectUri: AnypointAuth.redirectUri,
-      state: AnypointAuth._lastState
+      state: AnypointAuth._lastState,
+      scopes: AnypointAuth.scopes
     };
-    if (AnypointAuth.authType === 'code') {
+    /**
+     * For the AUTH_CODE grant type, the signin-aware doesn't handle exchanging the code for the access token.
+     * (since anypoint-signin-aware runs client side, it can't make the exchange anyway because:
+     * 1. CORS isn't enabled for the /token endpoint.
+     * 2. The anypoint-signin-aware should not know about the client-secret of the application.
+     * Note: The oauth2-authorization module that signin-aware depends on has an option for
+     * overriding the exchange code flow by setting the "overrideExchangeCodeFlow" to true, done here.
+     */
+    const useAuthCodeFlow = AnypointAuth.authType === GRANT_TYPES.AUTH_CODE;
+    if (useAuthCodeFlow) {
       result.accessTokenUri = AnypointAuth.accessTokenUri;
+      result.overrideExchangeCodeFlow = true;
     }
     return result;
   },
@@ -279,7 +290,7 @@ export const AnypointAuth = {
    * @return {Promise} Promise resolved when the token is revoked.
    */
   signOut: function() {
-    return AnypointAuth._deleteToken()
+    return AnypointAuth._logout()
       .catch(() => {})
       .then(() => AnypointAuth.setAuthData());
   },
@@ -296,7 +307,7 @@ export const AnypointAuth = {
       AnypointAuth.setAuthData();
       return;
     }
-    return AnypointAuth._getProfile(info.accessToken).catch(() => AnypointAuth.setAuthData(info.accessToken));
+    AnypointAuth.setAuthData(info.accessToken);
   },
 
   _oauth2ErrorHandler: function(e) {
@@ -305,7 +316,6 @@ export const AnypointAuth = {
     }
     const message = e.detail.message;
     AnypointAuth.accessToken = null;
-    AnypointAuth.user = null;
     AnypointAuth.signedIn = false;
     for (let i = 0; i < AnypointAuth.signinAwares.length; i++) {
       AnypointAuth.signinAwares[i]._updateStatus();
@@ -317,84 +327,27 @@ export const AnypointAuth = {
     }
   },
 
-  setAuthData: function(token, profile) {
+  setAuthData: function(token) {
     AnypointAuth.accessToken = token;
-    AnypointAuth.user = profile;
     AnypointAuth.signedIn = !!token;
     for (let i = 0; i < AnypointAuth.signinAwares.length; i++) {
       AnypointAuth.signinAwares[i]._updateStatus();
     }
   },
-  /**
-   * Gets user profile information from the authorization server.
-   *
-   * NOTE: Auth server does not allow XHR from other domains right now
-   * so this function is never called.
-   * This to be fixed when core service allows to get profile info from
-   * different domains.
-   *
-   * @param {String} accessToken OAuth 2 access token
-   * @return {Promise}
-   */
-  _getProfile: function(accessToken) {
-    return AnypointAuth._authGet(AnypointAuth.profileUrl, accessToken).then(function(response) {
-      let profile;
-      try {
-        profile = JSON.parse(response);
-      } catch (e) {
-        AnypointAuth._noop(e);
-      }
-      AnypointAuth.setAuthData(accessToken, profile);
-    });
-  },
 
-  _noop: function() {},
-
-  _authGet: function(url, accessToken) {
-    accessToken = accessToken || AnypointAuth.accessToken;
-    return new Promise(function(resolve, reject) {
-      const xhr = new XMLHttpRequest();
-      xhr.open('GET', url);
-      xhr.setRequestHeader('Authorization', 'bearer ' + accessToken);
-      xhr.addEventListener('load', function(e) {
-        const status = e.target.status;
-        if (status === 404) {
-          return reject(new Error('Profile URL is invalid.'));
-        } else if (status === 401) {
-          return reject(new Error('Invalid access token. Server status is 401.'));
-        } else if (status >= 400 && status < 500) {
-          return reject(new Error('Server do not support this method. Response code is ' + status));
-        } else if (status >= 500) {
-          return reject(new Error('Authorization server error. Response code is ' + status + '.'));
-        }
-        resolve(e.target.response);
-      });
-      xhr.addEventListener('error', function(e) {
-        const status = e.target.status;
-        let message = 'The request to the authorization server failed.';
-        if (status) {
-          message += ' Response code is: ' + status;
-        }
-        reject(new Error(message));
-      });
-      try {
-        xhr.send();
-      } catch (e) {
-        reject(new Error('Unable to send the request.'));
-      }
-    });
-  },
-
-  _deleteToken: function() {
-    const url = AnypointAuth.logoutUri + AnypointAuth.accessToken;
+  _logout: function() {
+    const url = AnypointAuth.logoutUri;
     /* global Promise */
     return new Promise(function(resolve, reject) {
       const xhr = new XMLHttpRequest();
-      xhr.open('DELETE', url);
+      xhr.open('GET', url);
+      if (AnypointAuth.accessToken) {
+        xhr.setRequestHeader('Authorization', 'bearer ' + AnypointAuth.accessToken);
+      }
       xhr.addEventListener('load', function(e) {
         const status = e.target.status;
         if (status > 299) {
-          return reject(new Error('Delete token request faioled.'));
+          return reject(new Error('Delete token request failed.'));
         }
         resolve();
       });
@@ -425,7 +378,6 @@ export const AnypointAuth = {
       }
       aware._signedIn = AnypointAuth.signedIn;
       aware._accessToken = AnypointAuth.accessToken;
-      aware._user = AnypointAuth.user;
     }
     if (!AnypointAuth._initialized) {
       AnypointAuth.init();
@@ -450,14 +402,19 @@ export const AnypointAuth = {
 };
 
 /**
- * `<anypoint-signin-aware>` is used to authenticate the user in Anypoint
- * core services API.
+ * `<anypoint-signin-aware>` is used to authenticate the user with the Anypoint Platform.
  *
  * The `anypoint-signin-aware-success` event is triggered when a user
  * successfully authenticates. It also sets `accessToken` property that can be
- * used to interact with Anypoint APIs.
+ * used to interact with Anypoint Platform APIs.
+ *
  * The `anypoint-signin-aware-signed-out` event is triggered when a user
  * signs out via calling `signOut()` function.
+ *
+ * The `oauth2-token-response` event is triggered when a user
+ * successfully authenticates for the authorization_code flow via the /authorize endpoint. An authorization code
+ * is returned in the event and should be used to exchange for an access token via the /token endpoint from
+ * your backend server.
  *
  * You can bind to `signedIn` property to monitor authorization state.
  * ##### Example
@@ -466,26 +423,37 @@ export const AnypointAuth = {
  *
  * The `clientId` and `redirectUri` properties has to be set before using the
  * component. `clientId` and associated with it `redirectUri` has to be set up
- * with Anypoint authorization server. Contact Anypoint Core services for
- * more information.
+ * with Anypoint authorization server.
+ * Contact Anypoint Access Management for more information.
  *
  * ##### Example
  *
- *     <anypoint-signin-aware
- *      client-id="abc123"
- *      redirect-uri="https://auth.domain.com/oauth2/redirect"></anypoint-signin-aware>
+ *      <anypoint-signin-aware
+ *        client-id="abc123"
+ *        redirect-uri="https://auth.domain.com/oauth2/redirect"
+ *      >
+ *      </anypoint-signin-aware>
  *
- * ## Authorization type
+ * ## Authorization types
  *
- * This element supports `implicit` authentication flow only. Web application
- * should not contain OAuth2 secret and most OAuth2 authorization do not allow
- * web clients to authenticate from a web client. If you have to use `code`
- * authorization flow when use different method to authenticate the user.
+ * This element supports `implicit` and `authorization_code` authentication flows.
+ *
+ * If you have to use the `authorization_code` authorization flow on the client side,
+ * you MUST handle exchanging the authorization code for an access token.
+ * The anypoint-signin-aware component will trigger the authorization flow for the user.
+ * Once the user grants authorization, the authorization server will redirect the user to the redirect_uri of your app.
+ *
+ * Your site at the redirect_uri should send back
+ * a window message (https://developer.mozilla.org/en-US/docs/Web/API/Window/message_event)
+ * via window.postMessage() that contains the authorization_code.
+ *
+ * See https://github.com/advanced-rest-client/oauth-authorization/blob/stage/oauth-popup.html for an example
+ * of a page that the Advanced Rest Client redirect_uri goes to which handles the authorization flow correctly.
  *
  * ## Autho log in
  *
  * The element attempts to log in user in a non-interactive way (without
- * displaying the popup) when the lement is ready. It does nothing when
+ * displaying the popup) when the element is ready. It does nothing when
  * the response is errored.
  *
  * @customElement
@@ -497,6 +465,11 @@ export class AnypointSigninAware extends LitElement {
   static get properties() {
     return {
       /**
+       * The authorization grant type. e.g. implicit, authorization code, etc.
+       * Note for authorization code and other grant types, you should use forceOAuthEvents (see below).
+       */
+      authType: { type: String },
+      /**
        * An Anypoint clientId.
        * This property is required to run the authorization flow.
        */
@@ -506,6 +479,12 @@ export class AnypointSigninAware extends LitElement {
        * This property is required to run the authorization flow.
        */
       redirectUri: { type: String },
+      /**
+       * String representing scopes that the application is requesting from the user.
+       * These scopes should be a subset of the scopes enabled for the client.
+       * This property is required to run the grant authorization flow.
+       */
+      scopes: { type: String },
       /**
        * By default this element inserts `oauth2-authorization` element to the
        * body and uses direct API to authorize the client. Set this property to
@@ -518,31 +497,6 @@ export class AnypointSigninAware extends LitElement {
        */
       forceOauthEvents: { type: Boolean }
     };
-  }
-  /**
-   * @return {Object} User profile information.
-   */
-  get user() {
-    return this._user;
-  }
-
-  get _user() {
-    return this.__user;
-  }
-
-  set _user(value) {
-    const old = this.__user;
-    if (old === value) {
-      return;
-    }
-    this.__user = value;
-    this.dispatchEvent(
-      new CustomEvent('user-changed', {
-        detail: {
-          value
-        }
-      })
-    );
   }
   /**
    * @return {String} Current access token of authenticated user
@@ -631,6 +585,38 @@ export class AnypointSigninAware extends LitElement {
     this._clientIdChanged(value);
   }
 
+  get authType() {
+    return this._authType;
+  }
+
+  set authType(value) {
+    const old = this._authType;
+    if (old === value) {
+      return;
+    }
+    if (value) {
+      value = String(value);
+    }
+    this._authType = value;
+    this._authTypeChanged(value);
+  }
+
+  get scopes() {
+    return this._scopes;
+  }
+
+  set scopes(value) {
+    const old = this._scopes;
+    if (old === value) {
+      return;
+    }
+    if (value) {
+      value = String(value);
+    }
+    this._scopes = value;
+    this._scopesChanged(value);
+  }
+
   connectedCallback() {
     if (super.connectedCallback) {
       super.connectedCallback();
@@ -655,6 +641,9 @@ export class AnypointSigninAware extends LitElement {
    * Currently token destroy endpoint does not allow request from
    * different domains so this is dummy function that clears token info,
    * TODO: (jarrode) Discuss with core services to enable token revoke action
+   * TODO: (leo) Calling /logout will destroy the token as well.
+   *  However, CORS is not enabled for /logout for most origins.
+   *  Figure out where the allowed origins list is.
    * from the outside of domain.
    *
    * @return {Promise} Promise resolved when the token is revoked.
@@ -664,7 +653,7 @@ export class AnypointSigninAware extends LitElement {
   }
   /**
    * Notifies application about error.
-   * @param {String} error Error mesage
+   * @param {String} error Error message
    */
   errorNotify(error) {
     this.dispatchEvent(
@@ -678,6 +667,19 @@ export class AnypointSigninAware extends LitElement {
 
   _clientIdChanged(newId) {
     AnypointAuth.clientId = newId;
+  }
+
+  _authTypeChanged(newAuthType) {
+    AnypointAuth.authType = newAuthType;
+  }
+
+  /**
+   * Sets AnypointAuth with an array of scopes, e.g. ['full','profile','email']
+   * @param {String} newScopes space separated scopes, e.g. 'full profile email'
+   */
+  _scopesChanged(newScopes) {
+    const scopes = newScopes && newScopes.split(' ');
+    AnypointAuth.scopes = scopes;
   }
 
   _redirectUriChanged(value) {

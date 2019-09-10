@@ -6,8 +6,8 @@ describe('<anypoint-signin>', () => {
     return await fixture(`<anypoint-signin></anypoint-signin>`);
   }
 
-  async function noinkFixture() {
-    return await fixture(`<anypoint-signin noink></anypoint-signin>`);
+  async function materialFixture(material = true) {
+    return await fixture(`<anypoint-signin material="${material}"></anypoint-signin>`);
   }
 
   async function setupReadyFixture() {
@@ -44,15 +44,27 @@ describe('<anypoint-signin>', () => {
     return event;
   }
 
-  describe('_computeButtonClass()', function() {
-    let element;
-    beforeEach(async () => {
-      element = await basicFixture();
+  describe('material', () => {
+    it('sets compatibility to false if set to true', async () => {
+      const element = await materialFixture(true);
+      assert.equal(element.compatibility, false);
     });
 
-    it('Computes classes', function() {
-      const result = element._computeButtonClass('a', 'b', 'c', true);
-      assert.equal(result, 'height-a width-b theme-c signedIn-true');
+    it('defaults compatibility to true if not set', async () => {
+      const element = await basicFixture();
+      assert.equal(element.compatibility, true);
+    });
+
+    it('sets compatibility to true if set to false', async () => {
+      const element = await basicFixture(false);
+      assert.equal(element.compatibility, true);
+    });
+  });
+
+  describe('emphasis', () => {
+    it('is by default set to high', async () => {
+      const element = await basicFixture();
+      assert.equal(element.emphasis, 'high');
     });
   });
 
@@ -63,17 +75,15 @@ describe('<anypoint-signin>', () => {
     });
 
     it('Returns defined value', function() {
-      const width = 'wide';
       const label = 'test';
-      const result = element._computeSigninLabel(label, width);
+      const result = element._computeSigninLabel(label);
       assert.equal(result, label);
     });
 
     it('Returns "WIDE" value', function() {
-      const width = 'wide';
       const label = '';
-      const result = element._computeSigninLabel(label, width);
-      assert.equal(result, 'Sign in with Exchange');
+      const result = element._computeSigninLabel(label);
+      assert.equal(result, 'Sign in with MuleSoft');
     });
 
     it('Returns "STANDARD" value', function() {
@@ -94,19 +104,7 @@ describe('<anypoint-signin>', () => {
       const width = '';
       const label = '';
       const result = element._computeSigninLabel(label, width);
-      assert.equal(result, 'Sign in');
-    });
-  });
-
-  describe('No ink', function() {
-    let element;
-    beforeEach(async () => {
-      element = await noinkFixture();
-      await nextFrame();
-    });
-    it('Ripple is not rendered', function() {
-      const ripple = element.shadowRoot.querySelector('paper-ripple');
-      assert.notOk(ripple);
+      assert.equal(result, 'Sign in with MuleSoft');
     });
   });
 
@@ -281,7 +279,7 @@ describe('<anypoint-signin>', () => {
       assert.isTrue(called);
     });
 
-    it('Unregisteres old function', () => {
+    it('Unregisters old function', () => {
       let called1 = false;
       let called2 = false;
       const f1 = () => {
@@ -323,7 +321,7 @@ describe('<anypoint-signin>', () => {
       assert.isTrue(called);
     });
 
-    it('Unregisteres old function', () => {
+    it('Unregisters old function', () => {
       let called1 = false;
       let called2 = false;
       const f1 = () => {
@@ -336,48 +334,6 @@ describe('<anypoint-signin>', () => {
       element.onaccesstoken = f2;
       element.accessToken = 'test';
       element.onaccesstoken = null;
-      assert.isFalse(called1);
-      assert.isTrue(called2);
-    });
-  });
-
-  describe('onuser', () => {
-    let element;
-    beforeEach(async () => {
-      element = await basicFixture();
-    });
-
-    it('Getter returns previously registered handler', () => {
-      assert.isUndefined(element.onuser);
-      const f = () => {};
-      element.onuser = f;
-      assert.isTrue(element.onuser === f);
-    });
-
-    it('Calls registered function', () => {
-      let called = false;
-      const f = () => {
-        called = true;
-      };
-      element.onuser = f;
-      element.user = { name: 'test' };
-      element.onuser = null;
-      assert.isTrue(called);
-    });
-
-    it('Unregisteres old function', () => {
-      let called1 = false;
-      let called2 = false;
-      const f1 = () => {
-        called1 = true;
-      };
-      const f2 = () => {
-        called2 = true;
-      };
-      element.onuser = f1;
-      element.onuser = f2;
-      element.user = { name: 'test' };
-      element.onuser = null;
       assert.isFalse(called1);
       assert.isTrue(called2);
     });

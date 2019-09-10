@@ -63,6 +63,25 @@ npm install --save @anypoint-web-components/anypoint-signin
 </html>
 ```
 
+### Styling with Material Design 
+
+Note: The material attribute is used to set the anypoint button compatibility property to false.
+
+```html
+<html>
+  <head>
+    <script type="module">
+      import '@anypoint-web-components/anypoint-signin/anypoint-signin.js';
+    </script>
+  </head>
+  <body>
+    <!-- Material set to true will use compatibility=false on the base anypoint-button --> 
+    <anypoint-signin material></anypoint-signin>
+  </body>
+</html>
+```
+
+
 ### In a LitElement template
 
 ```js

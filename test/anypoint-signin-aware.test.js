@@ -1,7 +1,7 @@
 import { fixture, assert } from '@open-wc/testing';
 import sinon from 'sinon/pkg/sinon-esm.js';
 import { AuthServer } from './auth-server.js';
-import { AnypointAuth } from '../anypoint-signin-aware.js';
+import { hostname, AnypointAuth } from '../anypoint-signin-aware.js';
 
 describe('<anypoint-signin-aware>', () => {
   async function basicFixture() {
@@ -83,8 +83,8 @@ describe('<anypoint-signin-aware>', () => {
       element.redirectUri = redirectUri;
       restoreMethod('_oauthFactory');
       assert.isTrue(called);
-      assert.equal(argValue.type, 'implicit');
-      assert.equal(argValue.authorizationUri, 'https://anypoint.mulesoft.com/accounts/oauth2/authorize');
+      assert.equal(argValue.type, 'authorization_code');
+      assert.equal(argValue.authorizationUri, `${hostname}/accounts/api/v2/oauth2/authorize`);
       assert.equal(argValue.clientId, clientId);
       assert.equal(argValue.redirectUri, redirectUri);
       assert.typeOf(argValue.state, 'string');
@@ -105,10 +105,6 @@ describe('<anypoint-signin-aware>', () => {
         element.removeEventListener('anypoint-signin-aware-success', clb);
         assert.isTrue(element.signedIn);
         assert.equal(element.accessToken, 'test-token');
-        assert.typeOf(element.user, 'object');
-        assert.equal(element.user.username, 'test-user');
-        assert.typeOf(e.detail, 'object');
-        assert.equal(e.detail.username, 'test-user');
         done();
       });
       const oauth = document.body.querySelector('oauth2-authorization');
@@ -142,7 +138,6 @@ describe('<anypoint-signin-aware>', () => {
       element.addEventListener('anypoint-signin-aware-signed-out', function clb() {
         element.removeEventListener('anypoint-signin-aware-signed-out', clb);
         assert.isUndefined(element.accessToken);
-        assert.isUndefined(element.user);
         assert.isFalse(element.signedIn);
         done();
       });
@@ -177,12 +172,53 @@ describe('<anypoint-signin-aware>', () => {
   });
 
   describe('AnypointAuth', () => {
+    describe('oauth2Config', () => {
+      it('does not set overrideExchangeCodeFlow if the auth type is not authorization_code', () => {
+        AnypointAuth.authType = 'implicit';
+        AnypointAuth.scopes = ['full'];
+        const config = AnypointAuth.oauth2Config();
+        assert.isUndefined(config.overrideExchangeCodeFlow);
+        assert.isUndefined(config.accessTokenUri);
+        assert.equal(AnypointAuth.scopes, config.scopes);
+      });
+
+      it('sets overrideExchangeCodeFlow if the auth type is authorization_code', () => {
+        AnypointAuth.authType = 'authorization_code';
+        AnypointAuth.accessTokenUri = 'tokenuri';
+        AnypointAuth.scopes = ['full'];
+        const config = AnypointAuth.oauth2Config();
+        assert.isTrue(config.overrideExchangeCodeFlow);
+        assert.equal(AnypointAuth.accessTokenUri, config.accessTokenUri);
+        assert.equal(AnypointAuth.scopes, config.scopes);
+      });
+    });
+
+    describe('properties', () => {
+      let element;
+      beforeEach(async () => {
+        element = await basicFixture();
+      });
+
+      it('setting authType calls authTypeChanged if its value differs from previous value', () => {
+        const spy = sinon.spy(element, '_authTypeChanged');
+        assert.isFalse(spy.called);
+        element.authType = 'authorization_code';
+        assert.isTrue(spy.called);
+      });
+
+      it('setting scopes calls scopesChanged if its value differs from previous value', () => {
+        const spy = sinon.spy(element, '_scopesChanged');
+        assert.isFalse(spy.called);
+        element.scopes = 'profile';
+        assert.isTrue(spy.called);
+      });
+    });
+
     describe('_oauth2ErrorHandler()', () => {
       let element;
       beforeEach(async () => {
         element = await basicFixture();
         AnypointAuth.accessToken = 'test-token';
-        AnypointAuth.user = { user: 'test-user' };
         AnypointAuth.signedIn = true;
         AnypointAuth._lastState = 'abcd';
       });
@@ -194,7 +230,6 @@ describe('<anypoint-signin-aware>', () => {
           }
         });
         assert.equal(AnypointAuth.accessToken, null);
-        assert.equal(AnypointAuth.user, null);
         assert.isFalse(AnypointAuth.signedIn);
       });
 
@@ -256,35 +291,11 @@ describe('<anypoint-signin-aware>', () => {
       beforeEach(async () => {
         await basicFixture();
         AnypointAuth.accessToken = null;
-        AnypointAuth.user = null;
         AnypointAuth.signedIn = false;
         AnypointAuth._lastState = 'abcd';
       });
 
-      afterEach(() => {
-        if (AnypointAuth._getProfile.restore) {
-          AnypointAuth._getProfile.restore();
-        }
-      });
-
-      it('Does nothing when no detail on event', () => {
-        const spy = sinon.spy(AnypointAuth, '_getProfile');
-        AnypointAuth._oauth2TokenHandler({});
-        assert.isFalse(spy.called);
-      });
-
-      it('Does nothing when different state', () => {
-        const spy = sinon.spy(AnypointAuth, '_getProfile');
-        AnypointAuth._oauth2TokenHandler({
-          detail: {
-            state: 'other'
-          }
-        });
-        assert.isFalse(spy.called);
-      });
-
-      it('Calles setAuthData() only when no access token', () => {
-        const spy = sinon.spy(AnypointAuth, '_getProfile');
+      it('Calls setAuthData() only when no access token', () => {
         const spy2 = sinon.spy(AnypointAuth, 'setAuthData');
         AnypointAuth._oauth2TokenHandler({
           detail: {
@@ -292,115 +303,8 @@ describe('<anypoint-signin-aware>', () => {
           }
         });
         AnypointAuth.setAuthData.restore();
-        assert.isFalse(spy.called);
         assert.isTrue(spy2.called);
         assert.isUndefined(spy2.args[0][0]);
-      });
-
-      it('Calls _getProfile()', () => {
-        return AnypointAuth._oauth2TokenHandler({
-          detail: {
-            state: 'abcd',
-            accessToken: 'test'
-          }
-        }).then(() => {
-          assert.deepEqual(AnypointAuth.user, { username: 'test-user' });
-        });
-      });
-
-      it('Sets token only when profile get was error', () => {
-        return AnypointAuth._oauth2TokenHandler({
-          detail: {
-            state: 'abcd',
-            accessToken: 'no-token'
-          }
-        }).then(() => {
-          assert.equal(AnypointAuth.user, null);
-          assert.equal(AnypointAuth.accessToken, 'no-token');
-        });
-      });
-    });
-
-    describe('_getProfile()', () => {
-      before(function() {
-        AuthServer.createServer();
-      });
-
-      after(function() {
-        AuthServer.restore();
-      });
-
-      let element;
-      beforeEach(async () => {
-        element = await basicFixture();
-        AnypointAuth.accessToken = null;
-        AnypointAuth.user = null;
-        AnypointAuth.signedIn = false;
-      });
-
-      it('Calls setAuthData()', () => {
-        const spy = sinon.spy(AnypointAuth, 'setAuthData');
-        return AnypointAuth._getProfile('token-123').then(() => {
-          AnypointAuth.setAuthData.restore();
-          assert.isTrue(spy.called);
-          assert.equal(spy.args[0][0], 'token-123');
-          assert.deepEqual(spy.args[0][1], { username: 'test-user' });
-        });
-      });
-
-      it('Sets profile data', () => {
-        return AnypointAuth._getProfile('token-123').then(() => {
-          assert.isTrue(AnypointAuth.signedIn);
-          assert.deepEqual(AnypointAuth.user, { username: 'test-user' });
-        });
-      });
-
-      it('Updates status of the aware', () => {
-        const spy = sinon.spy(element, '_updateStatus');
-        return AnypointAuth._getProfile('token-123').then(() => {
-          assert.isTrue(spy.called);
-        });
-      });
-
-      it('Uses token set on auth factory', () => {
-        AnypointAuth.accessToken = 'token-123';
-        return AnypointAuth._getProfile().then(() => {
-          assert.deepEqual(AnypointAuth.user, { username: 'test-user' });
-        });
-      });
-
-      it('Rejects when request error', () => {
-        return AnypointAuth._getProfile('no-token')
-          .then(() => {
-            throw new Error('Should not resolve.');
-          })
-          .catch((cause) => {
-            assert.notEqual(cause.message, 'Should not resolve.');
-          });
-      });
-
-      it('Returns 401 status message', () => {
-        return AnypointAuth._getProfile('no-token').catch((cause) => {
-          assert.equal(cause.message, 'Invalid access token. Server status is 401.');
-        });
-      });
-
-      it('Returns 404 status message', () => {
-        return AnypointAuth._getProfile('invalid-profile').catch((cause) => {
-          assert.equal(cause.message, 'Profile URL is invalid.');
-        });
-      });
-
-      it('Returns 4xx status message', () => {
-        return AnypointAuth._getProfile('error-400').catch((cause) => {
-          assert.equal(cause.message, 'Server do not support this method. Response code is 400.');
-        });
-      });
-
-      it('Returns 5xx status message', () => {
-        return AnypointAuth._getProfile('error-500').catch((cause) => {
-          assert.equal(cause.message, 'Authorization server error. Response code is  500.');
-        });
       });
     });
 

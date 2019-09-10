@@ -40,12 +40,13 @@
 
 <body unresolved>
   <div class="vertical-section-container centered">
-    <h1>The anypoint-signin</h1>
+    <h1>The anypoint-signin button</h1>
 
     <section class="card">
-      <h2>Authorization status</h2>
+      <h3>Authorization status</h3>
       <p>User signed in: <span id="signInStatus">false</span></p>
       <p>User access token: <span id="atStatus">none</span></p>
+      <p>Authorization code: <span id="authorizationCode">none</span></p>
       <details>
         <summary>User data</summary>
         <span id="userStatus">none</span>
@@ -53,52 +54,28 @@
     </section>
 
     <section class="card">
-      <h2>Regular button</h2>
-      <anypoint-signin id="b1" redirecturi="https://auth.advancedrestclient.com/oauth-popup.html" clientid="59KaqF90hLgZMJec"></anypoint-signin>
+      <h3>Signin Button</h3>
+      <anypoint-signin
+        id="b1"
+        scopes="full"
+        redirecturi="https://auth.advancedrestclient.com/oauth-popup.html"
+        clientid="2e38d46b60c5476584cdecba8b516711"
+      >
+    </anypoint-signin>
     </section>
 
-    <h3>Theme options</h3>
+    <h3>Template</h3>
     <arc-demo-helper>
       <template>
-        <anypoint-signin theme="light" redirecturi="https://auth.advancedrestclient.com/oauth-popup.html" clientid="59KaqF90hLgZMJec"></anypoint-signin>
-        <anypoint-signin theme="dark" redirecturi="https://auth.advancedrestclient.com/oauth-popup.html" clientid="59KaqF90hLgZMJec"></anypoint-signin>
-        <br><br>
-        <anypoint-signin noink theme="light" redirecturi="https://auth.advancedrestclient.com/oauth-popup.html" clientid="59KaqF90hLgZMJec"></anypoint-signin>
-        <anypoint-signin noink theme="dark" redirecturi="https://auth.advancedrestclient.com/oauth-popup.html" clientid="59KaqF90hLgZMJec"></anypoint-signin>
-        <br><br>
-        <anypoint-signin raised theme="light" redirecturi="https://auth.advancedrestclient.com/oauth-popup.html" clientid="59KaqF90hLgZMJec"></anypoint-signin>
-        <anypoint-signin raised theme="dark" redirecturi="https://auth.advancedrestclient.com/oauth-popup.html" clientid="59KaqF90hLgZMJec"></anypoint-signin>
-        <br><br>
-        <anypoint-signin disabled theme="light" redirecturi="https://auth.advancedrestclient.com/oauth-popup.html" clientid="59KaqF90hLgZMJec"></anypoint-signin>
-        <anypoint-signin disabled theme="dark" redirecturi="https://auth.advancedrestclient.com/oauth-popup.html" clientid="59KaqF90hLgZMJec"></anypoint-signin>
+        <anypoint-signin
+          scopes="full"
+          redirecturi="https://auth.advancedrestclient.com/oauth-popup.html"
+          clientid="2e38d46b60c5476584cdecba8b516711"
+        >
+        </anypoint-signin>
       </template>
     </arc-demo-helper>
 
-    <h3>Width options</h3>
-    <arc-demo-helper>
-      <template>
-        <anypoint-signin width="iconOnly" redirecturi="https://auth.advancedrestclient.com/oauth-popup.html" clientid="59KaqF90hLgZMJec"></anypoint-signin>
-        <anypoint-signin width="standard" redirecturi="https://auth.advancedrestclient.com/oauth-popup.html" clientid="59KaqF90hLgZMJec"></anypoint-signin>
-        <anypoint-signin width="wide" redirecturi="https://auth.advancedrestclient.com/oauth-popup.html" clientid="59KaqF90hLgZMJec"></anypoint-signin>
-      </template>
-    </arc-demo-helper>
-
-    <h3>Height options</h3>
-    <arc-demo-helper>
-      <template>
-        <anypoint-signin height="short" redirecturi="https://auth.advancedrestclient.com/oauth-popup.html" clientid="59KaqF90hLgZMJec"></anypoint-signin>
-        <anypoint-signin height="standard" redirecturi="https://auth.advancedrestclient.com/oauth-popup.html" clientid="59KaqF90hLgZMJec"></anypoint-signin>
-        <anypoint-signin height="tall" redirecturi="https://auth.advancedrestclient.com/oauth-popup.html" clientid="59KaqF90hLgZMJec"></anypoint-signin>
-      </template>
-    </arc-demo-helper>
-
-    <h3>raised and noink options</h3>
-    <arc-demo-helper>
-      <template>
-        <anypoint-signin raised redirecturi="https://auth.advancedrestclient.com/oauth-popup.html" clientid="59KaqF90hLgZMJec"></anypoint-signin>
-        <anypoint-signin noink redirecturi="https://auth.advancedrestclient.com/oauth-popup.html" clientid="59KaqF90hLgZMJec"></anypoint-signin>
-      </template>
-    </arc-demo-helper>
     <paper-toast id="errorToast" duration="7000"></paper-toast>
   </div>
 

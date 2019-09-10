@@ -1,13 +1,13 @@
-import { LitElement, html, css } from 'lit-element';
+import { html, css } from 'lit-element';
 import '@polymer/paper-ripple/paper-ripple.js';
 import '@polymer/iron-icon/iron-icon.js';
-import {
-  ButtonStateMixin,
-  ControlStateMixin
-} from '@anypoint-web-components/anypoint-control-mixins/anypoint-control-mixins.js';
+import '@anypoint-web-components/anypoint-button/anypoint-button.js';
+import '@anypoint-web-components/anypoint-button/anypoint-icon-button.js';
 import './anypoint-signin-aware.js';
-import './exchange-icons.js';
+import './mulesoft-icons.js';
 import styles from './anypoint-signin-styles.js';
+import { AnypointButton } from '@anypoint-web-components/anypoint-button/src/AnypointButton.js';
+
 /**
  * Enum button label default values.
  * @readonly
@@ -15,7 +15,7 @@ import styles from './anypoint-signin-styles.js';
  */
 const LabelValue = {
   STANDARD: 'Sign in',
-  WIDE: 'Sign in with Exchange'
+  WIDE: 'Sign in with MuleSoft'
 };
 /**
  * Enum width values.
@@ -23,50 +23,100 @@ const LabelValue = {
  * @enum {string}
  */
 const WidthValue = {
-  ICON_ONLY: 'iconOnly',
   STANDARD: 'standard',
-  WIDE: 'wide'
+  WIDE: 'wide',
+  ICON_ONLY: 'iconOnly'
 };
 /**
- * Anypoint sign in button allows to sign in the user in the Anypoint
- * core services.
+ * ## Overview
  *
- * Authorization result is `accessToken` that can be used to call other APIs
- * and `user` object returned from the Exchange.
+ * The Anypoint SignIn button allows you to sign users into the Anypoint Platform.
  *
- * If you do not need to show the button, use companion
- * `<anypoint-signin-aware>` element to check authentication state and
- * perform manula authentication.
+ * ## Scopes
  *
- * #### Examples
+ * If you require OAuth 2.0 authorization for certain scopes for your application, the SignIn button supports
+ * requesting authorization for scopes from the user and will initialize an authorization flow for those scopes.
+ * Simply pass a space separated list of scopes as an attribute to the anypoint-signin element.
  *
- * ```html
- * <anypoint-signin client-id="..."
- *  redirect-uri="https://auth.domain.com/auth/redirect"></anypoint-signin>
- * <anypoint-signin label-signin="Sign-in" client-id="..."
- *  redirect-uri="https://auth.domain.com/auth/redirect"></anypoint-signin>
- * <anypoint-signin theme="dark" width="iconOnly" client-id="..."
- *  redirect-uri="https://auth.domain.com/auth/redirect"></anypoint-signin>
+ * Example
+ * ```
+ * <anypoint-signin redirecturi="YOUR_REDIRECT_URI" scopes="profile openid ..." clientid="YOUR_CLIENT_ID"></anypoint-signin>
  * ```
  *
  * #### Notes
  *
- * The `clientId` and `redirectUri` properties has to be set before using the
- * component. `clientId` and associated with it `redirectUri` has to be set up
- * with Anypoint authorization server. Contact Anypoint Core services for
- * more information.
+ * The `clientId`, `redirectUri`, and `authType` properties has to be set before using the component.
+ *
+ * Note: `authType` determines what grant type flow to use for authentication.
+ * Contact the Anypoint Access Management team for more information.
+ * By default, the `authType` will be "authorization_code".
+ *
+ * Note: `scopes` is an optional property that tells the button which scopes to request authorization for.
+ *
+ * Note: The Anypoint Platform, for security reasons, does not support the `implicit` flow.
+ * Please use the "authorization_code" flow.
+ *
+ * `clientId` and `redirectUri` has to be set up in the Anypoint Platform when registering an application.
+ *
+ *  If you do not need to show the button, use the companion
+ * `<anypoint-signin-aware>` element to check authentication state and perform manual authentication.
  *
  * ## Authorization type
  *
- * This element supports `implicit` authentication flow only. Web application
- * should not contain OAuth2 secret and most OAuth2 authorization do not allow
- * web clients to authenticate from a web client. If you have to use `code`
- * authorization flow when use different method to authenticate the user.
+ * This element supports `implicit` and `authorization_code` authentication flows.
+ * It potentially also supports `refresh_token` (use at your discretion, this hasn't been thoroughly tested).
+ *
+ * The authorization result via the `implicit` flow is an `accessToken` that can be used to call other APIs.
+ *
+ * The authorization result via the `authorization_code` flow will dispatch an event "oauth2-code-response" with the
+ * authorization "code" which you can exchange (e.g. via a backend service) for an `accessToken`.
+ *
+ * If you have to use the `authorization_code` authorization flow, you MUST handle exchanging the authorization code
+ * for an access token. The anypoint-signin-aware element that the anypoint-signin button uses will trigger the
+ * authorization flow. Once the user grants authorization, the authorization server will redirect the user to the
+ * redirect_uri of the application. The page at the redirect_uri will have the authorization code in the "code"
+ * query parameter of the url. The page should parse through the query parameters and send this via a
+ * window.postMessage() call back to the page with the anypoint-signin button. The anypoint-signin-aware
+ * uses the oauth2-authorization module has an event listener for the window message event and will dispatch
+ * the "oauth2-code-response" event with the authorization code for you to exchange for the access token.
+ *
+ * See https://github.com/advanced-rest-client/oauth-authorization/blob/stage/oauth-popup.html for an example
+ * of a page that the Advanced Rest Client redirect_uri goes to which handles the authorization flow correctly.
+ *
+ * See the demo page for an event listener for the "oauth2-code-response". This should be what you implement
+ * for getting the code back.
+ *
+ * The "oauth2-code-response" will have the following properties if you dispatch a message
+ * correctly from the redirect uri popup window after a user successfully grants authorization to your application.
+ *
+ * code: "THE_AUTHORIZATION_CODE"
+ * oauth2response: true
+ * state: "YOUR_STATE_QUERY_PARAMETER"
+ * tokenTime: 1566413156116
+ *
+ * #### Examples
+ *
+ * ```html
+ * <anypoint-signin
+ *    scopes="openid"
+ *    client-id="YOUR APPLICATION CLIENT ID"
+ *    redirect-uri="https://auth.domain.com/auth/redirect"
+ *  />
+ * <anypoint-signin
+ *    label-signin="Sign-in" client-id="..."
+ *    redirect-uri="https://auth.domain.com/auth/redirect"
+ * />
+ * <anypoint-signin
+ *    width="iconOnly"
+ *    client-id="..."
+ *    redirect-uri="https://auth.domain.com/auth/redirect"
+ *  />
+ * ```
  *
  * ## Autho log in
  *
  * The element attempts to log in user in a non-interactive way (without
- * displaying the popup) when the lement is ready. It does nothing when
+ * displaying the popup) when the element is ready. It does nothing when
  * the response is errored.
  *
  * ## New in version 2.0
@@ -88,68 +138,42 @@ const WidthValue = {
  * @demo demo/index.html
  * @memberof AnypointElements
  */
-export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElement)) {
+export class AnypointSignin extends AnypointButton {
   static get styles() {
-    return css`
-      ${styles}
-
-      .fit {
-        position: absolute;
-        top: 0;
-        right: 0;
-        bottom: 0;
-        left: 0;
-      }
-    `;
+    return [
+      AnypointButton.styles,
+      css`
+        ${styles}
+      `
+    ];
   }
 
   render() {
     const {
-      height,
-      width,
-      theme,
-      signedIn,
+      authType,
       clientId,
-      redirectUri,
       forceOauthEvents,
-      noink,
+      labelSignin,
       labelSignout,
-      labelSignin
+      redirectUri,
+      scopes,
+      signedIn,
+      width
     } = this;
-    const buttonClass = this._computeButtonClass(height, width, theme, signedIn);
+    const buttonIcon = 'anypoint:anypoint';
     const _labelSignin = this._computeSigninLabel(labelSignin, width);
     return html`
       <anypoint-signin-aware
         .clientId="${clientId}"
         .redirectUri="${redirectUri}"
+        .scopes="${scopes}"
+        .authType="${authType}"
         .forceOauthEvents="${forceOauthEvents}"
         @accesstoken-changed="${this._atHandler}"
-        @user-changed="${this._userHandler}"
         @signedin-changed="${this._signedinHandler}"
       ></anypoint-signin-aware>
-      <div id="authButton" class="${buttonClass}">
-        ${noink
-          ? undefined
-          : html`
-              <paper-ripple id="ripple" class="fit"></paper-ripple>
-            `}
-        <!-- this div is needed to position the ripple behind text content -->
-        <div>
-          ${signedIn
-            ? html`
-                <div class="button-content signOut">
-                  <span class="icon"><iron-icon icon="exchange:exchange"></iron-icon></span>
-                  <span class="buttonText">${labelSignout}</span>
-                </div>
-              `
-            : html`
-                <div class="button-content signIn">
-                  <span class="icon"><iron-icon icon="exchange:exchange"></iron-icon></span>
-                  <span class="buttonText">${_labelSignin}</span>
-                </div>
-              `}
-        </div>
-      </div>
+      <iron-icon icon="${buttonIcon}"></iron-icon>
+      <div class="buttonText ${signedIn ? 'signOut' : 'signIn'}">${signedIn ? labelSignout : _labelSignin}</div>
     `;
   }
 
@@ -193,26 +217,6 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
     );
   }
 
-  get user() {
-    return this._user;
-  }
-
-  set user(value) {
-    const old = this._user;
-    if (old === value) {
-      return;
-    }
-    this._user = value;
-    this.requestUpdate('user', old);
-    this.dispatchEvent(
-      new CustomEvent('user-changed', {
-        detail: {
-          value
-        }
-      })
-    );
-  }
-
   /**
    * @return {Function} Previously registered handler for `signedin-changed` event
    */
@@ -242,18 +246,22 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
     this._registerCallback('accesstoken-changed', value);
   }
   /**
-   * @return {Function} Previously registered handler for `user-changed` event
+   * @return {*} material property, which should represent opposite of compatibility
    */
-  get onuser() {
-    return this['_onuser-changed'];
+  get material() {
+    return this._material;
   }
   /**
-   * Registers a callback function for `user-changed` event
-   * @param {Function} value A callback to register. Pass `null` or `undefined`
-   * to clear the listener.
+   * @param {boolean} value If false, button should use compatibility styling.
+   * If true, should use material styling.
    */
-  set onuser(value) {
-    this._registerCallback('user-changed', value);
+  set material(value) {
+    const old = this._material;
+    if (old === value) {
+      return;
+    }
+    this.compatibility = !value;
+    this._material = value;
   }
   static get properties() {
     return {
@@ -274,21 +282,6 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
        */
       accessToken: { type: String },
       /**
-       * User profile information.
-       */
-      user: { type: Object },
-      /**
-       * The height to use for the button.
-       *
-       * Available options: short, standard, tall.
-       *
-       * Defaults to `standard`
-       *
-       * @type {string}
-       * @default 'standard'
-       */
-      height: { type: String },
-      /**
        * An optional label for the sign-in button.
        */
       labelSignin: { type: String },
@@ -299,33 +292,27 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
        */
       labelSignout: { type: String },
       /**
-       * If true, the button will be styled with a shadow.
+       * OAuth Scopes that the signin flow will request for.
        */
-      raised: {
-        type: Boolean,
-        reflect: true
-      },
+      scopes: { type: String },
       /**
-       * The theme to use for the button.
-       *
-       * Available options: light, dark.
-       *
-       * @attribute theme
-       * @type {string}
-       * @default 'light'
+       * The authorization type e.g. implicit, authorization_code, etc.
        */
-      theme: { type: String, reflect: true },
+      authType: { type: String },
       /**
        * The width to use for the button.
        *
-       * Available options: iconOnly, standard, wide.
+       * Available options: 'standard', 'wide'.
        *
        * @type {string}
-       * @default 'standard'
+       * @default 'wide'
        */
       width: { type: String },
-      // If set it will not render ripple effect
-      noink: { type: Boolean },
+      /**
+       * If set to true, sets the compatibility property of AnypointButton to false
+       * so that the button is rendered like the Anypoint Button (with material styling)
+       */
+      material: { type: Boolean },
       /**
        * By default this element inserts `oauth2-authorization` element to the
        * body and uses direct API to authorize the client. Set this property to
@@ -344,12 +331,10 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
 
   constructor() {
     super();
-    this.height = 'standard';
-    this.width = 'standard';
+    this.emphasis = 'high';
+    this.width = 'wide';
     this.labelSignout = 'Sign out';
-    this.theme = 'light';
-    this.noink = false;
-
+    this.compatibility = true;
     this._keyDownHandler = this._keyDownHandler.bind(this);
     this._clickHandler = this._clickHandler.bind(this);
   }
@@ -362,7 +347,8 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
       this.setAttribute('tabindex', '0');
     }
     if (!this.hasAttribute('aria-labelledby') && !this.hasAttribute('aria-label')) {
-      this.setAttribute('aria-label', 'Press the button to sign in with Exchange');
+      const text = 'Press the button to sign in with MuleSoft';
+      this.setAttribute('aria-label', text);
     }
     this.addEventListener('keydown', this._keyDownHandler);
     this.addEventListener('click', this._clickHandler);
@@ -394,29 +380,25 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
     this.addEventListener(eventType, value);
   }
 
-  _computeButtonClass(height, width, theme, signedIn) {
-    return 'height-' + height + ' width-' + width + ' theme-' + theme + ' signedIn-' + signedIn;
-  }
   /**
    * Determines the proper label based on the attributes.
-   * @param {String} labelSignin
-   * @param {Number} width
-   * @return {String}
+   * @param {String} labelSignin - the signin label e.g. "Sign in with MuleSoft"
+   * @param {String} width - wide, iconOnly, standard
+   * @return {String} - the string that the signin button should show e.g. "Sign in with MuleSoft"
    */
   _computeSigninLabel(labelSignin, width) {
     if (labelSignin) {
       return labelSignin;
-    } else {
-      switch (width) {
-        case WidthValue.WIDE:
-          return LabelValue.WIDE;
-        case WidthValue.STANDARD:
-          return LabelValue.STANDARD;
-        case WidthValue.ICON_ONLY:
-          return '';
-        default:
-          return LabelValue.STANDARD;
-      }
+    }
+    switch (width) {
+      case WidthValue.WIDE:
+        return LabelValue.WIDE;
+      case WidthValue.STANDARD:
+        return LabelValue.STANDARD;
+      case WidthValue.ICON_ONLY:
+        return '';
+      default:
+        return LabelValue.WIDE;
     }
   }
   /**
@@ -473,10 +455,6 @@ export class AnypointSignin extends ControlStateMixin(ButtonStateMixin(LitElemen
 
   _atHandler(e) {
     this.accessToken = e.detail.value;
-  }
-
-  _userHandler(e) {
-    this.user = e.detail.value;
   }
 
   _signedinHandler(e) {
