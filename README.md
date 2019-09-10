@@ -76,7 +76,7 @@ Note: The material attribute is used to set the anypoint button compatibility pr
   </head>
   <body>
     <!-- Material set to true will use compatibility=false on the base anypoint-button --> 
-    <anypoint-signin material="true"></anypoint-signin>
+    <anypoint-signin material></anypoint-signin>
   </body>
 </html>
 ```
