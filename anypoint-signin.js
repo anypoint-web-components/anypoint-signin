@@ -4,7 +4,6 @@ import '@polymer/iron-icon/iron-icon.js';
 import '@anypoint-web-components/anypoint-button/anypoint-button.js';
 import '@anypoint-web-components/anypoint-button/anypoint-icon-button.js';
 import './anypoint-signin-aware.js';
-import './mulesoft-icons.js';
 import styles from './anypoint-signin-styles.js';
 import { AnypointButton } from '@anypoint-web-components/anypoint-button/src/AnypointButton.js';
 
@@ -15,7 +14,7 @@ import { AnypointButton } from '@anypoint-web-components/anypoint-button/src/Any
  */
 const LabelValue = {
   STANDARD: 'Sign in',
-  WIDE: 'Sign in with MuleSoft'
+  WIDE: 'Sign in with Anypoint Platform'
 };
 /**
  * Enum width values.
@@ -160,7 +159,6 @@ export class AnypointSignin extends AnypointButton {
       signedIn,
       width
     } = this;
-    const buttonIcon = 'anypoint:anypoint';
     const _labelSignin = this._computeSigninLabel(labelSignin, width);
     return html`
       <anypoint-signin-aware
@@ -172,7 +170,6 @@ export class AnypointSignin extends AnypointButton {
         @accesstoken-changed="${this._atHandler}"
         @signedin-changed="${this._signedinHandler}"
       ></anypoint-signin-aware>
-      <iron-icon icon="${buttonIcon}"></iron-icon>
       <div class="buttonText ${signedIn ? 'signOut' : 'signIn'}">${signedIn ? labelSignout : _labelSignin}</div>
     `;
   }
@@ -347,7 +344,7 @@ export class AnypointSignin extends AnypointButton {
       this.setAttribute('tabindex', '0');
     }
     if (!this.hasAttribute('aria-labelledby') && !this.hasAttribute('aria-label')) {
-      const text = 'Press the button to sign in with MuleSoft';
+      const text = 'Press the button to sign in with Anypoint Platform';
       this.setAttribute('aria-label', text);
     }
     this.addEventListener('keydown', this._keyDownHandler);
@@ -382,9 +379,9 @@ export class AnypointSignin extends AnypointButton {
 
   /**
    * Determines the proper label based on the attributes.
-   * @param {String} labelSignin - the signin label e.g. "Sign in with MuleSoft"
+   * @param {String} labelSignin - the signin label e.g. "Sign in with Anypoint Platform"
    * @param {String} width - wide, iconOnly, standard
-   * @return {String} - the string that the signin button should show e.g. "Sign in with MuleSoft"
+   * @return {String} - the string that the signin button should show e.g. "Sign in with Anypoint Platform"
    */
   _computeSigninLabel(labelSignin, width) {
     if (labelSignin) {
