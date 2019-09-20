@@ -83,7 +83,7 @@ describe('<anypoint-signin>', () => {
     it('Returns "WIDE" value', function() {
       const label = '';
       const result = element._computeSigninLabel(label);
-      assert.equal(result, 'Sign in with MuleSoft');
+      assert.equal(result, 'Sign in with Anypoint Platform');
     });
 
     it('Returns "STANDARD" value', function() {
@@ -104,7 +104,7 @@ describe('<anypoint-signin>', () => {
       const width = '';
       const label = '';
       const result = element._computeSigninLabel(label, width);
-      assert.equal(result, 'Sign in with MuleSoft');
+      assert.equal(result, 'Sign in with Anypoint Platform');
     });
   });
 
