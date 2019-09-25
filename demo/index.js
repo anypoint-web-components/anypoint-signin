@@ -20,16 +20,6 @@ button.addEventListener('accesstoken-changed', (e) => {
   document.getElementById('atStatus').innerText = value;
 });
 
-button.addEventListener('user-changed', (e) => {
-  let { value } = e.detail;
-  if (value) {
-    value = JSON.stringify(value, null, 2);
-  } else {
-    value = 'none';
-  }
-  document.getElementById('userStatus').innerText = value;
-});
-
 window.addEventListener('anypoint-signin-aware-error', (e) => {
   const { message } = e.detail;
   const toast = document.getElementById('errorToast');
