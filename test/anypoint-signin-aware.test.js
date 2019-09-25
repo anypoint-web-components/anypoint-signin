@@ -161,9 +161,18 @@ describe('<anypoint-signin-aware>', () => {
       element = await eventsFixture();
     });
 
-    it('Dispatches oauth2-token-requested custom event', function() {
+    it('Dispatches oauth2-token-requested custom event (body)', function() {
       const spy = sinon.spy();
       document.body.addEventListener('oauth2-token-requested', spy);
+      element.clientId = clientId;
+      element.redirectUri = redirectUri;
+      element.signIn();
+      assert.isTrue(spy.calledOnce);
+    });
+
+    it('Dispatches oauth2-token-requested on self', function() {
+      const spy = sinon.spy();
+      element.addEventListener('oauth2-token-requested', spy);
       element.clientId = clientId;
       element.redirectUri = redirectUri;
       element.signIn();

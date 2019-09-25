@@ -142,12 +142,13 @@ export const AnypointAuth = {
   },
   /**
    * Initialize the client.
+   * @param {?Object} aware The aware that requested the init.
    */
-  init: function() {
+  init: function(aware) {
     if (!AnypointAuth.forceOauthEvents) {
       AnypointAuth._setOauthAuthorization();
     }
-    AnypointAuth.initAuth2();
+    AnypointAuth.initAuth2(aware);
   },
 
   _setOauthAuthorization() {
@@ -189,9 +190,10 @@ export const AnypointAuth = {
 
   /**
    * Initializes OAuth2 client
+   * @param {?Object} aware The aware that requested the init.
    */
-  initAuth2: function() {
-    AnypointAuth._initSignIn();
+  initAuth2: function(aware) {
+    AnypointAuth._initSignIn(aware);
   },
 
   /**
@@ -207,12 +209,14 @@ export const AnypointAuth = {
     }
     return text;
   },
-
-  _initSignIn: function() {
+  /**
+   * @param {?Object} aware The aware that requested the init.
+   */
+  _initSignIn: function(aware) {
     if (!AnypointAuth.clientId || !AnypointAuth.redirectUri) {
       return;
     }
-    AnypointAuth.signIn(false);
+    AnypointAuth.signIn(false, aware);
   },
 
   assertAuthInitialized: function() {
@@ -260,8 +264,10 @@ export const AnypointAuth = {
    *
    * @param {Boolean} interactive If `false` then it performs non-interactive
    * authorization in the background.
+   * @param {?Node} eventTarget Event target to dispatch `oauth2-token-requested`
+   * from when OAuth event is enforced. If not ser it dispatched the event on the document body.
    */
-  signIn: function(interactive) {
+  signIn: function(interactive, eventTarget) {
     if (!AnypointAuth._oauthFactory && !AnypointAuth.forceOauthEvents) {
       return;
     }
@@ -273,9 +279,10 @@ export const AnypointAuth = {
     if (AnypointAuth.forceOauthEvents) {
       const ev = new CustomEvent('oauth2-token-requested', {
         bubbles: true,
-        detail: detail
+        composed: true,
+        detail
       });
-      document.body.dispatchEvent(ev);
+      (eventTarget || document.body).dispatchEvent(ev);
     } else {
       AnypointAuth._oauthFactory.authorize(detail);
     }
@@ -380,7 +387,7 @@ export const AnypointAuth = {
       aware._accessToken = AnypointAuth.accessToken;
     }
     if (!AnypointAuth._initialized) {
-      AnypointAuth.init();
+      AnypointAuth.init(aware);
       AnypointAuth._initialized = true;
     }
   },
@@ -634,7 +641,7 @@ export class AnypointSigninAware extends LitElement {
 
   /** pops up the authorization dialog */
   signIn() {
-    AnypointAuth.signIn();
+    AnypointAuth.signIn(true, this);
   }
   /**
    * Signs out the user and attempts to destroy the token.
