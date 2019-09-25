@@ -1,8 +1,4 @@
 import { html, css } from 'lit-element';
-import '@polymer/paper-ripple/paper-ripple.js';
-import '@polymer/iron-icon/iron-icon.js';
-import '@anypoint-web-components/anypoint-button/anypoint-button.js';
-import '@anypoint-web-components/anypoint-button/anypoint-icon-button.js';
 import './anypoint-signin-aware.js';
 import styles from './anypoint-signin-styles.js';
 import { AnypointButton } from '@anypoint-web-components/anypoint-button/src/AnypointButton.js';
@@ -23,8 +19,7 @@ const LabelValue = {
  */
 const WidthValue = {
   STANDARD: 'standard',
-  WIDE: 'wide',
-  ICON_ONLY: 'iconOnly'
+  WIDE: 'wide'
 };
 /**
  * ## Overview
@@ -106,7 +101,7 @@ const WidthValue = {
  *    redirect-uri="https://auth.domain.com/auth/redirect"
  * />
  * <anypoint-signin
- *    width="iconOnly"
+ *    width="standard"
  *    client-id="..."
  *    redirect-uri="https://auth.domain.com/auth/redirect"
  *  />
@@ -380,7 +375,7 @@ export class AnypointSignin extends AnypointButton {
   /**
    * Determines the proper label based on the attributes.
    * @param {String} labelSignin - the signin label e.g. "Sign in with Anypoint Platform"
-   * @param {String} width - wide, iconOnly, standard
+   * @param {String} width - wide, standard
    * @return {String} - the string that the signin button should show e.g. "Sign in with Anypoint Platform"
    */
   _computeSigninLabel(labelSignin, width) {
@@ -392,8 +387,6 @@ export class AnypointSignin extends AnypointButton {
         return LabelValue.WIDE;
       case WidthValue.STANDARD:
         return LabelValue.STANDARD;
-      case WidthValue.ICON_ONLY:
-        return '';
       default:
         return LabelValue.WIDE;
     }
