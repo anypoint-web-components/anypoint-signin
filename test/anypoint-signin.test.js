@@ -93,13 +93,6 @@ describe('<anypoint-signin>', () => {
       assert.equal(result, 'Sign in');
     });
 
-    it('Returns "ICON_ONLY" value', function() {
-      const width = 'iconOnly';
-      const label = '';
-      const result = element._computeSigninLabel(label, width);
-      assert.equal(result, '');
-    });
-
     it('Returns default value', function() {
       const width = '';
       const label = '';
