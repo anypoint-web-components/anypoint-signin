@@ -1,3 +1,5 @@
 coverage/
 _site/
 dist/
+index.js
+dist.js
