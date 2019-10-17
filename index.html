@@ -7,16 +7,10 @@
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
   <title>anypoint-signin demo</title>
   <style>
-    html,
+  html,
   body {
     background-color: #EEEEEE;
     min-height: 100%;
-  }
-
-  .demo {
-    max-width: 1200px;
-    width: 700px;
-    margin-bottom: 40px;
   }
 
   .card {
@@ -27,37 +21,11 @@
       0 1px 8px 0 rgba(0, 0, 0, 0.12),
       0 3px 3px -2px rgba(0, 0, 0, 0.4);
   }
-
-  .vertical-section-container {
-    max-width: 600px;
-  }
   </style>
 </head>
 
 <body unresolved>
-  <div class="vertical-section-container centered">
-    <h1>The anypoint-signin button</h1>
-    <section class="card">
-      <h3>Authorization status</h3>
-      <p>User signed in: <span id="signInStatus">false</span></p>
-      <p>Authorization code: <span id="authorizationCode">none</span></p>
-      <p>User access token: <span id="atStatus">none</span></p>
-    </section>
-    <section class="card">
-      <h3>Signin Button</h3>
-      <anypoint-signin id="b1" scopes="full" redirecturi="https://auth.advancedrestclient.com/oauth-popup.html" clientid="2e38d46b60c5476584cdecba8b516711">
-      </anypoint-signin>
-    </section>
-    <h3>Template</h3>
-    <arc-demo-helper>
-      <template>
-        <anypoint-signin scopes="full" redirecturi="https://auth.advancedrestclient.com/oauth-popup.html" clientid="2e38d46b60c5476584cdecba8b516711">
-        </anypoint-signin>
-      </template>
-    </arc-demo-helper>
-    <paper-toast id="errorToast" duration="7000"></paper-toast>
-  </div>
-  <script type="module" src="./index.js"></script>
+  <div id="demo"></div>
 <script type="text/javascript" src="dist.js"></script></body>
 
 </html>
