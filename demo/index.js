@@ -15,7 +15,7 @@ class DemoPage extends ArcDemoPage {
     this.initObservableProperties(['buttonWidth', 'status', 'code']);
     this._componentName = 'anypoint-signin';
     this.demoStates = ['Anypoint'];
-    this.buttonWidth = 'standard';
+    this.buttonWidth = 'wide';
     this._demoStateHandler = this._demoStateHandler.bind(this);
     this._toggleMainOption = this._toggleMainOption.bind(this);
     this._widthHandler = this._widthHandler.bind(this);
@@ -90,11 +90,11 @@ class DemoPage extends ArcDemoPage {
           ></anypoint-signin>
           <label slot="options" id="listTypeLabel">List type</label>
           <anypoint-radio-group slot="options" selectable="anypoint-radio-button" aria-labelledby="listTypeLabel">
-            <anypoint-radio-button @change="${this._widthHandler}" checked name="width" value="standard"
-              >Standard width</anypoint-radio-button
-            >
             <anypoint-radio-button @change="${this._widthHandler}" name="width" value="wide"
               >Wide width</anypoint-radio-button
+            >
+            <anypoint-radio-button @change="${this._widthHandler}" checked name="width" value="standard"
+              >Standard width</anypoint-radio-button
             >
           </anypoint-radio-group>
         </arc-interactive-demo>
