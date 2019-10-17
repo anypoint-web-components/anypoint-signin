@@ -99,7 +99,7 @@ class DemoPage extends ArcDemoPage {
           </anypoint-radio-group>
         </arc-interactive-demo>
 
-        <section class="card">
+        <section class="result">
           <h3>Authorization status</h3>
           <p>User signed in: <span>${status}</span></p>
           <p>Authorization code: <span>${code}</span></p>
