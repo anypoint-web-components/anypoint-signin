@@ -90,10 +90,10 @@ class DemoPage extends ArcDemoPage {
           ></anypoint-signin>
           <label slot="options" id="listTypeLabel">List type</label>
           <anypoint-radio-group slot="options" selectable="anypoint-radio-button" aria-labelledby="listTypeLabel">
-            <anypoint-radio-button @change="${this._widthHandler}" name="width" value="wide"
+            <anypoint-radio-button @change="${this._widthHandler}" checked name="width" value="wide"
               >Wide width</anypoint-radio-button
             >
-            <anypoint-radio-button @change="${this._widthHandler}" checked name="width" value="standard"
+            <anypoint-radio-button @change="${this._widthHandler}" name="width" value="standard"
               >Standard width</anypoint-radio-button
             >
           </anypoint-radio-group>
