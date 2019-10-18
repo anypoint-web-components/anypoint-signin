@@ -6,6 +6,7 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=yes">
   <title>anypoint-signin demo</title>
+  <link href="prism.css" rel="stylesheet" />
   <style>
   html,
   body {
@@ -16,15 +17,23 @@
   .result {
     background-color: #fff;
     padding: 12px;
-    margin: 20px;
     border: 1px #e5e5e5 solid;
+    margin-bottom: 40px;
+  }
+
+  body.styled h4 {
+    margin: 2rem 0;
+  }
+
+  body.styled pre[class*="language-"] {
+    background-color: #f5f7f9;
   }
   </style>
 </head>
 
-<body unresolved>
+<body class="styled">
   <div id="demo"></div>
-  <script type="module" src="index.js"></script>
-<script type="text/javascript" src="dist.js"></script></body>
+  <script src="prism.js"></script>
+  <script type="text/javascript" src="dist.js"></script></body>
 
 </html>
