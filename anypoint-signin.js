@@ -133,9 +133,9 @@ const WidthValue = {
  * @memberof AnypointElements
  */
 export class AnypointSignin extends AnypointButton {
-  static get styles() {
+  get styles() {
     return [
-      AnypointButton.styles,
+      super.styles,
       css`
         ${styles}
       `
@@ -152,10 +152,12 @@ export class AnypointSignin extends AnypointButton {
       redirectUri,
       scopes,
       signedIn,
-      width
+      width,
+      styles,
     } = this;
     const _labelSignin = this._computeSigninLabel(labelSignin, width);
     return html`
+      <style>${styles}</style>
       <anypoint-signin-aware
         .clientId="${clientId}"
         .redirectUri="${redirectUri}"
