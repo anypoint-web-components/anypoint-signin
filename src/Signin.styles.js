@@ -12,7 +12,7 @@ License for the specific language governing permissions and limitations under
 the License.
 */
 import { css } from 'lit-element';
-// import '../../@advanced-rest-client/anypoint-styles/colors.js';
+
 export default css`
   .buttonText {
     font-family: var(--arc-font-family, -apple-system, 'BlinkMacSystemFont', 'Helvetica Neue', 'Segoe UI', sans-serif);
