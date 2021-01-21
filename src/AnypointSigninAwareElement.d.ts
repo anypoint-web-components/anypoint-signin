@@ -1,5 +1,14 @@
 import { LitElement } from 'lit-element';
 
+import {
+  signedInValue,
+  accessTokenValue,
+  redirectUriValue,
+  clientIdValue,
+  authTypeValue,
+  scopesValue,
+} from './internals.js';
+
 /**
  * `<anypoint-signin-aware>` is used to authenticate the user with the Anypoint Platform.
  *
@@ -55,11 +64,12 @@ import { LitElement } from 'lit-element';
  * displaying the popup) when the element is ready. It does nothing when
  * the response is error.
  * 
- * @fires anypoint-signin-aware-success
- * @fires anypoint-signin-aware-signed-out
- * @fires anypoint-signin-aware-error
- * @fires accesstoken-changed
- * @fires signedin-changed
+ * @fires anypointsignin
+ * @fires anypointsignout
+ * @fires anypointsigninawareerror
+ * @fires accesstokenchange
+ * @fires signedinchange
+ * @fires anypointcodeexchange
  */
 export declare class AnypointSigninAwareElement extends LitElement {
   /**
@@ -105,14 +115,18 @@ export declare class AnypointSigninAwareElement extends LitElement {
    */
   get accessToken(): string;
 
-  _accessToken: string;
+  [accessTokenValue]: string;
 
   /**
    * @return True when user is signed in
    */
   get signedIn(): boolean;
 
-  _signedIn: boolean;
+  [signedInValue]: boolean;
+  [redirectUriValue]: string;
+  [clientIdValue]: string;
+  [authTypeValue]: string;
+  [scopesValue]: string;
 
   connectedCallback(): void;
 
@@ -141,9 +155,9 @@ export declare class AnypointSigninAwareElement extends LitElement {
    */
   errorNotify(error: string): void;
 
-  _clientIdChanged(newId: string): void;
+  _clientIdChanged(newId?: string): void;
 
-  _authTypeChanged(newAuthType: string): void;
+  _authTypeChanged(newAuthType?: string): void;
 
   /**
    * Sets AnypointAuth with an array of scopes, e.g. ['full','profile','email']

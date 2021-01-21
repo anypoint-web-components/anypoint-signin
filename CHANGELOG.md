@@ -108,3 +108,12 @@
  [8fa183c](https://github.com/anypoint-web-components/anypoint-signin/commit/8fa183c0b38a07915f16a876c19c661db3c9cc22) by Pawel
 
 
+<a name="5.0.0"></a>
+
+### Refactor
+
+* Adding types definition
+* Moving components logic to the `src/` folder
+* Adding events definition.
+* Adding `ExchangeAuthorization` element to perform code exchange via the event
+* Changing event names

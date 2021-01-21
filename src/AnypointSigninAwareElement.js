@@ -2,6 +2,18 @@
 /* eslint-disable no-param-reassign */
 import { LitElement } from 'lit-element';
 import { AnypointAuth } from './AnypointAuth.js';
+import {
+  signedInValue,
+  accessTokenValue,
+  redirectUriValue,
+  clientIdValue,
+  authTypeValue,
+  scopesValue,
+} from './internals.js';
+import { AccessTokenChangeType, SignedInChangeType, AnypointSignedInErrorType, AnypointSignedInType, AnypointSignedOutType } from './Events.js';
+
+export const accessTokenLocal = Symbol('accessTokenLocal');
+export const signedInLocal = Symbol('signedInLocal');
 
 /**
  * `<anypoint-signin-aware>` is used to authenticate the user with the Anypoint Platform.
@@ -100,119 +112,137 @@ export class AnypointSigninAwareElement extends LitElement {
    * @return {string} Current access token of authenticated user
    */
   get accessToken() {
-    return this._accessToken;
+    return this[accessTokenValue];
   }
 
-  get _accessToken() {
-    return this.__accessToken;
+  get [accessTokenValue]() {
+    return this[accessTokenLocal];
   }
 
-  set _accessToken(value) {
-    const old = this.__accessToken;
+  set [accessTokenValue](value) {
+    const old = this[accessTokenLocal];
     if (old === value) {
       return;
     }
-    this.__accessToken = value;
-    this.dispatchEvent(
-      new CustomEvent('accesstoken-changed', {
-        detail: {
-          value
-        }
-      })
-    );
+    this[accessTokenLocal] = value;
+    this.dispatchEvent(new Event(AccessTokenChangeType));
   }
 
   /**
    * @return {boolean} True if user is signed in
    */
   get signedIn() {
-    return this._signedIn;
+    return this[signedInValue];
   }
 
-  get _signedIn() {
-    return this.__signedIn;
+  /**
+   * @returns {boolean}
+   */
+  get [signedInValue]() {
+    return this[signedInLocal];
   }
 
-  set _signedIn(value) {
-    const old = this.__signedIn;
+  /**
+   * @param {boolean} value
+   */
+  set [signedInValue](value) {
+    const old = this[signedInLocal];
     if (old === value) {
       return;
     }
-    this.__signedIn = value;
-    this.dispatchEvent(
-      new CustomEvent('signedin-changed', {
-        detail: {
-          value
-        }
-      })
-    );
+    this[signedInLocal] = value;
+    this.dispatchEvent(new Event(SignedInChangeType));
   }
 
+  /**
+   * @returns {string}
+   */
   get redirectUri() {
-    return this._redirectUri;
+    return this[redirectUriValue];
   }
 
+  /**
+   * @param {string} value
+   */
   set redirectUri(value) {
-    const old = this._redirectUri;
+    const old = this[redirectUriValue];
     if (old === value) {
       return;
     }
     if (value) {
       value = String(value);
       // simple XSS prevention
-      if (value.indexOf('http') === -1) {
+      if (!value.startsWith('http')) {
         value = undefined;
       }
     }
-    this._redirectUri = value;
+    this[redirectUriValue] = value;
     this._redirectUriChanged(value);
   }
 
+  /**
+   * @returns {string}
+   */
   get clientId() {
-    return this._clientId;
+    return this[clientIdValue];
   }
 
+  /**
+   * @param {string} value
+   */
   set clientId(value) {
-    const old = this._clientId;
+    const old = this[clientIdValue];
     if (old === value) {
       return;
     }
     if (value) {
       value = String(value);
     }
-    this._clientId = value;
+    this[clientIdValue] = value;
     this._clientIdChanged(value);
   }
 
+  /**
+   * @returns {string}
+   */
   get authType() {
-    return this._authType;
+    return this[authTypeValue];
   }
 
+  /**
+   * @param {string} value
+   */
   set authType(value) {
-    const old = this._authType;
+    const old = this[authTypeValue];
     if (old === value) {
       return;
     }
     if (value) {
       value = String(value);
     }
-    this._authType = value;
+    this[authTypeValue] = value;
     this._authTypeChanged(value);
   }
 
+  /**
+   * @returns {string}
+   */
   get scopes() {
-    return this._scopes;
+    return this[scopesValue];
   }
 
+  /**
+   * @param {string} value
+   */
   set scopes(value) {
-    const old = this._scopes;
+    const old = this[scopesValue];
     if (old === value) {
       return;
     }
     if (value) {
       value = String(value);
     }
-    this._scopes = value;
+    this[scopesValue] = value;
     this._scopesChanged(value);
   }
 
@@ -227,9 +257,11 @@ export class AnypointSigninAwareElement extends LitElement {
     AnypointAuth.detachSigninAware(this);
   }
 
-  /** pops up the authorization dialog */
-  signIn() {
-    AnypointAuth.signIn(true, this);
+  /**
+   * Initializes the authorization flow.
+   */
+  async signIn() {
+    await AnypointAuth.signIn(true, this);
   }
 
   /**
@@ -244,8 +276,8 @@ export class AnypointSigninAwareElement extends LitElement {
    *
    * @return {Promise<void>} Promise resolved when the token is revoked.
    */
-  signOut() {
-    return AnypointAuth.signOut();
+  async signOut() {
+    await AnypointAuth.signOut();
   }
 
   /**
@@ -254,7 +286,7 @@ export class AnypointSigninAwareElement extends LitElement {
    */
   errorNotify(error) {
     this.dispatchEvent(
-      new CustomEvent('anypoint-signin-aware-error', {
+      new CustomEvent(AnypointSignedInErrorType, {
         bubbles: true,
         composed: true,
         detail: error
@@ -262,17 +294,23 @@ export class AnypointSigninAwareElement extends LitElement {
     );
   }
 
+  /**
+   * @param {string=} newId
+   */
   _clientIdChanged(newId) {
     AnypointAuth.clientId = newId;
   }
 
+  /**
+   * @param {string=} newAuthType
+   */
   _authTypeChanged(newAuthType) {
     AnypointAuth.authType = newAuthType;
   }
 
   /**
    * Sets AnypointAuth with an array of scopes, e.g. ['full','profile','email']
-   * @param {string} newScopes space separated scopes, e.g. 'full profile email'
+   * @param {string=} newScopes space separated scopes, e.g. 'full profile email'
    */
   _scopesChanged(newScopes) {
     const scopes = newScopes && newScopes.split(' ');
@@ -289,16 +327,10 @@ export class AnypointSigninAwareElement extends LitElement {
   _updateStatus() {
     let type;
     if (this.signedIn) {
-      type = 'anypoint-signin-aware-success';
+      type = AnypointSignedInType;
     } else {
-      type = 'anypoint-signin-aware-signed-out';
+      type = AnypointSignedOutType;
     }
-
-    this.dispatchEvent(
-      new CustomEvent(type, {
-        bubbles: true,
-        composed: true,
-      })
-    );
+    this.dispatchEvent(new Event(type, { bubbles: true, composed: true }));
   }
 }

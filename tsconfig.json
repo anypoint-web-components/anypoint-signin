@@ -17,6 +17,6 @@
       }
     ]
   },
-  "include": ["**/*.js", "node_modules/@open-wc/**/*.js", "src/AnypointSigninAwareElement.d.ts"],
+  "include": ["**/*.js", "node_modules/@open-wc/**/*.js", "src/AnypointSigninAwareElement.d.ts", "src/Events.d.ts", "src/ExchangeAuthorization.d.ts", "src/internals.d.ts", "src/AnypointAuth.d.ts", "src/AnypointSigninElement.d.ts"],
   "exclude": ["node_modules/!(@open-wc)"]
 }

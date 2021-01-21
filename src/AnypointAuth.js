@@ -14,11 +14,20 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations under
 the License.
 */
-import { OAuth2Authorization as Oa2 } from '@advanced-rest-client/oauth-authorization';
 import { AuthorizationEvents } from '@advanced-rest-client/arc-events';
+import { randomString } from '@advanced-rest-client/oauth-authorization/src/Utils.js';
+import { ExchangeAuthorization } from './ExchangeAuthorization.js';
+import {
+  clientIdValue,
+  redirectUriValue,
+  authTypeValue,
+  signedInValue,
+  accessTokenValue,
+} from './internals.js';
 
 /** @typedef {import('./AnypointSigninAwareElement').AnypointSigninAwareElement} AnypointSigninAwareElement */
 /** @typedef {import('@advanced-rest-client/oauth-authorization').OAuth2AuthorizationElement} OAuth2AuthorizationElement */
+/** @typedef {import('@advanced-rest-client/oauth-authorization').AuthorizationError} AuthorizationError */
 /** @typedef {import('@advanced-rest-client/arc-types').Authorization.TokenInfo} TokenInfo */
 /** @typedef {import('@advanced-rest-client/arc-types').Authorization.OAuth2Authorization} OAuth2Authorization */
 
@@ -32,88 +41,118 @@ export const GRANT_TYPES = {
 
 export const AnypointAuth = {
   /**
-   * oauth2 client ID
+   * OAuth2 client_id param
+   * @type {string}
    */
-  _clientId: null,
-  // returns currently set `client_id`
-  get clientId() {
-    return AnypointAuth._clientId;
-  },
-  // Sets new `client_id`
-  set clientId(val) {
-    if (val && val !== AnypointAuth._clientId) {
-      AnypointAuth._clientId = val;
-      AnypointAuth.initAuth2();
-    } else {
-      AnypointAuth._clientId = val;
-    }
-  },
-  // OAuth2 redirect URI
-  _redirectUri: null,
-  get redirectUri() {
-    return AnypointAuth._redirectUri;
-  },
-  set redirectUri(val) {
-    if (val && val !== AnypointAuth._redirectUri) {
-      AnypointAuth._redirectUri = val;
-      AnypointAuth.initAuth2();
-    } else {
-      AnypointAuth._redirectUri = val;
-    }
-  },
-  // OAuth2 authorization type. e.g. implicit, authorization_code, etc.
-  // By default, the authorization type is authorization_code.
-  _authType: GRANT_TYPES.AUTH_CODE,
-  get authType() {
-    return AnypointAuth._authType;
-  },
-  set authType(val) {
-    if (val && val !== AnypointAuth._authType) {
-      AnypointAuth._authType = val;
-      AnypointAuth.initAuth2();
-    } else {
-      AnypointAuth._authType = val;
-    }
-  },
-  // Token authorization URL
-  authorizationUri: `${hostname}/accounts/api/v2/oauth2/authorize`,
-  // Code exchange endpoint
-  accessTokenUri: `${hostname}/accounts/api/v2/oauth2/token`,
-  // Log out URL.
-  logoutUri: `${hostname}/accounts/api/logout/`,
-  /** Is user signed in? */
-  _signedIn: false,
+  [clientIdValue]: null,
+
+  /**
+   * OAuth2 redirect URI
+   * @type {string}
+   */
+  [redirectUriValue]: null,
 
   /** 
-   * @type {OAuth2AuthorizationElement}
+   * OAuth2 authorization type. e.g. implicit, authorization_code, etc.
+   * By default, the authorization type is authorization_code.
    */
-  _oauthFactory: null,
+  [authTypeValue]: GRANT_TYPES.AUTH_CODE,
+  /**  
+   * Is user signed in?
+   * @type {boolean}
+   */
+  [signedInValue]: false,
 
-  // Returns value for user signed in flag.
-  get signedIn() {
-    return AnypointAuth._signedIn;
+  /** 
+   * The current access token.
+   */
+  [accessTokenValue]: null,
+
+  /** 
+   * @returns {string} currently set `client_id` param
+   */
+  get clientId() {
+    return AnypointAuth[clientIdValue];
   },
+
+  /** 
+   * Sets new `client_id`
+   * @param {string} value
+   */
+  set clientId(val) {
+    if (val && val !== AnypointAuth[clientIdValue]) {
+      AnypointAuth[clientIdValue] = val;
+      AnypointAuth.initAuth2();
+    } else {
+      AnypointAuth[clientIdValue] = val;
+    }
+  },
+  
+  /** 
+   * @returns {string} currently set redirect URI.
+   */
+  get redirectUri() {
+    return AnypointAuth[redirectUriValue];
+  },
+
+  /** 
+   * Sets the new redirect URI
+   * @param {string} value
+   */
+  set redirectUri(val) {
+    if (val && val !== AnypointAuth[redirectUriValue]) {
+      AnypointAuth[redirectUriValue] = val;
+      AnypointAuth.initAuth2();
+    } else {
+      AnypointAuth[redirectUriValue] = val;
+    }
+  },
+  
+  /** 
+   * @returns {string} currently set authorization type.
+   */
+  get authType() {
+    return AnypointAuth[authTypeValue];
+  },
+
+  /** 
+   * Sets the new authorization type value
+   * @param {string} value
+   */
+  set authType(val) {
+    if (val && val !== AnypointAuth[authTypeValue]) {
+      AnypointAuth[authTypeValue] = val;
+      AnypointAuth.initAuth2();
+    } else {
+      AnypointAuth[authTypeValue] = val;
+    }
+  },
+
+  /**
+   * @returns {boolean} value for user signed in flag.
+   */
+  get signedIn() {
+    return AnypointAuth[signedInValue];
+  },
+
   /**
    * Sets signedIn value and informs awares about the change.
    *
-   * @param {Boolean} val Current state of user being signed in.
+   * @param {boolean} val Current state of user being signed in.
    */
   set signedIn(val) {
-    if (val === AnypointAuth._signedIn) {
+    if (val === AnypointAuth[signedInValue]) {
       return;
     }
-    AnypointAuth._signedIn = val;
-    AnypointAuth.signinAwares.forEach((aware) => { aware._signedIn = val });
+    AnypointAuth[signedInValue] = val;
+    AnypointAuth.signinAwares.forEach((aware) => { aware[signedInValue] = val });
   },
-
-  // User's access token.
-  _accessToken: null,
 
   /**
    * @return {string} Access token value
    */
   get accessToken() {
-    return AnypointAuth._accessToken;
+    return AnypointAuth[accessTokenValue];
   },
 
   /**
@@ -122,84 +161,57 @@ export const AnypointAuth = {
    * @param {string} val New access token.
    */
   set accessToken(val) {
-    if (val === AnypointAuth._accessToken) {
+    if (val === AnypointAuth[accessTokenValue]) {
       return;
     }
-    AnypointAuth._accessToken = val;
-    AnypointAuth.signinAwares.forEach((aware) => { aware._accessToken = val });
+    AnypointAuth[accessTokenValue] = val;
+    AnypointAuth.signinAwares.forEach((aware) => { aware[accessTokenValue] = val });
   },
 
   /**
-   * array of <anypoint-signin-aware>
-   * state changes are broadcast to them
+   * When the `forceOauthEvents` is set then this library dispatches the OAuth2 event
+   * as declared in the `AuthorizationEvents` of the `@advanced-rest-client/arc-events` library.
+   * This can be used to force the components to dispatch the event so the application can handle the authorization process.
+   * If not set then the Aware uses the `OAuth2Authorization` library from the `@advanced-rest-client/oauth-authorization` package
+   * to handle the token exchange.
+   * 
+   * Note, Exchange does not allow to exchange the code for token in a browser environment. This library configures
+   * the `OAuth2Authorization` library to dispatch the event to exchange the data by the application.
+   * 
+   * @type {boolean}
+   */
+  forceOauthEvents: false,
+
+  /** 
+   * Anypoint token authorization URL
+   * @type {string}
+   */
+  authorizationUri: `${hostname}/accounts/api/v2/oauth2/authorize`,
+
+  /** 
+   * Code exchange endpoint
+   * @type {string}
+   */
+  accessTokenUri: `${hostname}/accounts/api/v2/oauth2/token`,
+  /** 
+   * Log out URL.
+   * @type {string}
+   */
+  logoutUri: `${hostname}/accounts/api/logout/`,
+  
+  /**
+   * The list of <anypoint-signin-aware> elements.
+   * The state changes are broadcast to them.
+   * @type {AnypointSigninAwareElement[]}
    */
   signinAwares: [],
-
-  _forceOauthEvents: null,
-
-  get forceOauthEvents() {
-    return AnypointAuth._forceOauthEvents;
-  },
-
-  set forceOauthEvents(val) {
-    if (AnypointAuth._forceOauthEvents === val) {
-      return;
-    }
-    AnypointAuth._forceOauthEvents = val;
-    if (val) {
-      AnypointAuth._clearOauthAuthorization();
-      AnypointAuth._observeWindowEvents();
-    } else {
-      AnypointAuth._setOauthAuthorization();
-      AnypointAuth._unobserveWindowEvents();
-    }
-  },
+  
   /**
    * Initialize the client.
    * @param {AnypointSigninAwareElement=} aware The aware that requested the init.
    */
   init(aware) {
-    if (!AnypointAuth.forceOauthEvents) {
-      AnypointAuth._setOauthAuthorization();
-    }
     AnypointAuth.initAuth2(aware);
-  },
-
-  _setOauthAuthorization() {
-    let factory;
-    if (AnypointAuth._oauthFactory) {
-      factory = AnypointAuth._oauthFactory;
-    } else {
-      const selector = 'oauth2-authorization[data-owner="anypoint-signin-aware"]';
-      factory = document.body.querySelector(selector);
-    }
-    if (!factory) {
-      AnypointAuth._oauthFactory = document.createElement('oauth2-authorization');
-      AnypointAuth._oauthFactory.dataset.owner = 'anypoint-signin-aware';
-      AnypointAuth._oauthFactory.addEventListener('oauth2-error', AnypointAuth._oauth2ErrorHandler);
-      AnypointAuth._oauthFactory.addEventListener('oauth2-token-response', AnypointAuth._oauth2TokenHandler);
-      document.body.appendChild(AnypointAuth._oauthFactory);
-    }
-  },
-
-  _clearOauthAuthorization() {
-    if (!AnypointAuth._oauthFactory) {
-      return;
-    }
-    AnypointAuth._oauthFactory.removeEventListener('oauth2-error', AnypointAuth._oauth2ErrorHandler);
-    AnypointAuth._oauthFactory.removeEventListener('oauth2-token-response', AnypointAuth._oauth2TokenHandler);
-    document.body.removeChild(AnypointAuth._oauthFactory);
-    AnypointAuth._oauthFactory = undefined;
-  },
-
-  _observeWindowEvents() {
-    window.addEventListener('oauth2-error', AnypointAuth._oauth2ErrorHandler);
-    window.addEventListener('oauth2-token-response', AnypointAuth._oauth2TokenHandler);
-  },
-
-  _unobserveWindowEvents() {
-    window.removeEventListener('oauth2-error', AnypointAuth._oauth2ErrorHandler);
-    window.removeEventListener('oauth2-token-response', AnypointAuth._oauth2TokenHandler);
   },
 
   /**
@@ -208,20 +220,6 @@ export const AnypointAuth = {
    */
   initAuth2(aware) {
     AnypointAuth._initSignIn(aware);
-  },
-
-  /**
-   * Generates `state` parameter for the OAuth2 call.
-   *
-   * @return {String} Generated state string.
-   */
-  generateState() {
-    let text = '';
-    const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    for (let i = 0; i < 6; i++) {
-      text += possible.charAt(Math.floor(Math.random() * possible.length));
-    }
-    return text;
   },
 
   /**
@@ -249,14 +247,13 @@ export const AnypointAuth = {
    * @return {OAuth2Authorization} OAuth2 authorization settings to be dispatched to `<oauth2-authorization>` element
    */
   oauth2Config() {
-    AnypointAuth._lastState = AnypointAuth.generateState();
     const result = /** @type OAuth2Authorization */ ({
-      type: AnypointAuth.authType,
+      grantType: AnypointAuth.authType,
       authorizationUri: AnypointAuth.authorizationUri,
       clientId: AnypointAuth.clientId,
       redirectUri: AnypointAuth.redirectUri,
-      state: AnypointAuth._lastState,
-      scopes: AnypointAuth.scopes
+      state: randomString(),
+      scopes: AnypointAuth.scopes,
     });
     const useAuthCodeFlow = AnypointAuth.authType === GRANT_TYPES.AUTH_CODE;
     if (useAuthCodeFlow) {
@@ -271,33 +268,42 @@ export const AnypointAuth = {
    *
    * @param {boolean} interactive If `false` then it performs non-interactive
    * authorization in the background.
-   * @param {EventTarget=} eventTarget Event target to dispatch `oauth2-token-requested`
-   * from when OAuth event is enforced. If not ser it dispatched the event on the document body.
+   * @param {EventTarget=} eventTarget Event target to dispatch the OAuth 2 token request event.
    * @returns {Promise<void>}
    */
-  async signIn(interactive, eventTarget) {
-    if (!AnypointAuth._oauthFactory && !AnypointAuth.forceOauthEvents) {
-      return;
-    }
-    AnypointAuth.assertAuthInitialized();
-    const detail = AnypointAuth.oauth2Config();
-    if (interactive === false) {
-      detail.interactive = interactive;
-    }
-    let info = /** @type TokenInfo */ (null);
+  async signIn(interactive, eventTarget=document.body) {
     try {
+      AnypointAuth.assertAuthInitialized();
+      const detail = AnypointAuth.oauth2Config();
+      if (interactive === false) {
+        detail.interactive = interactive;
+      }
+      let info = /** @type TokenInfo */ (null);
       if (AnypointAuth.forceOauthEvents) {
-        const node = (eventTarget || document.body);
-        info = await AuthorizationEvents.OAuth2.authorize(node, detail);
+        info = await AuthorizationEvents.OAuth2.authorize(eventTarget, detail);
+        if (!info) {
+          throw new Error('The exchange authorization event not handled.');
+        }
       } else {
-        const auth = new Oa2(detail);
+        const auth = new ExchangeAuthorization(detail, {}, eventTarget);
         auth.checkConfig();
         info = await auth.authorize();
       }
+      // the state is checked in the authorization library so no need to check it here
+      if (!info.accessToken) {
+        AnypointAuth.setAuthData();
+      } else {
+        AnypointAuth.setAuthData(info.accessToken);
+      }
     } catch (e) {
-
+      if (e.interactive === false) {
+        return;
+      }
+      this._handleOauthError(e);
+      throw e;
     }
   },
+
   /**
    * Signs out the user and attempts to destroy the token.
    * Currently token destroy endpoint does not allow request from
@@ -305,7 +311,7 @@ export const AnypointAuth = {
    * TODO: (jarrodek) Discuss with core services to enable token revoke action
    * from the outside of domain.
    *
-   * @return {Promise} Promise resolved when the token is revoked.
+   * @return {Promise<void>} Promise resolved when the token is revoked.
    */
   signOut: async () => {
     try {
@@ -316,23 +322,8 @@ export const AnypointAuth = {
     AnypointAuth.setAuthData();
   },
 
-  _oauth2TokenHandler(e) {
-    const info = e.detail;
-    if (!info) {
-      return;
-    }
-    if (AnypointAuth._lastState !== e.detail.state) {
-      return;
-    }
-    if (!info.accessToken) {
-      AnypointAuth.setAuthData();
-      return;
-    }
-    AnypointAuth.setAuthData(info.accessToken);
-  },
-
   /**
-   * @param {Error} e
+   * @param {AuthorizationError} e
    */
   _handleOauthError(e) {
     const { message } = e;
@@ -341,16 +332,9 @@ export const AnypointAuth = {
     AnypointAuth.signinAwares.forEach((aware) => {
       aware._updateStatus();
       if (e.interactive !== false) {
-        aware.errorNotify({ message });
+        aware.errorNotify(message);
       }
     });
-  },
-
-  _oauth2ErrorHandler(e) {
-    if (AnypointAuth._lastState !== e.detail.state) {
-      return;
-    }
-    
   },
 
   /**
@@ -382,7 +366,7 @@ export const AnypointAuth = {
         const { status } = /** @type XMLHttpRequest */ (e.target);
         let message = 'Unable to delete the token.';
         if (status) {
-          message += ` Response code is: ${  status}`;
+          message += ` Response code is: ${status}`;
         }
         reject(new Error(message));
       });
@@ -400,11 +384,11 @@ export const AnypointAuth = {
   attachSigninAware(aware) {
     if (AnypointAuth.signinAwares.indexOf(aware) === -1) {
       AnypointAuth.signinAwares.push(aware);
-      if (typeof aware.forceOauthEvents !== 'undefined') {
+      if (typeof aware.forceOauthEvents === 'boolean') {
         AnypointAuth.forceOauthEvents = aware.forceOauthEvents;
       }
-      aware._signedIn = AnypointAuth.signedIn;
-      aware._accessToken = AnypointAuth.accessToken;
+      aware[signedInValue] = AnypointAuth.signedIn;
+      aware[accessTokenValue] = AnypointAuth.accessToken;
     }
     if (!AnypointAuth._initialized) {
       AnypointAuth.init(aware);
@@ -420,14 +404,5 @@ export const AnypointAuth = {
     if (index !== -1) {
       AnypointAuth.signinAwares.splice(index, 1);
     }
-  },
-
-  /**
-   * @param {string} message 
-   */
-  notifyError(message) {
-    AnypointAuth.signinAwares.forEach((aware) => {
-      aware.errorNotify({ message });
-    });
   }
 };

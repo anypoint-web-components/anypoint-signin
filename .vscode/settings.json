@@ -1,11 +1,17 @@
 {
   "cSpell.words": [
     "accesstoken",
+    "accesstokenchange",
+    "anypointcodeexchange",
+    "anypointsignin",
+    "anypointsigninawareerror",
+    "anypointsignout",
     "awares",
     "onaccesstoken",
     "onsignedin",
     "openid",
     "signedin",
+    "signedinchange",
     "signin",
     "signout"
   ]

@@ -1,8 +1,11 @@
 /* eslint-disable class-methods-use-this */
 import { html, css } from 'lit-element';
 import '../anypoint-signin-aware.js';
-import { AnypointButton } from '@anypoint-web-components/anypoint-button/src/AnypointButton.js';
+import { AnypointButton } from '@anypoint-web-components/anypoint-button';
 import elementStyles from './Signin.styles.js';
+import { AccessTokenChangeType, SignedInChangeType } from './Events.js';
+
+/** @typedef {import('./AnypointSigninAwareElement').AnypointSigninAwareElement} AnypointSigninAwareElement */
 
 /**
  * Enum button label default values.
@@ -23,6 +26,10 @@ const WidthValue = {
   STANDARD: 'standard',
   WIDE: 'wide'
 };
+
+export const accessTokenChangeEvent = Symbol('accessTokenChangeEvent');
+export const signedInChangeEvent = Symbol('signedInChangeEvent');
+export const materialValue = Symbol('materialValue');
 
 /**
  * ## Overview
@@ -115,23 +122,8 @@ const WidthValue = {
  * The element attempts to log in user in a non-interactive way (without
  * displaying the popup) when the element is ready. It does nothing when
  * the response is an error.
- *
- * ## New in version 2.0
- *
- * - The element does not include polyfills library. If you targeting legacy
- * browsers you can include polyfills library from `advanced-rest-client/arc-polyfills`
- * - The element works with Polymer 2.0 library
- *
- * ## Styling
- *
- * `<anypoint-signin>` provides the following custom properties and mixins for styling:
- *
- * Custom property | Description | Default
- * ----------------|-------------|----------
- * `--anypoint-signin-disabled-background-color` | Background color of the disabled button | `#eaeaea`
- * `--anypoint-signin-disabled-color` | Color of the disabled button | `#a8a8a8`
  */
-export class AnypointSignin extends AnypointButton {
+export class AnypointSigninElement extends AnypointButton {
   get styles() {
     return [
       // @ts-ignore
@@ -142,112 +134,57 @@ export class AnypointSignin extends AnypointButton {
     ];
   }
 
-  render() {
-    const {
-      authType,
-      clientId,
-      forceOauthEvents,
-      labelSignin,
-      labelSignout,
-      redirectUri,
-      scopes,
-      signedIn,
-      width,
-      styles,
-    } = this;
-    const _labelSignin = this._computeSigninLabel(labelSignin, width);
-    return html`
-      <style>${styles}</style>
-      <anypoint-signin-aware
-        .clientId="${clientId}"
-        .redirectUri="${redirectUri}"
-        .scopes="${scopes}"
-        .authType="${authType}"
-        .forceOauthEvents="${forceOauthEvents}"
-        @accesstoken-changed="${this._atHandler}"
-        @signedin-changed="${this._signedinHandler}"
-      ></anypoint-signin-aware>
-      <div class="buttonText ${signedIn ? 'signOut' : 'signIn'}">${signedIn ? labelSignout : _labelSignin}</div>
-    `;
-  }
-
-  get signedIn() {
-    return this._signedIn;
-  }
-
-  set signedIn(value) {
-    const old = this._signedIn;
-    if (old === value) {
-      return;
-    }
-    this._signedIn = value;
-    this.requestUpdate('signedIn', old);
-    this.dispatchEvent(
-      new CustomEvent('signedin-changed', {
-        detail: {
-          value
-        }
-      })
-    );
-  }
-
-  get accessToken() {
-    return this._accessToken;
-  }
-
-  set accessToken(value) {
-    const old = this._accessToken;
-    if (old === value) {
-      return;
-    }
-    this._accessToken = value;
-    this.requestUpdate('accessToken', old);
-    this.dispatchEvent(
-      new CustomEvent('accesstoken-changed', {
-        detail: {
-          value
-        }
-      })
-    );
-  }
-
   /**
    * @return {EventListener} Previously registered handler for `signedin-changed` event
    */
   get onsignedin() {
-    return this['_onsignedin-changed'];
+    return this[signedInChangeEvent];
   }
 
   /**
    * Registers a callback function for `signedin-changed` event
-   * @param {EventListener} value A callback to register. Pass `null` or `undefined`
-   * to clear the listener.
+   * @param {EventListener} value A callback to register. Pass `null` or `undefined` to clear the listener.
    */
   set onsignedin(value) {
-    this._registerCallback('signedin-changed', value);
+    if (this[signedInChangeEvent]) {
+      this.removeEventListener(SignedInChangeType, this[signedInChangeEvent]);
+    }
+    if (typeof value !== 'function') {
+      this[signedInChangeEvent] = null;
+      return;
+    }
+    this[signedInChangeEvent] = value;
+    this.addEventListener(SignedInChangeType, value);
   }
 
   /**
    * @return {EventListener} Previously registered handler for `accesstoken-changed` event
    */
   get onaccesstoken() {
-    return this['_onaccesstoken-changed'];
+    return this[accessTokenChangeEvent];
   }
 
   /**
    * Registers a callback function for `accesstoken-changed` event
-   * @param {EventListener} value A callback to register. Pass `null` or `undefined`
-   * to clear the listener.
+   * @param {EventListener} value A callback to register. Pass `null` or `undefined` to clear the listener.
    */
   set onaccesstoken(value) {
-    this._registerCallback('accesstoken-changed', value);
+    if (this[accessTokenChangeEvent]) {
+      this.removeEventListener(AccessTokenChangeType, this[accessTokenChangeEvent]);
+    }
+    if (typeof value !== 'function') {
+      this[accessTokenChangeEvent] = null;
+      return;
+    }
+    this[accessTokenChangeEvent] = value;
+    this.addEventListener(AccessTokenChangeType, value);
   }
 
   /**
    * @return {boolean} material property, which should represent opposite of compatibility
    */
   get material() {
-    return this._material;
+    return this[materialValue];
   }
 
   /**
@@ -255,12 +192,12 @@ export class AnypointSignin extends AnypointButton {
    * If true, should use material styling.
    */
   set material(value) {
-    const old = this._material;
+    const old = this[materialValue];
     if (old === value) {
       return;
     }
     this.compatibility = !value;
-    this._material = value;
+    this[materialValue] = value;
   }
 
   static get properties() {
@@ -323,6 +260,9 @@ export class AnypointSignin extends AnypointButton {
     };
   }
 
+  /**
+   * @returns {AnypointSigninAwareElement}
+   */
   get authAware() {
     return this.shadowRoot.querySelector('anypoint-signin-aware');
   }
@@ -332,13 +272,14 @@ export class AnypointSignin extends AnypointButton {
     this.emphasis = 'high';
     this.width = 'wide';
     this.labelSignout = 'Sign out';
-    this.compatibility = true;
     this.authType = undefined;
     this.clientId = undefined;
-    this.forceOauthEvents = false;
     this.labelSignin = undefined;
     this.redirectUri = undefined;
     this.scopes = undefined;
+    this.compatibility = true;
+    this.forceOauthEvents = false;
+    this.signedIn = false;
 
     this._keyDownHandler = this._keyDownHandler.bind(this);
     this._clickHandler = this._clickHandler.bind(this);
@@ -364,28 +305,10 @@ export class AnypointSignin extends AnypointButton {
   }
 
   /**
-   * Registers an event handler for given type
-   * @param {string} eventType Event type (name)
-   * @param {EventListener} value The handler to register
-   */
-  _registerCallback(eventType, value) {
-    const key = `_on${eventType}`;
-    if (this[key]) {
-      this.removeEventListener(eventType, this[key]);
-    }
-    if (typeof value !== 'function') {
-      this[key] = null;
-      return;
-    }
-    this[key] = value;
-    this.addEventListener(eventType, value);
-  }
-
-  /**
    * Determines the proper label based on the attributes.
-   * @param {String} labelSignin - the signin label e.g. "Sign in with Anypoint Platform"
-   * @param {String} width - wide, standard
-   * @return {String} - the string that the signin button should show e.g. "Sign in with Anypoint Platform"
+   * @param {string} labelSignin - the signin label e.g. "Sign in with Anypoint Platform"
+   * @param {string} width - wide, standard
+   * @returns {string} - the string that the signin button should show e.g. "Sign in with Anypoint Platform"
    */
   _computeSigninLabel(labelSignin, width) {
     if (labelSignin) {
@@ -411,12 +334,6 @@ export class AnypointSignin extends AnypointButton {
 
   /** Sign out the user */
   signOut() {
-    this.dispatchEvent(
-      new CustomEvent('anypoint-signout-attempted', {
-        bubbles: true,
-        composed: true
-      })
-    );
     this.authAware.signOut();
   }
 
@@ -456,16 +373,49 @@ export class AnypointSignin extends AnypointButton {
   }
 
   /**
-   * @param {CustomEvent} e 
+   * @param {Event} e 
    */
   _atHandler(e) {
-    this.accessToken = e.detail.value;
+    const aware = /** @type AnypointSigninAwareElement */ (e.target);
+    this.accessToken = aware.accessToken;
+    this.dispatchEvent(new Event(AccessTokenChangeType));
   }
 
   /**
-   * @param {CustomEvent} e 
+   * @param {Event} e 
    */
   _signedinHandler(e) {
-    this.signedIn = e.detail.value;
+    const aware = /** @type AnypointSigninAwareElement */ (e.target);
+    this.signedIn = aware.signedIn;
+    this.dispatchEvent(new Event(SignedInChangeType));
+  }
+
+  render() {
+    const {
+      authType,
+      clientId,
+      forceOauthEvents,
+      labelSignin,
+      labelSignout,
+      redirectUri,
+      scopes,
+      signedIn,
+      width,
+      styles,
+    } = this;
+    const _labelSignin = this._computeSigninLabel(labelSignin, width);
+    return html`
+      <style>${styles}</style>
+      <anypoint-signin-aware
+        .clientId="${clientId}"
+        .redirectUri="${redirectUri}"
+        .scopes="${scopes}"
+        .authType="${authType}"
+        .forceOauthEvents="${forceOauthEvents}"
+        @accesstokenchange="${this._atHandler}"
+        @signedinchange="${this._signedinHandler}"
+      ></anypoint-signin-aware>
+      <div class="buttonText ${signedIn ? 'signOut' : 'signIn'}">${signedIn ? labelSignout : _labelSignin}</div>
+    `;
   }
 }
