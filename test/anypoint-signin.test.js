@@ -1,46 +1,55 @@
-import { fixture, assert, nextFrame } from '@open-wc/testing';
+import { fixture, assert, nextFrame, html } from '@open-wc/testing';
+import { SignedInChangeType, AccessTokenChangeType } from '../index.js';
 import '../anypoint-signin.js';
 
+/** @typedef {import('../').AnypointSigninElement} AnypointSigninElement */
+
 describe('<anypoint-signin>', () => {
+  /**
+   * @return {Promise<AnypointSigninElement>} 
+   */
   async function basicFixture() {
-    return await fixture(`<anypoint-signin></anypoint-signin>`);
+    return fixture(html`<anypoint-signin></anypoint-signin>`);
   }
 
-  async function materialFixture(material = true) {
-    return await fixture(`<anypoint-signin material="${material}"></anypoint-signin>`);
+  /**
+   * @return {Promise<AnypointSigninElement>} 
+   */
+  async function materialFixture(material=true) {
+    return fixture(html`<anypoint-signin ?material="${material}"></anypoint-signin>`);
   }
 
+  /**
+   * @return {Promise<AnypointSigninElement>} 
+   */
   async function setupReadyFixture() {
-    return await fixture(`<anypoint-signin clientid="abc" redirecturi="https://auth.domain.com"></anypoint-signin>`);
+    return fixture(html`<anypoint-signin clientId="abc" redirectUri="https://auth.domain.com"></anypoint-signin>`);
   }
 
   /**
    * Returns a keyboard event. This event bubbles and is cancellable.
    *
-   * @param {string} type The type of keyboard event (such as 'keyup' or
-   * 'keydown').
+   * @param {string} type The type of keyboard event (such as 'keyup' or 'keydown').
    * @param {number} keyCode The keyCode for the event.
    * @param {string} key The KeyboardEvent.key value for the event.
    * @param {string} code The KeyboardEvent.code value for the event.
-   * @return {CustomEvent}
+   * @return {KeyboardEvent}
    */
   function keyboardEventFor(type, keyCode, key, code) {
-    const event = new CustomEvent(type, {
+    const event = new KeyboardEvent(type, {
       detail: 0,
       bubbles: true,
       cancelable: true,
-      // Allow event to go outside a ShadowRoot.
-      composed: true
+      // Allows event to go outside the ShadowRoot.
+      composed: true,
+      altKey: false,
+      ctrlKey: false,
+      shiftKey: false,
+      metaKey: false,
+      key,
+      code,
+      keyCode,
     });
-
-    event.keyCode = keyCode;
-    event.code = keyCode;
-    event.shiftKey = false;
-    event.altKey = false;
-    event.ctrlKey = false;
-    event.metaKey = false;
-    event.key = key;
-    event.code = code;
     return event;
   }
 
@@ -56,7 +65,7 @@ describe('<anypoint-signin>', () => {
     });
 
     it('sets compatibility to true if set to false', async () => {
-      const element = await basicFixture(false);
+      const element = await basicFixture();
       assert.equal(element.compatibility, true);
     });
   });
@@ -68,32 +77,32 @@ describe('<anypoint-signin>', () => {
     });
   });
 
-  describe('_computeSigninLabel()', function() {
-    let element;
+  describe('_computeSigninLabel()', () => {
+    let element = /** @type AnypointSigninElement */ (null);
     beforeEach(async () => {
       element = await basicFixture();
     });
 
-    it('Returns defined value', function() {
+    it('Returns defined value', () => {
       const label = 'test';
-      const result = element._computeSigninLabel(label);
+      const result = element._computeSigninLabel(label, undefined);
       assert.equal(result, label);
     });
 
-    it('Returns "WIDE" value', function() {
+    it('Returns "WIDE" value', () => {
       const label = '';
-      const result = element._computeSigninLabel(label);
+      const result = element._computeSigninLabel(label, undefined);
       assert.equal(result, 'Sign in with Anypoint Platform');
     });
 
-    it('Returns "STANDARD" value', function() {
+    it('Returns "STANDARD" value', () => {
       const width = 'standard';
       const label = '';
       const result = element._computeSigninLabel(label, width);
       assert.equal(result, 'Sign in');
     });
 
-    it('Returns default value', function() {
+    it('Returns default value', () => {
       const width = '';
       const label = '';
       const result = element._computeSigninLabel(label, width);
@@ -101,22 +110,22 @@ describe('<anypoint-signin>', () => {
     });
   });
 
-  describe('Buttons state', function() {
-    let element;
+  describe('Buttons state', () => {
+    let element = /** @type AnypointSigninElement */ (null);
     beforeEach(async () => {
       element = await basicFixture();
       await nextFrame();
       element.signedIn = false;
     });
 
-    it('Sign in button is rendered', function() {
+    it('Sign in button is rendered', () => {
       const button = element.shadowRoot.querySelector('.signIn');
       assert.ok(button);
-      const display = getComputedStyle(button).display;
+      const { display } = getComputedStyle(button);
       assert.notEqual(display, 'none');
     });
 
-    it('Sign out button not rendered', function() {
+    it('Sign out button not rendered', () => {
       const button = element.shadowRoot.querySelector('.signOut');
       assert.notOk(button);
     });
@@ -126,7 +135,7 @@ describe('<anypoint-signin>', () => {
       await nextFrame();
       const button = element.shadowRoot.querySelector('.signOut');
       assert.ok(button);
-      const display = getComputedStyle(button).display;
+      const { display } = getComputedStyle(button);
       assert.notEqual(display, 'none');
     });
 
@@ -138,31 +147,31 @@ describe('<anypoint-signin>', () => {
     });
   });
 
-  describe('signIn', function() {
-    let element;
+  describe('signIn', () => {
+    let element = /** @type AnypointSigninElement */ (null);
     beforeEach(async () => {
       element = await setupReadyFixture();
       await nextFrame();
       element.signedIn = false;
     });
 
-    it('Calls signIn() on the aware', function() {
+    it('Calls signIn() on the aware', () => {
       let called;
-      element.authAware.signIn = () => (called = true);
+      element.authAware.signIn = () => { called = true };
       element.signIn();
       assert.isTrue(called);
     });
 
-    it('Calls signIn for click', function() {
+    it('Calls signIn for click', () => {
       let called;
-      element.authAware.signIn = () => (called = true);
+      element.authAware.signIn = () => { called = true };
       element.click();
       assert.isTrue(called);
     });
 
-    it('Calls signIn for spacebar press', () => {
+    it('Calls signIn for space bar press', () => {
       let called;
-      element.signIn = () => (called = true);
+      element.signIn = () => { called = true };
       const e = keyboardEventFor('keydown', 32, ' ', 'Space');
       element.dispatchEvent(e);
       assert.isTrue(called);
@@ -170,7 +179,7 @@ describe('<anypoint-signin>', () => {
 
     it('Calls signIn for enter press', () => {
       let called;
-      element.signIn = () => (called = true);
+      element.signIn = () => { called = true };
       const e = keyboardEventFor('keydown', 13, 'Enter', 'Enter');
       element.dispatchEvent(e);
       assert.isTrue(called);
@@ -178,7 +187,7 @@ describe('<anypoint-signin>', () => {
 
     it('Calls signIn for numeric enter press', () => {
       let called;
-      element.signIn = () => (called = true);
+      element.signIn = () => { called = true };
       const e = keyboardEventFor('keydown', 13, 'Enter', 'NumpadEnter');
       element.dispatchEvent(e);
       assert.isTrue(called);
@@ -186,37 +195,37 @@ describe('<anypoint-signin>', () => {
 
     it('Ignores other keys', () => {
       let called = false;
-      element.signOut = () => (called = true);
+      element.signOut = () => { called = true };
       const e = keyboardEventFor('keydown', 48, '0', '0');
       element.dispatchEvent(e);
       assert.isFalse(called);
     });
   });
 
-  describe('signOut', function() {
-    let element;
+  describe('signOut', () => {
+    let element = /** @type AnypointSigninElement */ (null);
     beforeEach(async () => {
       element = await setupReadyFixture();
       element.signedIn = true;
     });
 
-    it('Calls signOut() on the aware', function() {
+    it('Calls signOut() on the aware', () => {
       let called;
-      element.authAware.signOut = () => (called = true);
+      element.authAware.signOut = async () => { called = true };
       element.signOut();
       assert.isTrue(called);
     });
 
-    it('Calls signOut for click', function() {
+    it('Calls signOut for click', () => {
       let called;
-      element.signOut = () => (called = true);
+      element.signOut = () => { called = true };
       element.click();
       assert.isTrue(called);
     });
 
-    it('Calls signOut for spacebar press', () => {
+    it('Calls signOut for space bar press', () => {
       let called;
-      element.signOut = () => (called = true);
+      element.signOut = () => { called = true };
       const e = keyboardEventFor('keydown', 32, ' ', 'Space');
       element.dispatchEvent(e);
       assert.isTrue(called);
@@ -224,7 +233,7 @@ describe('<anypoint-signin>', () => {
 
     it('Calls signOut for enter press', () => {
       let called;
-      element.signOut = () => (called = true);
+      element.signOut = () => { called = true };
       const e = keyboardEventFor('keydown', 13, 'Enter', 'Enter');
       element.dispatchEvent(e);
       assert.isTrue(called);
@@ -232,7 +241,7 @@ describe('<anypoint-signin>', () => {
 
     it('Calls signIn for numeric enter press', () => {
       let called;
-      element.signOut = () => (called = true);
+      element.signOut = () => { called = true };
       const e = keyboardEventFor('keydown', 13, 'Enter', 'NumpadEnter');
       element.dispatchEvent(e);
       assert.isTrue(called);
@@ -240,7 +249,7 @@ describe('<anypoint-signin>', () => {
 
     it('Ignores other keys', () => {
       let called = false;
-      element.signOut = () => (called = true);
+      element.signOut = () => { called = true };
       const e = keyboardEventFor('keydown', 48, '0', '0');
       element.dispatchEvent(e);
       assert.isFalse(called);
@@ -248,10 +257,9 @@ describe('<anypoint-signin>', () => {
   });
 
   describe('onsignedin', () => {
-    let element;
+    let element = /** @type AnypointSigninElement */ (null);
     beforeEach(async () => {
       element = await basicFixture();
-      element.signedIn = false;
     });
 
     it('Getter returns previously registered handler', () => {
@@ -267,7 +275,7 @@ describe('<anypoint-signin>', () => {
         called = true;
       };
       element.onsignedin = f;
-      element.signedIn = true;
+      element.dispatchEvent(new Event(SignedInChangeType));
       element.onsignedin = null;
       assert.isTrue(called);
     });
@@ -283,7 +291,7 @@ describe('<anypoint-signin>', () => {
       };
       element.onsignedin = f1;
       element.onsignedin = f2;
-      element.signedIn = true;
+      element.dispatchEvent(new Event(SignedInChangeType));
       element.onsignedin = null;
       assert.isFalse(called1);
       assert.isTrue(called2);
@@ -291,7 +299,7 @@ describe('<anypoint-signin>', () => {
   });
 
   describe('onaccesstoken', () => {
-    let element;
+    let element = /** @type AnypointSigninElement */ (null);
     beforeEach(async () => {
       element = await basicFixture();
     });
@@ -310,6 +318,7 @@ describe('<anypoint-signin>', () => {
       };
       element.onaccesstoken = f;
       element.accessToken = 'test';
+      element.dispatchEvent(new Event(AccessTokenChangeType));
       element.onaccesstoken = null;
       assert.isTrue(called);
     });
@@ -326,6 +335,7 @@ describe('<anypoint-signin>', () => {
       element.onaccesstoken = f1;
       element.onaccesstoken = f2;
       element.accessToken = 'test';
+      element.dispatchEvent(new Event(AccessTokenChangeType));
       element.onaccesstoken = null;
       assert.isFalse(called1);
       assert.isTrue(called2);
@@ -364,7 +374,7 @@ describe('<anypoint-signin>', () => {
 
     it('has aria-label attribute', async () => {
       const element = await basicFixture();
-      assert.notEmpty(element.getAttribute('aria-label'));
+      assert.ok(element.getAttribute('aria-label'));
     });
 
     it('respects existing aria-label attribute', async () => {

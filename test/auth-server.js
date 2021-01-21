@@ -1,24 +1,25 @@
-import sinon from 'sinon/pkg/sinon-esm.js';
+import sinon from 'sinon';
+
 export const AuthServer = {
-  createServer: function() {
-    this.srv = sinon.fakeServer.create({
+  createServer: () => {
+    AuthServer.srv = sinon.fakeServer.create({
       autoRespond: true
     });
-    this.mock();
+    AuthServer.mock();
   },
 
-  mock: function() {
-    this.mockLogout();
+  mock: () => {
+    AuthServer.mockLogout();
   },
 
-  mockLogout: function() {
+  mockLogout: () => {
     const url = /^https:\/\/anypoint\.mulesoft\.com\/accounts\/api\/logout/;
-    this.srv.respondWith('DELETE', url, function(request) {
+    AuthServer.srv.respondWith('DELETE', url, (request) => {
       request.respond(200, {}, '{"test": true}');
     });
   },
 
-  restore: function() {
-    this.srv.restore();
+  restore: () => {
+    AuthServer.srv.restore();
   }
 };

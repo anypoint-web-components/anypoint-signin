@@ -16,7 +16,7 @@ class SampleElement extends LitElement {
         .clientId="\${this.clientId}"
         .scopes="\${this.scopes}"
         .redirectUri="\${this.redirectUri}"
-        @signedin-changed="\${this._signedinHandler}"
+        @signedinchange="\${this._signedinHandler}"
       ></anypoint-signin>
     \`;
   }

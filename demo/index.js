@@ -1,5 +1,5 @@
 import { html } from 'lit-html';
-import { ArcDemoPage } from '@advanced-rest-client/arc-demo-helper/ArcDemoPage.js';
+import { DemoPage } from '@advanced-rest-client/arc-demo-helper';
 import '@advanced-rest-client/arc-demo-helper/arc-interactive-demo.js';
 import '@anypoint-web-components/anypoint-radio-button/anypoint-radio-button.js';
 import '@anypoint-web-components/anypoint-radio-button/anypoint-radio-group.js';
@@ -14,19 +14,21 @@ import litExample from './lit-example.js';
 import htmlCodeExample from './html-code-example.js';
 import litCodeExample from './lit-code-example.js';
 import nodeCodeExample from './node-server-example.js';
+import { AnypointCodeExchangeEventType, AnypointSignedInErrorType } from '../index.js';
+
+/** @typedef {import('../index').AnypointCodeExchangeEvent} AnypointCodeExchangeEvent */
+/** @typedef {import('@advanced-rest-client/arc-types').Authorization.TokenInfo} TokenInfo */
 
 const apiBase = 'https://awc.dev/api/v1'
 const tokenUri = `${apiBase}/auth/anypoint-token`;
 
-class DemoPage extends ArcDemoPage {
+class ComponentDemoPage extends DemoPage {
   constructor() {
     super();
     this.initObservableProperties(['buttonWidth', 'status', 'code', 'accessToken']);
-    this._componentName = 'anypoint-signin';
+    this.componentName = 'anypoint-signin';
     this.demoStates = ['Anypoint'];
     this.buttonWidth = 'wide';
-    this._demoStateHandler = this._demoStateHandler.bind(this);
-    this._toggleMainOption = this._toggleMainOption.bind(this);
     this._widthHandler = this._widthHandler.bind(this);
     this._signedinChangedHandler = this._signedinChangedHandler.bind(this);
     this._oauth2CodeHandler = this._oauth2CodeHandler.bind(this);
@@ -36,19 +38,8 @@ class DemoPage extends ArcDemoPage {
     this.redirectUri = 'https://auth.advancedrestclient.com/oauth-popup.html';
     this.clientId = '2e38d46b60c5476584cdecba8b516711';
 
-    window.addEventListener('oauth2-code-response', this._oauth2CodeHandler);
-    window.addEventListener('anypoint-signin-aware-error', this._errorHandler);
-  }
-
-  _toggleMainOption(e) {
-    const { name, checked } = e.target;
-    this[name] = checked;
-  }
-
-  _demoStateHandler(e) {
-    const state = e.detail.value;
-    this.outlined = state === 1;
-    this.compatibility = state === 2;
+    window.addEventListener(AnypointCodeExchangeEventType, this._oauth2CodeHandler);
+    window.addEventListener(AnypointSignedInErrorType, this._errorHandler);
   }
 
   _widthHandler(e) {
@@ -60,16 +51,24 @@ class DemoPage extends ArcDemoPage {
   }
 
   _signedinChangedHandler(e) {
-    const { value } = e.detail;
-    this.status = String(value);
+    const { signedIn } = e.target;
+    this.status = String(signedIn);
   }
 
+  /**
+   * @param {AnypointCodeExchangeEvent} e
+   */
   _oauth2CodeHandler(e) {
-    const { code } = e.detail;
+    const { code } = e;
     this.code = code;
-    setTimeout(() => this._exchangeCode(code));
+    e.preventDefault();
+    e.detail.result = this._exchangeCode(code);
   }
 
+  /**
+   * @param {string} code
+   * @returns {Promise<TokenInfo>}
+   */
   async _exchangeCode(code) {
     const body = {
       code,
@@ -89,24 +88,32 @@ class DemoPage extends ArcDemoPage {
       if (response.ok) {
         this.accessToken = data.data.accessToken;
       } else {
-        this._toastEreror(data.message);
-        console.error(data);
+        throw new Error('No token response received');
+      }
+      return {
+        accessToken: data.data.accessToken,
+        expiresAt: 0,
+        expiresIn: data.data.expiresIn,
+        expiresAssumed: true,
+        state: '0',
       }
     } catch (e) {
-      this._toastEreror(e.message);
-      console.error(e);
+      this._toastError(e.message);
+      throw e;
     }
   }
 
-  _toastEreror(message) {
+  _toastError(message) {
     const toast = document.getElementById('errorToast');
+    // @ts-ignore
     toast.text = message;
+    // @ts-ignore
     toast.opened = true;
   }
 
   _errorHandler(e) {
     const { message } = e.detail;
-    this._toastEreror(message);
+    this._toastError(message);
   }
 
   _demoTemplate() {
@@ -119,7 +126,7 @@ class DemoPage extends ArcDemoPage {
         </p>
         <arc-interactive-demo
           .states="${demoStates}"
-          @state-chanegd="${this._demoStateHandler}"
+          @state-changed="${this._demoStateHandler}"
           ?dark="${darkThemeActive}"
         >
           <anypoint-signin
@@ -128,7 +135,7 @@ class DemoPage extends ArcDemoPage {
             .scopes="${scopes}"
             .redirectUri="${redirectUri}"
             slot="content"
-            @signedin-changed="${this._signedinChangedHandler}"
+            @signedinchange="${this._signedinChangedHandler}"
           ></anypoint-signin>
           <label slot="options" id="listTypeLabel">List type</label>
           <anypoint-radio-group slot="options" selectable="anypoint-radio-button" aria-labelledby="listTypeLabel">
@@ -169,8 +176,7 @@ class DemoPage extends ArcDemoPage {
     return html`<section class="documentation-section">
       <h3>Usage</h3>
       <p>
-        Anypont sign in button is a web component and can be used in any
-        web environment.
+        Anypoint sign in button is a web component and can be used in any web environment.
       </p>
       <p>
         Learn more about using web components at <a href="https://open-wc.org/" target="_blank">Open WC project</a>.
@@ -190,8 +196,8 @@ class DemoPage extends ArcDemoPage {
         OAuth 2 flow.
       </p>
       <p>
-        The button starts the authorization flow and returns authorization code.
-        The code should be then used the exchange it to access token using a server component.
+        The button starts the authorization flow and returns the authorization code.
+        The code should be then used to exchange it to the access token using a server component.
       </p>
       <h5>In an html file</h5>
       <pre><code class="language-javascript">${htmlCodeExample}</code></pre>
@@ -200,7 +206,7 @@ class DemoPage extends ArcDemoPage {
 
       <h4>Exchanging the code</h4>
       <p>
-        Thwe server must make a request to Anypoint authorization server
+        The server must make a request to Anypoint authorization server
         with OAuth 2 standard parameters in the request body.
         These are:
       </p>
@@ -237,6 +243,7 @@ class DemoPage extends ArcDemoPage {
     if (!this._initialized) {
       this._initialized = true;
       /* global Prism */
+      // @ts-ignore
       setTimeout(() => Prism.highlightAll());
     }
     return html`
@@ -248,5 +255,5 @@ class DemoPage extends ArcDemoPage {
   }
 }
 
-const instance = new DemoPage();
+const instance = new ComponentDemoPage();
 instance.render();
