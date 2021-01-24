@@ -300,7 +300,7 @@ export const AnypointAuth = {
         return;
       }
       this._handleOauthError(e);
-      throw e;
+      // throw e;
     }
   },
 
