@@ -290,7 +290,7 @@ export const AnypointAuth = {
         info = await auth.authorize();
       }
       // the state is checked in the authorization library so no need to check it here
-      if (!info.accessToken) {
+      if (!info || !info.accessToken) {
         AnypointAuth.setAuthData();
       } else {
         AnypointAuth.setAuthData(info.accessToken);
