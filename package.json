@@ -1,7 +1,7 @@
 {
   "name": "@anypoint-web-components/anypoint-signin",
   "description": "Anypoint authentication web component",
-  "version": "5.0.1",
+  "version": "5.0.2",
   "license": "Apache-2.0",
   "main": "index.js",
   "module": "index.js",
@@ -12,10 +12,10 @@
     "oauth2",
     "authorization"
   ],
-  "authors": [
-    "Pawel Psztyc",
-    "The Advanced REST client authors <arc@mulesoft.com>"
-  ],
+  "author": {
+    "name": "Pawel Psztyc",
+    "email": "arc@mulesoft.com"
+  },
   "contributors": [
     "Your name can be here!"
   ],
@@ -29,29 +29,29 @@
   },
   "dependencies": {
     "@advanced-rest-client/arc-events": "^0.2.14",
-    "@advanced-rest-client/arc-types": "^0.2.49",
+    "@advanced-rest-client/arc-types": "^0.2.50",
     "@advanced-rest-client/oauth-authorization": "^5.0.5",
-    "@anypoint-web-components/anypoint-button": "^1.2.0",
-    "lit-element": "^2.4.0"
+    "@anypoint-web-components/anypoint-button": "^1.2.1",
+    "lit-element": "^2.5.1"
   },
   "devDependencies": {
     "@advanced-rest-client/arc-demo-helper": "^2.2.6",
-    "@anypoint-web-components/anypoint-radio-button": "^0.1.6",
+    "@anypoint-web-components/anypoint-radio-button": "^0.1.7",
     "@anypoint-web-components/anypoint-styles": "^1.0.1",
-    "@commitlint/cli": "^12.0.1",
-    "@commitlint/config-conventional": "^12.0.1",
-    "@open-wc/eslint-config": "^4.0.1",
-    "@open-wc/testing": "^2.5.32",
+    "@commitlint/cli": "^12.1.4",
+    "@commitlint/config-conventional": "^12.1.4",
+    "@open-wc/eslint-config": "^4.3.0",
+    "@open-wc/testing": "^2.5.33",
     "@polymer/paper-toast": "^3.0.0",
-    "@web/dev-server": "^0.1.8",
-    "@web/test-runner": "^0.12.15",
-    "@web/test-runner-playwright": "^0.8.4",
-    "eslint": "^7.21.0",
-    "eslint-config-prettier": "^8.1.0",
-    "husky": "^4.3.8",
-    "lint-staged": "^10.5.4",
-    "sinon": "^9.2.4",
-    "typescript": "^4.2.2",
+    "@web/dev-server": "^0.1.17",
+    "@web/test-runner": "^0.13.5",
+    "@web/test-runner-playwright": "^0.8.6",
+    "eslint": "^7.27.0",
+    "eslint-config-prettier": "^8.3.0",
+    "husky": "^6.0.0",
+    "lint-staged": "^11.0.0",
+    "sinon": "^11.1.1",
+    "typescript": "^4.3.2",
     "typescript-lit-html-plugin": "^0.9.0"
   },
   "scripts": {

@@ -8,6 +8,10 @@ Anypoint platform authentication web components.
 
 Use `anypoint-signin-aware` inside your application to receive events when the user is authenticated.
 
+[![Published on NPM](https://img.shields.io/npm/v/@anypoint-web-components/anypoint-signin.svg)](https://www.npmjs.com/package/@anypoint-web-components/anypoint-signin)
+
+[![tests](https://github.com/anypoint-web-components/anypoint-signin/actions/workflows/deployment.yml/badge.svg)](https://github.com/anypoint-web-components/anypoint-signin/actions/workflows/deployment.yml)
+
 ## Usage
 
 ### Installation
