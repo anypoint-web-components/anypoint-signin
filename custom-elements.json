@@ -1,0 +1,392 @@
+{
+  "version": "experimental",
+  "tags": [
+    {
+      "name": "anypoint-signin-aware",
+      "path": "./anypoint-signin-aware.js",
+      "description": "`<anypoint-signin-aware>` is used to authenticate the user with the Anypoint Platform.\n\nThe `anypoint-signin-aware-success` event is triggered when a user\nsuccessfully authenticates. It also sets `accessToken` property that can be\nused to interact with Anypoint Platform APIs.\n\nThe `anypoint-signin-aware-signed-out` event is triggered when a user\nsigns out via calling `signOut()` function.\n\nThe `oauth2-token-response` event is triggered when a user\nsuccessfully authenticates for the authorization_code flow via the /authorize endpoint. An authorization code\nis returned in the event and should be used to exchange for an access token via the /token endpoint from\nyour backend server.\n\nYou can bind to `signedIn` property to monitor authorization state.\n##### Example\n\n     <anypoint-signin-aware signed-in=\"{{isSigned}}\"></anypoint-signin-aware>\n\nThe `clientId` and `redirectUri` properties has to be set before using the\ncomponent. `clientId` and associated with it `redirectUri` has to be set up\nwith Anypoint authorization server.\nContact Anypoint Access Management for more information.\n\n##### Example\n\n      <anypoint-signin-aware\n        client-id=\"abc123\"\n        redirect-uri=\"https://auth.domain.com/oauth2/redirect\"\n      >\n      </anypoint-signin-aware>\n\n## Authorization types\n\nThis element supports `implicit` and `authorization_code` authentication flows.\n\nIf you have to use the `authorization_code` authorization flow on the client side,\nyou MUST handle exchanging the authorization code for an access token.\nThe anypoint-signin-aware component will trigger the authorization flow for the user.\nOnce the user grants authorization, the authorization server will redirect the user to the redirect_uri of your app.\n\nYour site at the redirect_uri should send back\na window message (https://developer.mozilla.org/en-US/docs/Web/API/Window/message_event)\nvia window.postMessage() that contains the authorization_code.\n\nSee https://github.com/advanced-rest-client/oauth-authorization/blob/stage/oauth-popup.html for an example\nof a page that the Advanced Rest Client redirect_uri goes to which handles the authorization flow correctly.\n\n## Auto log in\n\nThe element attempts to log in user in a non-interactive way (without\ndisplaying the popup) when the element is ready. It does nothing when\nthe response is error.",
+      "attributes": [
+        {
+          "name": "authType",
+          "description": "The authorization grant type. e.g. implicit, authorization code, etc.\nNote for authorization code and other grant types, you should use forceOAuthEvents (see below).",
+          "type": "string | undefined"
+        },
+        {
+          "name": "clientId",
+          "description": "An Anypoint clientId.\nThis property is required to run the authorization flow.",
+          "type": "string | undefined"
+        },
+        {
+          "name": "redirectUri",
+          "description": "Authorization redirect URI.\nThis property is required to run the authorization flow.",
+          "type": "string | undefined"
+        },
+        {
+          "name": "scopes",
+          "description": "String representing scopes that the application is requesting from the user.\nThese scopes should be a subset of the scopes enabled for the client.\nThis property is required to run the grant authorization flow.",
+          "type": "string | undefined"
+        },
+        {
+          "name": "forceOauthEvents",
+          "description": "By default this element inserts `oauth2-authorization` element to the\nbody and uses direct API to authorize the client. Set this property to\nforce the element to use events system to call the OAuth endpoint.\n\nIt is useful when your application has it's own OAuth 2 authorization\nmechanism. In this case handle `oauth2-token-requested` custom event.\nSee `@advanced-rest-client/oauth-authorization` component documentation\nfor more information.",
+          "type": "boolean | undefined"
+        }
+      ],
+      "properties": [
+        {
+          "name": "authType",
+          "attribute": "authType",
+          "description": "The authorization grant type. e.g. implicit, authorization code, etc.\nNote for authorization code and other grant types, you should use forceOAuthEvents (see below).",
+          "type": "string | undefined"
+        },
+        {
+          "name": "clientId",
+          "attribute": "clientId",
+          "description": "An Anypoint clientId.\nThis property is required to run the authorization flow.",
+          "type": "string | undefined"
+        },
+        {
+          "name": "redirectUri",
+          "attribute": "redirectUri",
+          "description": "Authorization redirect URI.\nThis property is required to run the authorization flow.",
+          "type": "string | undefined"
+        },
+        {
+          "name": "scopes",
+          "attribute": "scopes",
+          "description": "String representing scopes that the application is requesting from the user.\nThese scopes should be a subset of the scopes enabled for the client.\nThis property is required to run the grant authorization flow.",
+          "type": "string | undefined"
+        },
+        {
+          "name": "forceOauthEvents",
+          "attribute": "forceOauthEvents",
+          "description": "By default this element inserts `oauth2-authorization` element to the\nbody and uses direct API to authorize the client. Set this property to\nforce the element to use events system to call the OAuth endpoint.\n\nIt is useful when your application has it's own OAuth 2 authorization\nmechanism. In this case handle `oauth2-token-requested` custom event.\nSee `@advanced-rest-client/oauth-authorization` component documentation\nfor more information.",
+          "type": "boolean | undefined"
+        },
+        {
+          "name": "accessToken",
+          "type": "string"
+        },
+        {
+          "name": "signedIn",
+          "type": "boolean"
+        }
+      ],
+      "events": [
+        {
+          "name": "anypointsignin"
+        },
+        {
+          "name": "anypointsignout"
+        },
+        {
+          "name": "anypointsigninawareerror"
+        },
+        {
+          "name": "accesstokenchange"
+        },
+        {
+          "name": "signedinchange"
+        },
+        {
+          "name": "anypointcodeexchange"
+        }
+      ]
+    },
+    {
+      "name": "anypoint-signin",
+      "path": "./anypoint-signin.js",
+      "description": "## Overview\n\nThe Anypoint SignIn button allows you to sign users into the Anypoint Platform.\n\n## Scopes\n\nIf you require OAuth 2.0 authorization for certain scopes for your application, the SignIn button supports\nrequesting authorization for scopes from the user and will initialize an authorization flow for those scopes.\nSimply pass a space separated list of scopes as an attribute to the anypoint-signin element.\n\nExample\n```\n<anypoint-signin redirectUri=\"YOUR_REDIRECT_URI\" scopes=\"profile openid ...\" clientId=\"YOUR_CLIENT_ID\"></anypoint-signin>\n```\n\n#### Notes\n\nThe `clientId`, `redirectUri`, and `authType` properties has to be set before using the component.\n\nNote: `authType` determines what grant type flow to use for authentication.\nContact the Anypoint Access Management team for more information.\nBy default, the `authType` will be \"authorization_code\".\n\nNote: `scopes` is an optional property that tells the button which scopes to request authorization for.\n\nNote: The Anypoint Platform, for security reasons, does not support the `implicit` flow.\nPlease use the \"authorization_code\" flow.\n\n`clientId` and `redirectUri` has to be set up in the Anypoint Platform when registering an application.\n\n  If you do not need to show the button, use the companion\n`<anypoint-signin-aware>` element to check authentication state and perform manual authentication.\n\n## Authorization type\n\nThis element supports `implicit` and `authorization_code` authentication flows.\nIt potentially also supports `refresh_token` (use at your discretion, this hasn't been thoroughly tested).\n\nThe authorization result via the `implicit` flow is an `accessToken` that can be used to call other APIs.\n\nThe authorization result via the `authorization_code` flow will dispatch an event \"oauth2-code-response\" with the\nauthorization \"code\" which you can exchange (e.g. via a backend service) for an `accessToken`.\n\nIf you have to use the `authorization_code` authorization flow, you MUST handle exchanging the authorization code\nfor an access token. The anypoint-signin-aware element that the anypoint-signin button uses will trigger the\nauthorization flow. Once the user grants authorization, the authorization server will redirect the user to the\nredirect_uri of the application. The page at the redirect_uri will have the authorization code in the \"code\"\nquery parameter of the url. The page should parse through the query parameters and send this via a\nwindow.postMessage() call back to the page with the anypoint-signin button. The anypoint-signin-aware\nuses the oauth2-authorization module has an event listener for the window message event and will dispatch\nthe \"oauth2-code-response\" event with the authorization code for you to exchange for the access token.\n\nSee https://github.com/advanced-rest-client/oauth-authorization/blob/stage/oauth-popup.html for an example\nof a page that the Advanced Rest Client redirect_uri goes to which handles the authorization flow correctly.\n\nSee the demo page for an event listener for the \"oauth2-code-response\". This should be what you implement\nfor getting the code back.\n\nThe \"oauth2-code-response\" will have the following properties if you dispatch a message\ncorrectly from the redirect uri popup window after a user successfully grants authorization to your application.\n\ncode: \"THE_AUTHORIZATION_CODE\"\noauth2response: true\nstate: \"YOUR_STATE_QUERY_PARAMETER\"\ntokenTime: 1566413156116\n\n#### Examples\n\n```html\n<anypoint-signin\n    scopes=\"openid\"\n    client-id=\"YOUR APPLICATION CLIENT ID\"\n    redirect-uri=\"https://auth.domain.com/auth/redirect\"\n  />\n<anypoint-signin\n    label-signin=\"Sign-in\" client-id=\"...\"\n    redirect-uri=\"https://auth.domain.com/auth/redirect\"\n/>\n<anypoint-signin\n    width=\"standard\"\n    client-id=\"...\"\n    redirect-uri=\"https://auth.domain.com/auth/redirect\"\n  />\n```\n\n## Auto log in\n\nThe element attempts to log in user in a non-interactive way (without\ndisplaying the popup) when the element is ready. It does nothing when\nthe response is an error.",
+      "attributes": [
+        {
+          "name": "clientId",
+          "description": "An Anypoint clientId",
+          "type": "string"
+        },
+        {
+          "name": "redirectUri",
+          "description": "Authorization redirect URI",
+          "type": "string"
+        },
+        {
+          "name": "signedIn",
+          "description": "True if user is signed in",
+          "type": "boolean"
+        },
+        {
+          "name": "accessToken",
+          "description": "True if user is signed in",
+          "type": "string"
+        },
+        {
+          "name": "labelSignin",
+          "description": "An optional label for the sign-in button.",
+          "type": "string"
+        },
+        {
+          "name": "labelSignout",
+          "description": "An optional label for the sign-out button.\n\nDefaults to `Sign out`",
+          "type": "string"
+        },
+        {
+          "name": "scopes",
+          "description": "OAuth Scopes that the signin flow will request for.",
+          "type": "string"
+        },
+        {
+          "name": "authType",
+          "description": "The authorization type e.g. implicit, authorization_code, etc.",
+          "type": "string"
+        },
+        {
+          "name": "width",
+          "description": "The width to use for the button.\n\nAvailable options: 'standard', 'wide'.",
+          "type": "string",
+          "default": "\"'wide'\""
+        },
+        {
+          "name": "material",
+          "description": "If set to true, sets the compatibility property of AnypointButton to false\nso that the button is rendered like the Anypoint Button (with material styling)",
+          "type": "boolean"
+        },
+        {
+          "name": "forceOauthEvents",
+          "description": "By default this element inserts `oauth2-authorization` element to the\nbody and uses direct API to authorize the client. Set this property to\nforce the element to use events system to call the OAuth endpoint.\n\nIt is useful when your application has it's own OAuth 2 authorization\nmechanism.",
+          "type": "boolean"
+        },
+        {
+          "name": "toggles",
+          "description": "If true, the button toggles the active state with each click or press\nof the space bar.",
+          "type": "boolean"
+        },
+        {
+          "name": "active",
+          "description": "If true, the button is a toggle and is currently in the active state.",
+          "type": "boolean"
+        },
+        {
+          "name": "pressed",
+          "description": "True when the element is currently being pressed as\nthe user is holding down the button on the element.",
+          "type": "boolean"
+        },
+        {
+          "name": "ariaActiveAttribute",
+          "description": "The aria attribute to be set if the button is a toggle and in the\nactive state.",
+          "type": "string"
+        },
+        {
+          "name": "disabled",
+          "description": "If true the button is a toggle and is currently in the active state.",
+          "type": "boolean"
+        },
+        {
+          "name": "focused",
+          "description": "If true the element currently has focus.",
+          "type": "boolean"
+        }
+      ],
+      "properties": [
+        {
+          "name": "styles",
+          "type": "CSSResult[]"
+        },
+        {
+          "name": "onsignedin",
+          "description": "Previously registered handler for `signedin-changed` event",
+          "type": "EventListener"
+        },
+        {
+          "name": "onaccesstoken",
+          "description": "Previously registered handler for `accesstoken-changed` event",
+          "type": "EventListener"
+        },
+        {
+          "name": "clientId",
+          "attribute": "clientId",
+          "description": "An Anypoint clientId",
+          "type": "string"
+        },
+        {
+          "name": "redirectUri",
+          "attribute": "redirectUri",
+          "description": "Authorization redirect URI",
+          "type": "string"
+        },
+        {
+          "name": "signedIn",
+          "attribute": "signedIn",
+          "description": "True if user is signed in",
+          "type": "boolean"
+        },
+        {
+          "name": "accessToken",
+          "attribute": "accessToken",
+          "description": "True if user is signed in",
+          "type": "string"
+        },
+        {
+          "name": "labelSignin",
+          "attribute": "labelSignin",
+          "description": "An optional label for the sign-in button.",
+          "type": "string"
+        },
+        {
+          "name": "labelSignout",
+          "attribute": "labelSignout",
+          "description": "An optional label for the sign-out button.\n\nDefaults to `Sign out`",
+          "type": "string"
+        },
+        {
+          "name": "scopes",
+          "attribute": "scopes",
+          "description": "OAuth Scopes that the signin flow will request for.",
+          "type": "string"
+        },
+        {
+          "name": "authType",
+          "attribute": "authType",
+          "description": "The authorization type e.g. implicit, authorization_code, etc.",
+          "type": "string"
+        },
+        {
+          "name": "width",
+          "attribute": "width",
+          "description": "The width to use for the button.\n\nAvailable options: 'standard', 'wide'.",
+          "type": "string",
+          "default": "\"'wide'\""
+        },
+        {
+          "name": "material",
+          "attribute": "material",
+          "description": "If set to true, sets the compatibility property of AnypointButton to false\nso that the button is rendered like the Anypoint Button (with material styling)",
+          "type": "boolean"
+        },
+        {
+          "name": "forceOauthEvents",
+          "attribute": "forceOauthEvents",
+          "description": "By default this element inserts `oauth2-authorization` element to the\nbody and uses direct API to authorize the client. Set this property to\nforce the element to use events system to call the OAuth endpoint.\n\nIt is useful when your application has it's own OAuth 2 authorization\nmechanism.",
+          "type": "boolean"
+        },
+        {
+          "name": "authAware",
+          "type": "AnypointSigninAwareElement"
+        },
+        {
+          "name": "elevation",
+          "description": "The z-depth of this element, from 0-5. Setting to 0 will remove the\nshadow, and each increasing number greater than 0 will be \"deeper\"\nthan the last.\nThis is for MD implementation.",
+          "type": "boolean"
+        },
+        {
+          "name": "emphasis",
+          "description": "Button emphasis in the UI.\n\nPossible values:\n- `low` - Text buttons are typically used for less important actions.\n- `medium` - Outlined buttons are used for more emphasis than text buttons due to the stroke.\n- `high` - Contained buttons have more emphasis, as they use use a color fill and shadow.\n\nDefault is \"low\".",
+          "type": "string"
+        },
+        {
+          "name": "noink",
+          "description": "When set ripple effect is not rendered.",
+          "type": "boolean"
+        },
+        {
+          "name": "legacy",
+          "type": "boolean",
+          "deprecatedMessage": "Use legacy instead."
+        },
+        {
+          "name": "compatibility",
+          "description": "Enables compatibility with Anypoint components.",
+          "type": "boolean"
+        },
+        {
+          "name": "toggles",
+          "attribute": "toggles",
+          "description": "If true, the button toggles the active state with each click or press\nof the space bar.",
+          "type": "boolean"
+        },
+        {
+          "name": "active",
+          "attribute": "active",
+          "description": "If true, the button is a toggle and is currently in the active state.",
+          "type": "boolean"
+        },
+        {
+          "name": "pressed",
+          "attribute": "pressed",
+          "description": "True when the element is currently being pressed as\nthe user is holding down the button on the element.",
+          "type": "boolean"
+        },
+        {
+          "name": "pointerDown",
+          "description": "True when the a pointer device is currently pointing on the element\nand is in \"down\" state.",
+          "type": "boolean"
+        },
+        {
+          "name": "receivedFocusFromKeyboard",
+          "description": "True when the element received focus from the keyboard.",
+          "type": "boolean"
+        },
+        {
+          "name": "ariaActiveAttribute",
+          "attribute": "ariaActiveAttribute",
+          "description": "The aria attribute to be set if the button is a toggle and in the\nactive state.",
+          "type": "string"
+        },
+        {
+          "name": "disabled",
+          "attribute": "disabled",
+          "description": "If true the button is a toggle and is currently in the active state.",
+          "type": "boolean"
+        },
+        {
+          "name": "focused",
+          "attribute": "focused",
+          "description": "If true the element currently has focus.",
+          "type": "boolean"
+        }
+      ],
+      "events": [
+        {
+          "name": "signedinchange"
+        },
+        {
+          "name": "accesstokenchange"
+        },
+        {
+          "name": "anypointcodeexchange"
+        },
+        {
+          "name": "anypointsignin"
+        },
+        {
+          "name": "anypointsignout"
+        },
+        {
+          "name": "anypointsigninawareerror"
+        },
+        {
+          "name": "pressedchange",
+          "description": "When the `pressed` property has changed"
+        },
+        {
+          "name": "activechange",
+          "description": "When the `active` property has changed"
+        },
+        {
+          "name": "pressed-changed",
+          "description": "This event is deprecated"
+        },
+        {
+          "name": "active-changed",
+          "description": "This event is deprecated"
+        },
+        {
+          "name": "focusedchange",
+          "description": "When the `focused` property has changed"
+        },
+        {
+          "name": "disabledchange",
+          "description": "When the `disabled` property has changed"
+        }
+      ]
+    }
+  ]
+}

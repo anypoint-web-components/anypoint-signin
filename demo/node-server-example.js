@@ -41,7 +41,7 @@ class AuthApiRoute extends BaseApi {
   }
   /**
    * Exchanges code for access token.
-   * @param {String} code Received authrization code
+   * @param {String} code Received authorization code
    * @return {Promise}
    */
   async _exchangeToken(code) {
@@ -51,7 +51,7 @@ class AuthApiRoute extends BaseApi {
   }
   /**
    * Creates message body for OAuth 2 token exchange
-   * @param {String} code Received authrization code
+   * @param {String} code Received authorization code
    * @return {String}
    */
   _getTokenExchangeBody(code) {
