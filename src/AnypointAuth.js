@@ -15,7 +15,7 @@ License for the specific language governing permissions and limitations under
 the License.
 */
 import { AuthorizationEvents } from '@advanced-rest-client/arc-events';
-import { randomString } from '@advanced-rest-client/oauth-authorization/src/Utils.js';
+import { randomString } from '@advanced-rest-client/authorization/src/Utils.js';
 import { ExchangeAuthorization } from './ExchangeAuthorization.js';
 import {
   clientIdValue,
@@ -26,8 +26,8 @@ import {
 } from './internals.js';
 
 /** @typedef {import('./AnypointSigninAwareElement').AnypointSigninAwareElement} AnypointSigninAwareElement */
-/** @typedef {import('@advanced-rest-client/oauth-authorization').OAuth2AuthorizationElement} OAuth2AuthorizationElement */
-/** @typedef {import('@advanced-rest-client/oauth-authorization').AuthorizationError} AuthorizationError */
+/** @typedef {import('@advanced-rest-client/authorization').OAuth2AuthorizationElement} OAuth2AuthorizationElement */
+/** @typedef {import('@advanced-rest-client/authorization').AuthorizationError} AuthorizationError */
 /** @typedef {import('@advanced-rest-client/arc-types').Authorization.TokenInfo} TokenInfo */
 /** @typedef {import('@advanced-rest-client/arc-types').Authorization.OAuth2Authorization} OAuth2Authorization */
 

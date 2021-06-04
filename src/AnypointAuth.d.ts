@@ -1,4 +1,4 @@
-import { AuthorizationError } from '@advanced-rest-client/oauth-authorization';
+import { AuthorizationError } from '@advanced-rest-client/authorization';
 import { OAuth2Authorization } from '@advanced-rest-client/arc-types/src/authorization/Authorization';
 import { AnypointSigninAwareElement } from './AnypointSigninAwareElement';
 import {
