@@ -345,7 +345,9 @@ describe('<anypoint-signin>', () => {
   describe('a11y', () => {
     it('passes a11y tests', async () => {
       const element = await basicFixture();
-      await assert.isAccessible(element);
+      await assert.isAccessible(element, {
+        ignoredRules: ['color-contrast'],
+      });
     });
 
     it('has role attribute', async () => {
