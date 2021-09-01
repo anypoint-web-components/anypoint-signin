@@ -1,7 +1,7 @@
 {
   "name": "@anypoint-web-components/anypoint-signin",
   "description": "Anypoint authentication web component",
-  "version": "6.0.1",
+  "version": "7.0.0",
   "license": "Apache-2.0",
   "main": "index.js",
   "module": "index.js",
@@ -28,10 +28,10 @@
     "email": "arc@mulesoft.com"
   },
   "dependencies": {
-    "@advanced-rest-client/arc-events": "^0.2.18",
-    "@advanced-rest-client/arc-types": "^0.2.55",
-    "@advanced-rest-client/authorization": "^0.1.5",
-    "@anypoint-web-components/anypoint-button": "^1.2.2",
+    "@advanced-rest-client/arc-events": "^0.2.20",
+    "@advanced-rest-client/arc-types": "^0.2.58",
+    "@advanced-rest-client/authorization": "^0.2.1",
+    "@anypoint-web-components/anypoint-button": "^1.2.3",
     "lit-element": "^2.5.1"
   },
   "devDependencies": {
@@ -44,14 +44,14 @@
     "@open-wc/testing": "^2.5.33",
     "@polymer/paper-toast": "^3.0.0",
     "@web/dev-server": "^0.1.22",
-    "@web/test-runner": "^0.13.16",
+    "@web/test-runner": "^0.13.17",
     "@web/test-runner-playwright": "^0.8.8",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^8.3.0",
-    "husky": "^7.0.1",
+    "husky": "^7.0.2",
     "lint-staged": "^11.1.2",
     "sinon": "^11.1.2",
-    "typescript": "^4.3.5",
+    "typescript": "^4.4.2",
     "typescript-lit-html-plugin": "^0.9.0"
   },
   "scripts": {
