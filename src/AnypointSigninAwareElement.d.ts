@@ -71,7 +71,7 @@ import {
  * @fires signedinchange
  * @fires anypointcodeexchange
  */
-export declare class AnypointSigninAwareElement extends LitElement {
+export default class AnypointSigninAwareElement extends LitElement {
   /**
    * The authorization grant type. e.g. implicit, authorization code, etc.
    * Note for authorization code and other grant types, you should use forceOAuthEvents (see below).

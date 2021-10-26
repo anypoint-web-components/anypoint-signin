@@ -1,7 +1,7 @@
-import { AnypointSigninAwareElement } from './src/AnypointSigninAwareElement';
+import Element from './src/AnypointSigninAwareElement';
 
 declare global {
   interface HTMLElementTagNameMap {
-    "anypoint-signin-aware": AnypointSigninAwareElement;
+    "anypoint-signin-aware": Element;
   }
 }

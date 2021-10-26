@@ -1,3 +1,3 @@
-import { AnypointSigninElement } from './src/AnypointSigninElement.js';
+import Element from './src/AnypointSigninElement.js';
 
-window.customElements.define('anypoint-signin', AnypointSigninElement);
+window.customElements.define('anypoint-signin', Element);

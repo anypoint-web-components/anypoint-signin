@@ -1,3 +1,3 @@
-import { AnypointSigninAwareElement } from './src/AnypointSigninAwareElement.js';
+import Element from './src/AnypointSigninAwareElement.js';
 
-window.customElements.define('anypoint-signin-aware', AnypointSigninAwareElement);
+window.customElements.define('anypoint-signin-aware', Element);

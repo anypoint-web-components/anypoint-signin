@@ -1,6 +1,6 @@
 import { fixture, assert, html } from '@open-wc/testing';
 import sinon from 'sinon';
-import { AuthorizationEventTypes } from '@advanced-rest-client/arc-events';
+import { AuthorizationEventTypes } from '@advanced-rest-client/events';
 import { AuthServer } from './auth-server.js';
 import { AnypointAuth } from '../src/AnypointAuth.js';
 import '../anypoint-signin-aware.js';

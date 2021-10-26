@@ -1,11 +1,12 @@
 /* eslint-disable class-methods-use-this */
 import { html, css } from 'lit-element';
-import '../anypoint-signin-aware.js';
-import { AnypointButton } from '@anypoint-web-components/anypoint-button';
+import { AnypointButtonElement } from '@anypoint-web-components/awc';
 import elementStyles from './Signin.styles.js';
 import { AccessTokenChangeType, SignedInChangeType } from './Events.js';
+import '../anypoint-signin-aware.js';
 
-/** @typedef {import('./AnypointSigninAwareElement').AnypointSigninAwareElement} AnypointSigninAwareElement */
+/** @typedef {import('./AnypointSigninAwareElement').default} AnypointSigninAwareElement */
+/** @typedef {import('@anypoint-web-components/awc/src/AnypointButtonBase').EmphasisValue} EmphasisValue */
 
 /**
  * Enum button label default values.
@@ -123,7 +124,7 @@ export const materialValue = Symbol('materialValue');
  * displaying the popup) when the element is ready. It does nothing when
  * the response is an error.
  */
-export class AnypointSigninElement extends AnypointButton {
+export default class AnypointSigninElement extends AnypointButtonElement {
   get styles() {
     return [
       // @ts-ignore
@@ -181,14 +182,14 @@ export class AnypointSigninElement extends AnypointButton {
   }
 
   /**
-   * @return {boolean} material property, which should represent opposite of compatibility
+   * @return {boolean} material property, which should represent opposite of "anypoint"
    */
   get material() {
     return this[materialValue];
   }
 
   /**
-   * @param {boolean} value If false, button should use compatibility styling.
+   * @param {boolean} value If false, button should use "anypoint" styling.
    * If true, should use material styling.
    */
   set material(value) {
@@ -196,7 +197,7 @@ export class AnypointSigninElement extends AnypointButton {
     if (old === value) {
       return;
     }
-    this.compatibility = !value;
+    this.anypoint = !value;
     this[materialValue] = value;
   }
 
@@ -244,7 +245,7 @@ export class AnypointSigninElement extends AnypointButton {
        */
       width: { type: String },
       /**
-       * If set to true, sets the compatibility property of AnypointButton to false
+       * If set to true, sets the "anypoint" property of AnypointButton to false
        * so that the button is rendered like the Anypoint Button (with material styling)
        */
       material: { type: Boolean },
@@ -269,6 +270,7 @@ export class AnypointSigninElement extends AnypointButton {
 
   constructor() {
     super();
+    /** @type EmphasisValue */
     this.emphasis = 'high';
     this.width = 'wide';
     this.labelSignout = 'Sign out';
@@ -277,7 +279,7 @@ export class AnypointSigninElement extends AnypointButton {
     this.labelSignin = undefined;
     this.redirectUri = undefined;
     this.scopes = undefined;
-    this.compatibility = true;
+    this.anypoint = true;
     this.forceOauthEvents = false;
     this.signedIn = false;
 

@@ -1,7 +1,7 @@
-import { OAuth2Authorization } from '@advanced-rest-client/authorization';
-import { Authorization } from '@advanced-rest-client/arc-types';
-import { TokenInfo } from '@advanced-rest-client/arc-types/src/authorization/Authorization';
-import { ProcessingOptions } from '@advanced-rest-client/authorization/src/types';
+import { OAuth2Authorization } from '@advanced-rest-client/app';
+import { Authorization } from '@advanced-rest-client/events';
+import { TokenInfo } from '@advanced-rest-client/events/src/authorization/Authorization';
+import { ProcessingOptions } from '@advanced-rest-client/app/src/elements/authorization/types';
 
 /**
  * Extends the OAuth 2 authorization class to tweak it to support Anypoint authorization process that does not

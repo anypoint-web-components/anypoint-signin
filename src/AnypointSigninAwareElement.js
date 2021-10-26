@@ -70,7 +70,7 @@ export const signedInLocal = Symbol('signedInLocal');
  * displaying the popup) when the element is ready. It does nothing when
  * the response is error.
  */
-export class AnypointSigninAwareElement extends LitElement {
+export default class AnypointSigninAwareElement extends LitElement {
   static get properties() {
     return {
       /**

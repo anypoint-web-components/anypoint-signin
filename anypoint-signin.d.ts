@@ -1,7 +1,7 @@
-import { AnypointSigninElement } from './src/AnypointSigninElement';
+import Element from './src/AnypointSigninElement';
 
 declare global {
   interface HTMLElementTagNameMap {
-    "anypoint-signin": AnypointSigninElement;
+    "anypoint-signin": Element;
   }
 }

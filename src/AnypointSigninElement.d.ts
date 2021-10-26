@@ -1,6 +1,6 @@
-import { CSSResult, TemplateResult } from 'lit-element';
-import { AnypointButton } from '@anypoint-web-components/anypoint-button';
-import { AnypointSigninAwareElement } from './AnypointSigninAwareElement';
+import { TemplateResult } from 'lit-element';
+import { AnypointButtonElement } from '@anypoint-web-components/awc';
+import AnypointSigninAwareElement from './AnypointSigninAwareElement';
 
 export declare const accessTokenChangeEvent: unique symbol;
 export declare const signedInChangeEvent: unique symbol;
@@ -105,9 +105,7 @@ export declare const materialValue: unique symbol;
  * @fires anypointsignout
  * @fires anypointsigninawareerror
  */
-export declare class AnypointSigninElement extends AnypointButton {
-  get styles(): CSSResult[];
-
+export default class AnypointSigninElement extends AnypointButtonElement {
   /**
    * Previously registered handler for `signedin-changed` event
    */
@@ -170,7 +168,7 @@ export declare class AnypointSigninElement extends AnypointButton {
    */
   width: string;
   /**
-   * If set to true, sets the compatibility property of AnypointButton to false
+   * If set to true, sets the "anypoint" property of AnypointButton to false
    * so that the button is rendered like the Anypoint Button (with material styling)
    * @attribute
    */

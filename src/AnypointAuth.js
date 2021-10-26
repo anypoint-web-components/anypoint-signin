@@ -14,8 +14,8 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations under
 the License.
 */
-import { AuthorizationEvents } from '@advanced-rest-client/arc-events';
-import { randomString } from '@advanced-rest-client/authorization/src/Utils.js';
+import { AuthorizationEvents } from '@advanced-rest-client/events';
+import { randomString } from '@advanced-rest-client/app/src/elements/authorization/Utils.js';
 import { ExchangeAuthorization } from './ExchangeAuthorization.js';
 import {
   clientIdValue,
@@ -25,11 +25,11 @@ import {
   accessTokenValue,
 } from './internals.js';
 
-/** @typedef {import('./AnypointSigninAwareElement').AnypointSigninAwareElement} AnypointSigninAwareElement */
-/** @typedef {import('@advanced-rest-client/authorization').OAuth2AuthorizationElement} OAuth2AuthorizationElement */
-/** @typedef {import('@advanced-rest-client/authorization').AuthorizationError} AuthorizationError */
-/** @typedef {import('@advanced-rest-client/arc-types').Authorization.TokenInfo} TokenInfo */
-/** @typedef {import('@advanced-rest-client/arc-types').Authorization.OAuth2Authorization} OAuth2Authorization */
+/** @typedef {import('./AnypointSigninAwareElement').default} AnypointSigninAwareElement */
+/** @typedef {import('@advanced-rest-client/app').OAuth2AuthorizationElement} OAuth2AuthorizationElement */
+/** @typedef {import('@advanced-rest-client/app').AuthorizationError} AuthorizationError */
+/** @typedef {import('@advanced-rest-client/events').Authorization.TokenInfo} TokenInfo */
+/** @typedef {import('@advanced-rest-client/events').Authorization.OAuth2Authorization} OAuth2Authorization */
 
 export const hostname = 'https://anypoint.mulesoft.com';
 

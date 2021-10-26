@@ -1,4 +1,4 @@
-import { TokenInfo } from "@advanced-rest-client/arc-types/src/authorization/Authorization";
+import { TokenInfo } from "@advanced-rest-client/events/src/authorization/Authorization";
 
 export declare const AnypointCodeExchangeEventType: string;
 export declare const AccessTokenChangeType: string;

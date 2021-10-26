@@ -54,19 +54,19 @@ describe('<anypoint-signin>', () => {
   }
 
   describe('material', () => {
-    it('sets compatibility to false if set to true', async () => {
+    it('sets anypoint to false if set to true', async () => {
       const element = await materialFixture(true);
-      assert.equal(element.compatibility, false);
+      assert.equal(element.anypoint, false);
     });
 
-    it('defaults compatibility to true if not set', async () => {
+    it('defaults anypoint to true if not set', async () => {
       const element = await basicFixture();
-      assert.equal(element.compatibility, true);
+      assert.equal(element.anypoint, true);
     });
 
-    it('sets compatibility to true if set to false', async () => {
+    it('sets anypoint to true if set to false', async () => {
       const element = await basicFixture();
-      assert.equal(element.compatibility, true);
+      assert.equal(element.anypoint, true);
     });
   });
 

@@ -1,13 +1,12 @@
 import { html } from 'lit-html';
 import { DemoPage } from '@advanced-rest-client/arc-demo-helper';
 import '@advanced-rest-client/arc-demo-helper/arc-interactive-demo.js';
-import '@anypoint-web-components/anypoint-radio-button/anypoint-radio-button.js';
-import '@anypoint-web-components/anypoint-radio-button/anypoint-radio-group.js';
-import '@polymer/paper-toast/paper-toast.js';
-import '@anypoint-web-components/anypoint-styles/colors.js';
-import '@anypoint-web-components/anypoint-styles/typography.js';
-import '@anypoint-web-components/anypoint-styles/din-pro.js';
-import '@anypoint-web-components/anypoint-button/anypoint-button.js';
+import '@anypoint-web-components/awc/anypoint-radio-button.js';
+import '@anypoint-web-components/awc/anypoint-radio-group.js';
+import '@anypoint-web-components/awc/anypoint-button.js';
+import '@anypoint-web-components/awc/colors.js';
+import '@anypoint-web-components/awc/typography.js';
+import '@anypoint-web-components/awc/din-pro.js';
 import '../anypoint-signin.js';
 import htmlExample from './html-example.js';
 import litExample from './lit-example.js';
@@ -17,7 +16,7 @@ import nodeCodeExample from './node-server-example.js';
 import { AnypointCodeExchangeEventType, AnypointSignedInErrorType } from '../index.js';
 
 /** @typedef {import('../index').AnypointCodeExchangeEvent} AnypointCodeExchangeEvent */
-/** @typedef {import('@advanced-rest-client/arc-types').Authorization.TokenInfo} TokenInfo */
+/** @typedef {import('@advanced-rest-client/events').Authorization.TokenInfo} TokenInfo */
 
 const apiBase = 'https://awc.dev/api/v1'
 const tokenUri = `${apiBase}/auth/anypoint-token`;
@@ -104,11 +103,7 @@ class ComponentDemoPage extends DemoPage {
   }
 
   _toastError(message) {
-    const toast = document.getElementById('errorToast');
-    // @ts-ignore
-    toast.text = message;
-    // @ts-ignore
-    toast.opened = true;
+    console.info(message)
   }
 
   _errorHandler(e) {
@@ -250,7 +245,6 @@ class ComponentDemoPage extends DemoPage {
       <h2>Anypoint Sign In Button</h2>
       ${this._demoTemplate()}
       ${this._usageTemplate()}
-      <paper-toast id="errorToast" duration="7000"></paper-toast>
     `;
   }
 }
