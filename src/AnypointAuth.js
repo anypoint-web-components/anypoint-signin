@@ -15,7 +15,7 @@ License for the specific language governing permissions and limitations under
 the License.
 */
 import { AuthorizationEvents } from '@advanced-rest-client/events';
-import { randomString } from '@advanced-rest-client/app/src/elements/authorization/Utils.js';
+import { Utils } from '@advanced-rest-client/oauth';
 import { ExchangeAuthorization } from './ExchangeAuthorization.js';
 import {
   clientIdValue,
@@ -26,8 +26,7 @@ import {
 } from './internals.js';
 
 /** @typedef {import('./AnypointSigninAwareElement').default} AnypointSigninAwareElement */
-/** @typedef {import('@advanced-rest-client/app').OAuth2AuthorizationElement} OAuth2AuthorizationElement */
-/** @typedef {import('@advanced-rest-client/app').AuthorizationError} AuthorizationError */
+/** @typedef {import('@advanced-rest-client/oauth').AuthorizationError} AuthorizationError */
 /** @typedef {import('@advanced-rest-client/events').Authorization.TokenInfo} TokenInfo */
 /** @typedef {import('@advanced-rest-client/events').Authorization.OAuth2Authorization} OAuth2Authorization */
 
@@ -252,7 +251,7 @@ export const AnypointAuth = {
       authorizationUri: AnypointAuth.authorizationUri,
       clientId: AnypointAuth.clientId,
       redirectUri: AnypointAuth.redirectUri,
-      state: randomString(),
+      state: Utils.randomString(),
       scopes: AnypointAuth.scopes,
     });
     const useAuthCodeFlow = AnypointAuth.authType === GRANT_TYPES.AUTH_CODE;

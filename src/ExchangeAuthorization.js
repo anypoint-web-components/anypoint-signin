@@ -1,9 +1,9 @@
-import { OAuth2Authorization } from '@advanced-rest-client/app';
+import { OAuth2Authorization } from '@advanced-rest-client/oauth';
 import { AnypointCodeExchangeEvent } from './Events.js';
 
 /** @typedef {import('@advanced-rest-client/events').Authorization.TokenInfo} TokenInfo */
 /** @typedef {import('@advanced-rest-client/events').Authorization.OAuth2Authorization} OAuth2Settings */
-/** @typedef {import('@advanced-rest-client/app/src/elements/authorization/types').ProcessingOptions} ProcessingOptions */
+/** @typedef {import('@advanced-rest-client/oauth').ProcessingOptions} ProcessingOptions */
 
 /**
  * Extends the OAuth 2 authorization class to tweak it to support Anypoint authorization process that does not
