@@ -1,4 +1,4 @@
-import { TemplateResult } from 'lit-element';
+import { TemplateResult } from 'lit';
 import { AnypointButtonElement } from '@anypoint-web-components/awc';
 import AnypointSigninAwareElement from './AnypointSigninAwareElement';
 

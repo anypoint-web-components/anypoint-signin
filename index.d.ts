@@ -3,3 +3,5 @@ export { ExchangeAuthorization } from './src/ExchangeAuthorization';
 export { AnypointAuth, GRANT_TYPES, hostname } from './src/AnypointAuth';
 export { default as AnypointSigninElement } from './src/AnypointSigninElement';
 export { default as AnypointSigninAwareElement } from './src/AnypointSigninAwareElement';
+export * from './src/types';
+export * from './src/Events';

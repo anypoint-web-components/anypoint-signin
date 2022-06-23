@@ -1,6 +1,4 @@
-import { OAuth2Authorization, ProcessingOptions } from '@advanced-rest-client/oauth';
-import { Authorization } from '@advanced-rest-client/events';
-import { TokenInfo } from '@advanced-rest-client/events/src/authorization/Authorization';
+import { OAuth2Authorization, ProcessingOptions, OAuth2Config, TokenInfo } from '@advanced-rest-client/oauth';
 
 /**
  * Extends the OAuth 2 authorization class to tweak it to support Anypoint authorization process that does not
@@ -14,7 +12,7 @@ export class ExchangeAuthorization extends OAuth2Authorization {
    * @param settings The authorization configuration.
    * @param options Additional processing options to configure the behavior of this library.
    */
-  constructor(settings: Authorization.OAuth2Authorization, options?: ProcessingOptions, eventTarget?: EventTarget);
+  constructor(settings: OAuth2Config, options?: ProcessingOptions, eventTarget?: EventTarget);
 
   /**
    * Overrides the base class method to dispatch the code exchange event to the hosting application.

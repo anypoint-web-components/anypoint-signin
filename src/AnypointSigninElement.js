@@ -1,12 +1,12 @@
 /* eslint-disable class-methods-use-this */
-import { html, css } from 'lit-element';
-import { AnypointButtonElement } from '@anypoint-web-components/awc';
+import { html, css } from 'lit';
+import { AnypointButtonElement } from '@anypoint-web-components/awc/dist';
 import elementStyles from './Signin.styles.js';
 import { AccessTokenChangeType, SignedInChangeType } from './Events.js';
 import '../anypoint-signin-aware.js';
 
 /** @typedef {import('./AnypointSigninAwareElement').default} AnypointSigninAwareElement */
-/** @typedef {import('@anypoint-web-components/awc/src/AnypointButtonBase').EmphasisValue} EmphasisValue */
+/** @typedef {import('@anypoint-web-components/awc/src/elements/button/AnypointButtonBase').EmphasisValue} EmphasisValue */
 
 /**
  * Enum button label default values.
@@ -283,8 +283,8 @@ export default class AnypointSigninElement extends AnypointButtonElement {
     this.forceOauthEvents = false;
     this.signedIn = false;
 
-    this._keyDownHandler = this._keyDownHandler.bind(this);
-    this._clickHandler = this._clickHandler.bind(this);
+    this.addEventListener('keydown', this._keyDownHandler.bind(this));
+    this.addEventListener('click', this._clickHandler.bind(this));
   }
 
   connectedCallback() {
@@ -295,15 +295,7 @@ export default class AnypointSigninElement extends AnypointButtonElement {
     if (!this.hasAttribute('aria-labelledby') && !this.hasAttribute('aria-label')) {
       const text = 'Press the button to sign in with Anypoint Platform';
       this.setAttribute('aria-label', text);
-    }
-    this.addEventListener('keydown', this._keyDownHandler);
-    this.addEventListener('click', this._clickHandler);
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-    this.removeEventListener('keydown', this._keyDownHandler);
-    this.removeEventListener('click', this._clickHandler);
+    } 
   }
 
   /**

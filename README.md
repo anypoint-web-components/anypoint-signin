@@ -99,7 +99,7 @@ customElements.define('sample-element', SampleElement);
 
 ### Handling the code exchange
 
-Anypoint platform does not allow to exchange code in a browser (which is expected) but does not allow the browser flow neither. Because of that the aware element customizes the `@advanced-rest-client/oauth-authorization` library and dispatches a DOM event that should be handled by the application, which is expected to perform token exchange.
+Anypoint platform does not allow to exchange code in a browser (which is expected) but does not allow the browser flow neither. Because of that the aware element customizes the `@advanced-rest-client/oauth` library and dispatches a DOM event that should be handled by the application, which is expected to perform token exchange.
 
 The event to handle is the `anypointcodeexchange` type. The event is the `AnypointCodeExchangeEvent` class extending the `CustomEvent` interface. It has the `code` property with the value of the received from the authorization server authorization code.
 The implementation should exchange the code to the access token. The result should be resolved in the promise set on the `detail.result` property of the event.

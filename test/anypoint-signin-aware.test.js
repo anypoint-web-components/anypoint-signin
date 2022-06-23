@@ -1,8 +1,8 @@
 import { fixture, assert, html } from '@open-wc/testing';
 import sinon from 'sinon';
-import { AuthorizationEventTypes } from '@advanced-rest-client/events';
 import { AuthServer } from './auth-server.js';
 import { AnypointAuth } from '../src/AnypointAuth.js';
+import { AnypointAuthorizeEventType } from '../src/Events.js';
 import '../anypoint-signin-aware.js';
 
 /** @typedef {import('../').AnypointSigninAwareElement} AnypointSigninAwareElement */
@@ -98,7 +98,7 @@ describe('<anypoint-signin-aware>', () => {
 
     it('dispatches the oauth request event (body)', () => {
       let called = false;
-      document.body.addEventListener(AuthorizationEventTypes.OAuth2.authorize, (e) => {
+      document.body.addEventListener(AnypointAuthorizeEventType, (e) => {
         // @ts-ignore
         e.detail.result = Promise.resolve({});
         called = true;
@@ -111,7 +111,7 @@ describe('<anypoint-signin-aware>', () => {
 
     it('dispatches the oauth2 request event on self', () => {
       let called = false;
-      document.body.addEventListener(AuthorizationEventTypes.OAuth2.authorize, (e) => {
+      document.body.addEventListener(AnypointAuthorizeEventType, (e) => {
         // @ts-ignore
         e.detail.result = Promise.resolve({});
         called = true;

@@ -1,4 +1,4 @@
-import { LitElement } from 'lit-element';
+import { LitElement } from 'lit';
 
 import {
   signedInValue,
@@ -104,7 +104,7 @@ export default class AnypointSigninAwareElement extends LitElement {
    *
    * It is useful when your application has it's own OAuth 2 authorization
    * mechanism. In this case handle `oauth2-token-requested` custom event.
-   * See `@advanced-rest-client/oauth-authorization` component documentation
+   * See `@advanced-rest-client/oauth` component documentation
    * for more information.
    * @attribute
    */

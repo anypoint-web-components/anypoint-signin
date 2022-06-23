@@ -1,5 +1,4 @@
-import { AuthorizationError } from '@advanced-rest-client/oauth';
-import { OAuth2Authorization } from '@advanced-rest-client/events/src/authorization/Authorization';
+import { AuthorizationError, OAuth2Config } from '@advanced-rest-client/oauth';
 import AnypointSigninAwareElement from './AnypointSigninAwareElement';
 import {
   clientIdValue,
@@ -60,10 +59,9 @@ declare interface AnypointAuth {
   accessToken: string;
 
   /**
-   * When the `forceOauthEvents` is set then this library dispatches the OAuth2 event
-   * as declared in the `AuthorizationEvents` of the `@advanced-rest-client/arc-events` library.
+   * When the `forceOauthEvents` is set then this library dispatches the OAuth2 event.
    * This can be used to force the components to dispatch the event so the application can handle the authorization process.
-   * If not set then the Aware uses the `OAuth2Authorization` library from the `@advanced-rest-client/oauth-authorization` package
+   * If not set then the Aware uses the `OAuth2Authorization` library from the `@advanced-rest-client/oauth` package
    * to handle the token exchange.
    * 
    * Note, Exchange does not allow to exchange the code for token in a browser environment. This library configures
@@ -119,7 +117,7 @@ declare interface AnypointAuth {
    *
    * @returns OAuth2 authorization settings to be dispatched to `<oauth2-authorization>` element
    */
-  oauth2Config(): OAuth2Authorization;
+  oauth2Config(): OAuth2Config;
 
   /**
    * Sends `oauth2-token-requested` custom event to authorize with the
@@ -134,7 +132,7 @@ declare interface AnypointAuth {
    * Signs out the user and attempts to destroy the token.
    * Currently token destroy endpoint does not allow request from
    * different domains so this is dummy function that clears token info,
-   * TODO: (jarrodek) Discuss with core services to enable token revoke action
+   * TODO(@jarrodek) Discuss with core services to enable token revoke action
    * from the outside of domain.
    *
    * @returns Promise resolved when the token is revoked.

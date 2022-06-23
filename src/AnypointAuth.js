@@ -14,8 +14,9 @@ WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 License for the specific language governing permissions and limitations under
 the License.
 */
-import { AuthorizationEvents } from '@advanced-rest-client/events';
+
 import { Utils } from '@advanced-rest-client/oauth';
+import { authorizeOauth2 } from './Events.js';
 import { ExchangeAuthorization } from './ExchangeAuthorization.js';
 import {
   clientIdValue,
@@ -27,8 +28,8 @@ import {
 
 /** @typedef {import('./AnypointSigninAwareElement').default} AnypointSigninAwareElement */
 /** @typedef {import('@advanced-rest-client/oauth').AuthorizationError} AuthorizationError */
-/** @typedef {import('@advanced-rest-client/events').Authorization.TokenInfo} TokenInfo */
-/** @typedef {import('@advanced-rest-client/events').Authorization.OAuth2Authorization} OAuth2Authorization */
+/** @typedef {import('@advanced-rest-client/oauth').TokenInfo} TokenInfo */
+/** @typedef {import('@advanced-rest-client/oauth').OAuth2Config} OAuth2Config */
 
 export const hostname = 'https://anypoint.mulesoft.com';
 
@@ -76,7 +77,7 @@ export const AnypointAuth = {
 
   /** 
    * Sets new `client_id`
-   * @param {string} value
+   * @param {string} val
    */
   set clientId(val) {
     if (val && val !== AnypointAuth[clientIdValue]) {
@@ -96,7 +97,7 @@ export const AnypointAuth = {
 
   /** 
    * Sets the new redirect URI
-   * @param {string} value
+   * @param {string} val
    */
   set redirectUri(val) {
     if (val && val !== AnypointAuth[redirectUriValue]) {
@@ -116,7 +117,7 @@ export const AnypointAuth = {
 
   /** 
    * Sets the new authorization type value
-   * @param {string} value
+   * @param {string} val
    */
   set authType(val) {
     if (val && val !== AnypointAuth[authTypeValue]) {
@@ -168,10 +169,9 @@ export const AnypointAuth = {
   },
 
   /**
-   * When the `forceOauthEvents` is set then this library dispatches the OAuth2 event
-   * as declared in the `AuthorizationEvents` of the `@advanced-rest-client/arc-events` library.
+   * When the `forceOauthEvents` is set then this library dispatches the OAuth2 event.
    * This can be used to force the components to dispatch the event so the application can handle the authorization process.
-   * If not set then the Aware uses the `OAuth2Authorization` library from the `@advanced-rest-client/oauth-authorization` package
+   * If not set then the Aware uses the `OAuth2Authorization` library from the `@advanced-rest-client/oauth` package
    * to handle the token exchange.
    * 
    * Note, Exchange does not allow to exchange the code for token in a browser environment. This library configures
@@ -243,10 +243,10 @@ export const AnypointAuth = {
   /**
    * OAuth2 authorization event settings.
    *
-   * @return {OAuth2Authorization} OAuth2 authorization settings to be dispatched to `<oauth2-authorization>` element
+   * @returns {OAuth2Config} OAuth2 authorization settings to be dispatched to `<oauth2-authorization>` element
    */
   oauth2Config() {
-    const result = /** @type OAuth2Authorization */ ({
+    const result = /** @type OAuth2Config */ ({
       grantType: AnypointAuth.authType,
       authorizationUri: AnypointAuth.authorizationUri,
       clientId: AnypointAuth.clientId,
@@ -279,7 +279,7 @@ export const AnypointAuth = {
       }
       let info = /** @type TokenInfo */ (null);
       if (AnypointAuth.forceOauthEvents) {
-        info = await AuthorizationEvents.OAuth2.authorize(eventTarget, detail);
+        info = await authorizeOauth2(eventTarget, detail);
         if (!info) {
           throw new Error('The exchange authorization event not handled.');
         }
@@ -307,7 +307,7 @@ export const AnypointAuth = {
    * Signs out the user and attempts to destroy the token.
    * Currently token destroy endpoint does not allow request from
    * different domains so this is dummy function that clears token info,
-   * TODO: (jarrodek) Discuss with core services to enable token revoke action
+   * TODO(@jarrodek): Discuss with core services to enable token revoke action
    * from the outside of domain.
    *
    * @return {Promise<void>} Promise resolved when the token is revoked.

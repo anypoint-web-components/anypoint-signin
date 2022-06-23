@@ -1,8 +1,8 @@
 import { OAuth2Authorization } from '@advanced-rest-client/oauth';
 import { AnypointCodeExchangeEvent } from './Events.js';
 
-/** @typedef {import('@advanced-rest-client/events').Authorization.TokenInfo} TokenInfo */
-/** @typedef {import('@advanced-rest-client/events').Authorization.OAuth2Authorization} OAuth2Settings */
+/** @typedef {import('@advanced-rest-client/oauth').TokenInfo} TokenInfo */
+/** @typedef {import('@advanced-rest-client/oauth').OAuth2Authorization} OAuth2Settings */
 /** @typedef {import('@advanced-rest-client/oauth').ProcessingOptions} ProcessingOptions */
 
 /**

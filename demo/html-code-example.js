@@ -1,7 +1,7 @@
 export default `import { AnypointCodeExchangeEventType } from '@anypoint-web-components/anypoint-signin';
 
 /** @typedef {import('@anypoint-web-components/anypoint-signin').AnypointCodeExchangeEvent} AnypointCodeExchangeEvent */
-/** @typedef {import('@advanced-rest-client/arc-types').Authorization.TokenInfo} TokenInfo */
+/** @typedef {import('@anypoint-web-components/anypoint-signin').TokenInfo} TokenInfo */
 
 /**
  * @param {AnypointCodeExchangeEvent} e

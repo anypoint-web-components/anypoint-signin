@@ -1,5 +1,6 @@
-import { TokenInfo } from "@advanced-rest-client/events/src/authorization/Authorization";
+import { TokenInfo, OAuth2Config } from '@advanced-rest-client/oauth';
 
+export declare const AnypointAuthorizeEventType: string;
 export declare const AnypointCodeExchangeEventType: string;
 export declare const AccessTokenChangeType: string;
 export declare const SignedInChangeType: string;
@@ -29,3 +30,25 @@ export declare class AnypointCodeExchangeEvent extends CustomEvent<AnypointCodeE
    */
   constructor(code: string);
 }
+
+export declare interface ResultEventDetail<T> {
+  result?: Promise<T>;
+}
+
+/**
+ * An event dispatched to request OAuth2 authorization.
+ */
+ export declare class OAuth2AuthorizeEvent extends CustomEvent<OAuth2Config & ResultEventDetail<TokenInfo>> {
+  /**
+   * @param detail Authorization options.
+   */
+  constructor(detail: OAuth2Config);
+}
+
+/**
+ * @param target A node on which to dispatch the event.
+ * @param config Authorization options.
+ * @return Promise resolved with authorization result
+ * @throws {TokenError}
+ */
+export function authorizeOauth2(target: EventTarget, config: OAuth2Config): Promise<TokenInfo>;

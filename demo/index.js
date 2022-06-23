@@ -1,12 +1,10 @@
-import { html } from 'lit-html';
-import { DemoPage } from '@advanced-rest-client/arc-demo-helper';
-import '@advanced-rest-client/arc-demo-helper/arc-interactive-demo.js';
-import '@anypoint-web-components/awc/anypoint-radio-button.js';
-import '@anypoint-web-components/awc/anypoint-radio-group.js';
-import '@anypoint-web-components/awc/anypoint-button.js';
-import '@anypoint-web-components/awc/colors.js';
-import '@anypoint-web-components/awc/typography.js';
-import '@anypoint-web-components/awc/din-pro.js';
+import { html, render } from 'lit';
+import '@anypoint-web-components/awc/dist/define/anypoint-radio-button.js';
+import '@anypoint-web-components/awc/dist/define/anypoint-radio-group.js';
+import '@anypoint-web-components/awc/dist/define/anypoint-button.js';
+import '@anypoint-web-components/awc/dist/colors.js';
+import '@anypoint-web-components/awc/dist/typography.js';
+import '@anypoint-web-components/awc/dist/din-pro.js';
 import '../anypoint-signin.js';
 import htmlExample from './html-example.js';
 import litExample from './lit-example.js';
@@ -15,18 +13,16 @@ import litCodeExample from './lit-code-example.js';
 import nodeCodeExample from './node-server-example.js';
 import { AnypointCodeExchangeEventType, AnypointSignedInErrorType } from '../index.js';
 
+/** @typedef {import('lit').TemplateResult} TemplateResult */
+/** @typedef {import('@advanced-rest-client/oauth').TokenInfo} TokenInfo */
 /** @typedef {import('../index').AnypointCodeExchangeEvent} AnypointCodeExchangeEvent */
-/** @typedef {import('@advanced-rest-client/events').Authorization.TokenInfo} TokenInfo */
 
 const apiBase = 'https://awc.dev/api/v1'
 const tokenUri = `${apiBase}/auth/anypoint-token`;
 
-class ComponentDemoPage extends DemoPage {
+class ComponentDemoPage {
   constructor() {
-    super();
     this.initObservableProperties(['buttonWidth', 'status', 'code', 'accessToken']);
-    this.componentName = 'anypoint-signin';
-    this.demoStates = ['Anypoint'];
     this.buttonWidth = 'wide';
     this._widthHandler = this._widthHandler.bind(this);
     this._signedinChangedHandler = this._signedinChangedHandler.bind(this);
@@ -39,6 +35,90 @@ class ComponentDemoPage extends DemoPage {
 
     window.addEventListener(AnypointCodeExchangeEventType, this._oauth2CodeHandler);
     window.addEventListener(AnypointSignedInErrorType, this._errorHandler);
+  }
+
+  /**
+   * Creates setters and getters to properties defined in the passed list of properties.
+   * Property setter will trigger render function.
+   *
+   * @param {string[]} props List of properties to initialize.
+   */
+   initObservableProperties(props) {
+    props.forEach((item) => {
+      Object.defineProperty(this, item, {
+        get() {
+          return this[`_${item}`];
+        },
+        set(newValue) {
+          this._setObservableProperty(item, newValue);
+        },
+        enumerable: true,
+        configurable: true
+      });
+    });
+  }
+
+  /**
+   * @param {string} prop
+   * @param {any} value
+   */
+  _setObservableProperty(prop, value) {
+    const key = `_${prop}`;
+    if (this[key] === value) {
+      return;
+    }
+    this[key] = value;
+    this.render();
+  }
+
+  /**
+   * The main render function. Sub classes should not override this method.
+   * Override `_render()` instead.
+   *
+   * The function calls `_render()` in a timeout so it is safe to call this
+   * multiple time in the same event loop.
+   */
+  render() {
+    if (this._rendering) {
+      return;
+    }
+    this._rendering = true;
+    setTimeout(() => {
+      this._rendering = false;
+      this._render();
+    });
+  }
+
+  _render() {
+    const node = /** @type HTMLElement */ (document.querySelector('#demo'));
+    render(this.pageTemplate(), node, {
+      host: this
+    });
+  }
+
+  /**
+   * The page render function. Usually you don't need to use it.
+   * It renders the header template, main section, and the content.
+   * 
+   * @return {TemplateResult}
+   */
+  pageTemplate() {
+    return html`
+    ${this.headerTemplate()}
+    <section role="main" class="vertical-section-container centered main">
+      ${this.contentTemplate()}
+    </section>`;
+  }
+
+  /**
+   * Call this on the top of the `render()` method to render demo navigation
+   * @return {TemplateResult} HTML template for demo header
+   */
+  headerTemplate() {
+    return html`
+    <header>
+      <h1 class="api-title">anypoint-signin</h1>
+    </header>`;
   }
 
   _widthHandler(e) {
@@ -97,51 +177,41 @@ class ComponentDemoPage extends DemoPage {
         state: '0',
       }
     } catch (e) {
-      this._toastError(e.message);
+      console.error(e.detail);
       throw e;
     }
   }
 
-  _toastError(message) {
-    console.info(message)
-  }
-
   _errorHandler(e) {
-    const { message } = e.detail;
-    this._toastError(message);
+    console.error(e.detail);
   }
 
   _demoTemplate() {
-    const { demoStates, darkThemeActive, buttonWidth, scopes, redirectUri, clientId, status, code, accessToken } = this;
+    const { buttonWidth, scopes, redirectUri, clientId, status, code, accessToken } = this;
     return html`
       <section class="documentation-section">
         <h3>Interactive demo</h3>
         <p>
           This demo lets you preview the sign in button element with various configuration options.
         </p>
-        <arc-interactive-demo
-          .states="${demoStates}"
-          @state-changed="${this._demoStateHandler}"
-          ?dark="${darkThemeActive}"
-        >
-          <anypoint-signin
-            .width="${buttonWidth}"
-            .clientId="${clientId}"
-            .scopes="${scopes}"
-            .redirectUri="${redirectUri}"
-            slot="content"
-            @signedinchange="${this._signedinChangedHandler}"
-          ></anypoint-signin>
-          <label slot="options" id="listTypeLabel">List type</label>
-          <anypoint-radio-group slot="options" selectable="anypoint-radio-button" aria-labelledby="listTypeLabel">
-            <anypoint-radio-button @change="${this._widthHandler}" checked name="width" value="wide"
-              >Wide width</anypoint-radio-button
-            >
-            <anypoint-radio-button @change="${this._widthHandler}" name="width" value="standard"
-              >Standard width</anypoint-radio-button
-            >
-          </anypoint-radio-group>
-        </arc-interactive-demo>
+        
+        <anypoint-signin
+          .width="${buttonWidth}"
+          .clientId="${clientId}"
+          .scopes="${scopes}"
+          .redirectUri="${redirectUri}"
+          @signedinchange="${this._signedinChangedHandler}"
+        ></anypoint-signin>
+        
+        <label id="listTypeLabel">List type</label>
+        <anypoint-radio-group selectable="anypoint-radio-button" aria-labelledby="listTypeLabel">
+          <anypoint-radio-button @change="${this._widthHandler}" checked name="width" value="wide"
+            >Wide width</anypoint-radio-button
+          >
+          <anypoint-radio-button @change="${this._widthHandler}" name="width" value="standard"
+            >Standard width</anypoint-radio-button
+          >
+        </anypoint-radio-group>
 
         <section class="result">
           <h3>Authorization status</h3>
@@ -237,9 +307,6 @@ class ComponentDemoPage extends DemoPage {
   contentTemplate() {
     if (!this._initialized) {
       this._initialized = true;
-      /* global Prism */
-      // @ts-ignore
-      setTimeout(() => Prism.highlightAll());
     }
     return html`
       <h2>Anypoint Sign In Button</h2>
